@@ -133,7 +133,7 @@ async def create_expense_category(category_data: ExpenseCategoryCreate):
 
 @api_router.get("/expense-categories", response_model=List[ExpenseCategory])
 async def get_expense_categories():
-    categories = await db.expense_categories.find().sort("name", 1).to_list(100)
+    categories = await db.expense_categories.find({}, {"_id": 0}).sort("name", 1).to_list(100)
     return [ExpenseCategory(**cat) for cat in categories]
 
 @api_router.put("/expense-categories/{category_id}", response_model=ExpenseCategory)
