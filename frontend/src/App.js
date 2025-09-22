@@ -256,9 +256,9 @@ const Dashboard = () => {
   );
 };
 
-// Placeholder components for other routes
-const Clientes = () => <div className="text-2xl font-bold">Gestión de Clientes</div>;
-const Vehiculos = () => <div className="text-2xl font-bold">Gestión de Vehículos</div>;
+// Import components
+import Clientes from './components/Clientes';
+import Vehiculos from './components/Vehiculos';
 const Servicios = () => <div className="text-2xl font-bold">Gestión de Servicios</div>;
 const TiposServicios = () => <div className="text-2xl font-bold">Tipos de Servicios</div>;
 const Reportes = () => <div className="text-2xl font-bold">Reportes</div>;
