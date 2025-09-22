@@ -408,7 +408,7 @@ async def crear_vehiculo(vehiculo: VehiculoCreate, current_user: User = Depends(
     return vehiculo_obj
 
 @api_router.get("/vehiculos", response_model=List[Vehiculo])
-async def obtener_vehiculos():
+async def obtener_vehiculos(current_user: User = Depends(get_current_user)):
     vehiculos = await db.vehiculos.find().to_list(1000)
     return [Vehiculo(**vehiculo) for vehiculo in vehiculos]
 
