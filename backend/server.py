@@ -612,7 +612,7 @@ async def obtener_reporte_ingresos(dias: int = 30, current_user: User = Depends(
     ]
 
 @api_router.get("/buscar")
-async def buscar_por_placa(placa: str):
+async def buscar_por_placa(placa: str, current_user: User = Depends(get_current_user)):
     # Buscar vehículo por placa
     vehiculo = await db.vehiculos.find_one({"placa": {"$regex": placa, "$options": "i"}})
     if not vehiculo:
