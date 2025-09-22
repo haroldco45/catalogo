@@ -259,6 +259,8 @@ const Dashboard = () => {
 // Import components
 import Clientes from './components/Clientes';
 import Vehiculos from './components/Vehiculos';
+import Servicios from './components/Servicios';
+import TiposServicios from './components/TiposServicios';
 const Servicios = () => <div className="text-2xl font-bold">Gestión de Servicios</div>;
 const TiposServicios = () => <div className="text-2xl font-bold">Tipos de Servicios</div>;
 const Reportes = () => <div className="text-2xl font-bold">Reportes</div>;
