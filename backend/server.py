@@ -652,6 +652,52 @@ async def inicializar_datos(current_user: User = Depends(get_current_user)):
     
     return {"message": "Datos inicializados correctamente"}
 
+# Create initial admin user (only if no users exist)
+@api_router.post("/setup/admin")
+async def create_initial_admin():
+    # Check if any users exist
+    user_count = await db.users.count_documents({})
+    if user_count > 0:
+        return {"message": "Admin user already exists"}
+    
+    # Create default admin user
+    admin_data = UserCreate(
+        username="admin",
+        email="admin@lavadero.com",
+        full_name="Administrador",
+        password="admin123",
+        role=UserRole.ADMIN
+    )
+    
+    hashed_password = get_password_hash(admin_data.password)
+    user_dict = admin_data.dict()
+    del user_dict['password']
+    user_obj = User(**user_dict)
+    
+    # Store in database
+    user_data = user_obj.dict()
+    user_data['hashed_password'] = hashed_password
+    await db.users.insert_one(user_data)
+    
+    # Create default business config
+    default_config = BusinessConfig(
+        business_name="Mi Lavadero Pro",
+        owner_name="Propietario",
+        phone="(555) 123-4567",
+        email="contacto@milavadero.com",
+        address="Calle Principal 123, Ciudad",
+        currency="USD",
+        timezone="UTC"
+    )
+    await db.business_config.insert_one(default_config.dict())
+    
+    return {
+        "message": "Admin user created successfully",
+        "username": "admin",
+        "password": "admin123",
+        "note": "Please change the password after first login"
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
