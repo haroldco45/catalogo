@@ -522,7 +522,7 @@ async def actualizar_servicio(servicio_id: str, servicio_data: ServicioCreate):
 
 # ==================== DASHBOARD Y REPORTES ====================
 @api_router.get("/dashboard/estadisticas", response_model=EstadisticasDashboard)
-async def obtener_estadisticas_dashboard():
+async def obtener_estadisticas_dashboard(current_user: User = Depends(get_current_user)):
     hoy = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     inicio_mes = hoy.replace(day=1)
     
