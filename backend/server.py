@@ -413,7 +413,7 @@ async def obtener_vehiculos(current_user: User = Depends(get_current_user)):
     return [Vehiculo(**vehiculo) for vehiculo in vehiculos]
 
 @api_router.get("/vehiculos/{vehiculo_id}", response_model=Vehiculo)
-async def obtener_vehiculo(vehiculo_id: str):
+async def obtener_vehiculo(vehiculo_id: str, current_user: User = Depends(get_current_user)):
     vehiculo = await db.vehiculos.find_one({"vehiculo_id": vehiculo_id})
     if not vehiculo:
         raise HTTPException(status_code=404, detail="Vehículo no encontrado")
