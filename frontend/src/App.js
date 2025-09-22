@@ -263,8 +263,7 @@ import Servicios from './components/Servicios';
 import TiposServicios from './components/TiposServicios';
 import Reportes from './components/Reportes';
 import Buscar from './components/Buscar';
-const Reportes = () => <div className="text-2xl font-bold">Reportes</div>;
-const Buscar = () => <div className="text-2xl font-bold">Buscar</div>;
+
 
 function App() {
   // Inicializar datos al cargar la app
