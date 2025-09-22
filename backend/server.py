@@ -190,7 +190,7 @@ async def get_expenses(date_str: Optional[str] = None, start_date: Optional[str]
     elif start_date and end_date:
         query["date"] = {"$gte": start_date, "$lte": end_date}
     
-    expenses = await db.expenses.find(query).sort("date", -1).to_list(1000)
+    expenses = await db.expenses.find(query, {"_id": 0}).sort("date", -1).to_list(1000)
     return expenses
 
 @api_router.delete("/expenses/{expense_id}")
