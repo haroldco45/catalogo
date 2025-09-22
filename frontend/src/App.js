@@ -13,8 +13,24 @@ import {
   BarChart3, 
   Search,
   Menu,
-  X
+  X,
+  Settings,
+  LogOut,
+  User
 } from "lucide-react";
+
+// Context
+import { AuthProvider, useAuth } from './context/AuthContext';
+
+// Components
+import Login from './components/Login';
+import Clientes from './components/Clientes';
+import Vehiculos from './components/Vehiculos';
+import Servicios from './components/Servicios';
+import TiposServicios from './components/TiposServicios';
+import Reportes from './components/Reportes';
+import Buscar from './components/Buscar';
+import ConfiguracionNegocio from './components/ConfiguracionNegocio';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -22,7 +38,22 @@ const API = `${BACKEND_URL}/api`;
 // Layout Component
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [businessConfig, setBusinessConfig] = useState(null);
   const location = useLocation();
+  const { user, logout } = useAuth();
+
+  useEffect(() => {
+    fetchBusinessConfig();
+  }, []);
+
+  const fetchBusinessConfig = async () => {
+    try {
+      const response = await axios.get(`${API}/business/config`);
+      setBusinessConfig(response.data);
+    } catch (error) {
+      console.error('Error fetching business config:', error);
+    }
+  };
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
@@ -32,7 +63,14 @@ const Layout = ({ children }) => {
     { name: 'Tipos de Servicio', href: '/tipos-servicios', icon: Wrench },
     { name: 'Reportes', href: '/reportes', icon: BarChart3 },
     { name: 'Buscar', href: '/buscar', icon: Search },
+    ...(user?.role === 'admin' ? [{ name: 'Configuración', href: '/configuracion', icon: Settings }] : [])
   ];
+
+  const handleLogout = () => {
+    if (window.confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+      logout();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -48,25 +86,53 @@ const Layout = ({ children }) => {
               <X className="h-6 w-6 text-white" />
             </button>
           </div>
-          <SidebarContent navigation={navigation} currentPath={location.pathname} />
+          <SidebarContent navigation={navigation} currentPath={location.pathname} businessConfig={businessConfig} />
         </div>
       </div>
 
       {/* Desktop sidebar */}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-        <SidebarContent navigation={navigation} currentPath={location.pathname} />
+        <SidebarContent navigation={navigation} currentPath={location.pathname} businessConfig={businessConfig} />
       </div>
 
       {/* Main content */}
       <div className="md:pl-64 flex flex-col flex-1">
-        <div className="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-gray-50">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
+        {/* Top bar */}
+        <div className="sticky top-0 z-10 bg-white shadow-sm border-b border-gray-200">
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="md:hidden -ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+              <h1 className="text-lg font-semibold text-gray-900 md:hidden">
+                {businessConfig?.business_name || 'Lavadero Pro'}
+              </h1>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center text-sm text-gray-500">
+                <User className="h-4 w-4 mr-2" />
+                <span>{user?.full_name || user?.username}</span>
+                {user?.role === 'admin' && (
+                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    Admin
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={handleLogout}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+                title="Cerrar sesión"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
         </div>
+
         <main className="flex-1">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
@@ -79,13 +145,33 @@ const Layout = ({ children }) => {
   );
 };
 
-const SidebarContent = ({ navigation, currentPath }) => (
+const SidebarContent = ({ navigation, currentPath, businessConfig }) => (
   <div className="flex-1 flex flex-col min-h-0 bg-white border-r border-gray-200">
     <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
       <div className="flex items-center flex-shrink-0 px-4">
         <div className="flex items-center">
-          <Car className="h-8 w-8 text-blue-600" />
-          <span className="ml-2 text-xl font-bold text-gray-900">Lavadero Pro</span>
+          {businessConfig?.logo_url ? (
+            <img 
+              src={businessConfig.logo_url} 
+              alt="Logo" 
+              className="h-8 w-8 rounded-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+          ) : null}
+          <div className={`h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center ${businessConfig?.logo_url ? 'hidden' : ''}`}>
+            <Car className="h-5 w-5 text-white" />
+          </div>
+          <div className="ml-3">
+            <span className="text-lg font-bold text-gray-900">
+              {businessConfig?.business_name || 'Lavadero Pro'}
+            </span>
+            {businessConfig?.owner_name && (
+              <p className="text-xs text-gray-500">{businessConfig.owner_name}</p>
+            )}
+          </div>
         </div>
       </div>
       <nav className="mt-5 flex-1 px-2 space-y-1">
@@ -256,28 +342,36 @@ const Dashboard = () => {
   );
 };
 
-// Import components
-import Clientes from './components/Clientes';
-import Vehiculos from './components/Vehiculos';
-import Servicios from './components/Servicios';
-import TiposServicios from './components/TiposServicios';
-import Reportes from './components/Reportes';
-import Buscar from './components/Buscar';
+// Main App Component
+function AppContent() {
+  const { isAuthenticated, loading, login, user } = useAuth();
 
-
-function App() {
-  // Inicializar datos al cargar la app
+  // Initialize data on first auth
   useEffect(() => {
-    const initializeData = async () => {
-      try {
-        await axios.post(`${API}/inicializar-datos`);
-      } catch (error) {
-        console.error('Error initializing data:', error);
-      }
-    };
+    if (isAuthenticated()) {
+      const initializeData = async () => {
+        try {
+          await axios.post(`${API}/inicializar-datos`);
+        } catch (error) {
+          console.error('Error initializing data:', error);
+        }
+      };
 
-    initializeData();
-  }, []);
+      initializeData();
+    }
+  }, [isAuthenticated]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated()) {
+    return <Login onLogin={login} />;
+  }
 
   return (
     <div className="App">
@@ -291,10 +385,21 @@ function App() {
             <Route path="/tipos-servicios" element={<TiposServicios />} />
             <Route path="/reportes" element={<Reportes />} />
             <Route path="/buscar" element={<Buscar />} />
+            {user?.role === 'admin' && (
+              <Route path="/configuracion" element={<ConfiguracionNegocio user={user} />} />
+            )}
           </Routes>
         </Layout>
       </BrowserRouter>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
