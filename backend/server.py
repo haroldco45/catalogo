@@ -221,6 +221,142 @@ class ReporteIngresos(BaseModel):
     total_servicios: int
     total_ingresos: float
 
+# ==================== AUTHENTICATION ====================
+@api_router.post("/auth/register", response_model=User)
+async def register_user(user: UserCreate):
+    # Check if user already exists
+    existing_user = await db.users.find_one({"username": user.username})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already registered")
+    
+    existing_email = await db.users.find_one({"email": user.email})
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create new user
+    hashed_password = get_password_hash(user.password)
+    user_dict = user.dict()
+    del user_dict['password']
+    user_obj = User(**user_dict)
+    
+    # Store in database
+    user_data = user_obj.dict()
+    user_data['hashed_password'] = hashed_password
+    await db.users.insert_one(user_data)
+    
+    return user_obj
+
+@api_router.post("/auth/login", response_model=Token)
+async def login_user(user_login: UserLogin):
+    # Find user
+    user = await db.users.find_one({"username": user_login.username})
+    if not user or not verify_password(user_login.password, user['hashed_password']):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    if not user.get('is_active', True):
+        raise HTTPException(status_code=400, detail="Inactive user")
+    
+    # Create access token
+    access_token = create_access_token(data={"sub": user['username']})
+    
+    # Remove sensitive data
+    user_data = {k: v for k, v in user.items() if k not in ['hashed_password', '_id']}
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user_data
+    }
+
+@api_router.get("/auth/me", response_model=User)
+async def get_current_user_info(current_user: User = Depends(get_current_user)):
+    return current_user
+
+# ==================== BUSINESS CONFIGURATION ====================
+@api_router.post("/business/config", response_model=BusinessConfig)
+async def create_business_config(config: BusinessConfigCreate, current_user: User = Depends(get_current_user)):
+    # Only admin can create/update business config
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    # Check if config already exists
+    existing_config = await db.business_config.find_one({})
+    if existing_config:
+        # Update existing config
+        config_data = config.dict()
+        config_data['updated_at'] = datetime.utcnow()
+        await db.business_config.update_one({}, {"$set": config_data})
+        
+        updated_config = await db.business_config.find_one({})
+        return BusinessConfig(**updated_config)
+    else:
+        # Create new config
+        config_obj = BusinessConfig(**config.dict())
+        await db.business_config.insert_one(config_obj.dict())
+        return config_obj
+
+@api_router.get("/business/config", response_model=BusinessConfig)
+async def get_business_config():
+    config = await db.business_config.find_one({})
+    if not config:
+        # Return default config
+        default_config = BusinessConfig(
+            business_name="Mi Lavadero",
+            owner_name="Propietario",
+            currency="USD",
+            timezone="UTC"
+        )
+        await db.business_config.insert_one(default_config.dict())
+        return default_config
+    
+    return BusinessConfig(**config)
+
+@api_router.post("/business/license")
+async def generate_license(business_name: str, current_user: User = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    license_key = generate_license_key(business_name)
+    expiry_date = datetime.utcnow() + timedelta(days=365)  # 1 year license
+    
+    license_info = LicenseInfo(
+        license_key=license_key,
+        business_name=business_name,
+        expiry_date=expiry_date,
+        max_users=5,
+        features=["dashboard", "reports", "clients", "vehicles", "services"]
+    )
+    
+    # Store license in database
+    await db.licenses.insert_one(license_info.dict())
+    
+    return {
+        "license_key": license_key,
+        "business_name": business_name,
+        "expiry_date": expiry_date,
+        "message": "License generated successfully"
+    }
+
+@api_router.post("/business/validate-license")
+async def validate_license(license_key: str):
+    license_info = await db.licenses.find_one({"license_key": license_key})
+    if not license_info:
+        return {"valid": False, "message": "Invalid license key"}
+    
+    if license_info.get('expiry_date') and datetime.utcnow() > license_info['expiry_date']:
+        return {"valid": False, "message": "License expired"}
+    
+    return {
+        "valid": True,
+        "business_name": license_info['business_name'],
+        "expiry_date": license_info.get('expiry_date'),
+        "features": license_info.get('features', [])
+    }
+
 # ==================== CLIENTES ====================
 @api_router.post("/clientes", response_model=Cliente)
 async def crear_cliente(cliente: ClienteCreate):
