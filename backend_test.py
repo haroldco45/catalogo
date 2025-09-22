@@ -182,13 +182,15 @@ class LavaderoAPITester:
             print("❌ Cannot test - no token available")
             return False
         
-        # Generate license
+        # Generate license - business_name should be in request body
+        license_data = {"business_name": "Lavadero Premium Test"}
+        
         success, response = self.run_test(
             "Generate License",
             "POST",
             "business/license",
             200,
-            params={"business_name": "Lavadero Premium Test"}
+            data=license_data
         )
         
         if success:
@@ -200,12 +202,13 @@ class LavaderoAPITester:
             
             # Test license validation
             if license_key:
+                validation_data = {"license_key": license_key}
                 success2, validation_response = self.run_test(
                     "Validate License",
                     "POST",
                     "business/validate-license",
                     200,
-                    params={"license_key": license_key},
+                    data=validation_data,
                     auth_required=False
                 )
                 
