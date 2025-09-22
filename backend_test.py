@@ -7,6 +7,7 @@ class LavaderoAPITester:
     def __init__(self, base_url="https://autowash-system.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
+        self.token = None
         self.tests_run = 0
         self.tests_passed = 0
         self.created_ids = {
