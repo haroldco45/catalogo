@@ -529,32 +529,58 @@ class LavaderoAPITester:
         return success
 
 def main():
-    print("🚗 TESTING LAVADERO API SYSTEM")
-    print("=" * 50)
+    print("🚗 TESTING LAVADERO AUTHENTICATION & BUSINESS CONFIG SYSTEM")
+    print("=" * 60)
     
     tester = LavaderoAPITester()
     
-    # Run all tests in sequence
-    tests = [
-        tester.test_initialize_data,
-        tester.test_dashboard_stats,
-        tester.test_service_types,
-        tester.test_clients_crud,
-        tester.test_vehicles_crud,
-        tester.test_services_crud,
-        tester.test_search_functionality,
-        tester.test_reports,
-        tester.test_updated_dashboard
+    # Run authentication and business config tests first
+    auth_tests = [
+        tester.test_setup_admin,
+        tester.test_login,
+        tester.test_get_current_user,
+        tester.test_business_config,
+        tester.test_license_generation,
+        tester.test_unauthorized_access,
+        tester.test_admin_only_access
     ]
     
-    for test in tests:
+    print("\n🔐 RUNNING AUTHENTICATION & BUSINESS CONFIG TESTS")
+    print("=" * 60)
+    
+    for test in auth_tests:
         try:
             test()
         except Exception as e:
             print(f"❌ Test failed with exception: {str(e)}")
     
+    # Run basic functionality tests if authentication works
+    if tester.token:
+        print("\n🚗 RUNNING BASIC FUNCTIONALITY TESTS")
+        print("=" * 60)
+        
+        basic_tests = [
+            tester.test_initialize_data,
+            tester.test_dashboard_stats,
+            tester.test_service_types,
+            tester.test_clients_crud,
+            tester.test_vehicles_crud,
+            tester.test_services_crud,
+            tester.test_search_functionality,
+            tester.test_reports,
+            tester.test_updated_dashboard
+        ]
+        
+        for test in basic_tests:
+            try:
+                test()
+            except Exception as e:
+                print(f"❌ Test failed with exception: {str(e)}")
+    else:
+        print("\n⚠️  SKIPPING BASIC FUNCTIONALITY TESTS - Authentication failed")
+    
     # Print final results
-    print("\n" + "=" * 50)
+    print("\n" + "=" * 60)
     print(f"📊 FINAL RESULTS: {tester.tests_passed}/{tester.tests_run} tests passed")
     
     if tester.tests_passed == tester.tests_run:
