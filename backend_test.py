@@ -234,7 +234,7 @@ class LavaderoAPITester:
             "Access Dashboard Without Auth",
             "GET",
             "dashboard/estadisticas",
-            401  # Should return 401 Unauthorized
+            403  # Should return 403 Forbidden (FastAPI returns 403 for missing auth)
         )
         
         # Restore token
