@@ -397,7 +397,7 @@ async def eliminar_cliente(cliente_id: str, current_user: User = Depends(get_cur
 
 # ==================== VEHÍCULOS ====================
 @api_router.post("/vehiculos", response_model=Vehiculo)
-async def crear_vehiculo(vehiculo: VehiculoCreate):
+async def crear_vehiculo(vehiculo: VehiculoCreate, current_user: User = Depends(get_current_user)):
     # Verificar que el cliente existe
     cliente = await db.clientes.find_one({"cliente_id": vehiculo.cliente_id})
     if not cliente:
