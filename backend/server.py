@@ -632,7 +632,7 @@ async def buscar_por_placa(placa: str, current_user: User = Depends(get_current_
 
 # Inicializar datos de ejemplo
 @api_router.post("/inicializar-datos")
-async def inicializar_datos():
+async def inicializar_datos(current_user: User = Depends(get_current_user)):
     # Verificar si ya hay datos
     if await db.tipos_servicios.count_documents({}) > 0:
         return {"message": "Los datos ya están inicializados"}
