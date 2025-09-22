@@ -50,6 +50,106 @@ class EstadoServicio(str, Enum):
     COMPLETADO = "Completado"
     CANCELADO = "Cancelado"
 
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    USER = "user"
+
+# Auth Models
+class UserBase(BaseModel):
+    username: str
+    email: str
+    full_name: Optional[str] = None
+    role: UserRole = UserRole.USER
+
+class UserCreate(UserBase):
+    password: str
+
+class User(UserBase):
+    user_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user: dict
+
+# Business Config Models
+class BusinessConfigBase(BaseModel):
+    business_name: str
+    owner_name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
+    logo_url: Optional[str] = None
+    currency: str = "USD"
+    timezone: str = "UTC"
+
+class BusinessConfigCreate(BusinessConfigBase):
+    pass
+
+class BusinessConfig(BusinessConfigBase):
+    config_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+# License Models
+class LicenseInfo(BaseModel):
+    license_key: str
+    business_name: str
+    expiry_date: Optional[datetime] = None
+    max_users: int = 5
+    features: List[str] = ["basic"]
+
+# Security Functions
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    except jwt.PyJWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    user = await db.users.find_one({"username": username})
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return User(**user)
+
+def generate_license_key(business_name: str) -> str:
+    """Generate a unique license key for the business"""
+    data = f"{business_name}-{datetime.utcnow().isoformat()}"
+    return hashlib.sha256(data.encode()).hexdigest()[:24].upper()
+
 # Models
 class ClienteBase(BaseModel):
     nombre: str
