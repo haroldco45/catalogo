@@ -17,10 +17,14 @@ class LavaderoAPITester:
             'servicio_id': None
         }
 
-    def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
+    def run_test(self, name, method, endpoint, expected_status, data=None, params=None, auth_required=True):
         """Run a single API test"""
         url = f"{self.api_url}/{endpoint}"
         headers = {'Content-Type': 'application/json'}
+        
+        # Add authorization header if token exists and auth is required
+        if self.token and auth_required:
+            headers['Authorization'] = f'Bearer {self.token}'
 
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
@@ -59,6 +63,211 @@ class LavaderoAPITester:
         except Exception as e:
             print(f"❌ Failed - Error: {str(e)}")
             return False, {}
+
+    def test_setup_admin(self):
+        """Test creating initial admin user"""
+        print("\n=== TESTING ADMIN SETUP ===")
+        success, response = self.run_test(
+            "Setup Admin User",
+            "POST",
+            "setup/admin",
+            200,
+            auth_required=False
+        )
+        
+        if success:
+            print("✅ Admin user setup completed")
+            print(f"   Username: {response.get('username', 'admin')}")
+            print(f"   Password: {response.get('password', 'admin123')}")
+        
+        return success
+
+    def test_login(self):
+        """Test login with admin credentials"""
+        print("\n=== TESTING LOGIN ===")
+        
+        login_data = {
+            "username": "admin",
+            "password": "admin123"
+        }
+        
+        success, response = self.run_test(
+            "Admin Login",
+            "POST",
+            "auth/login",
+            200,
+            data=login_data,
+            auth_required=False
+        )
+        
+        if success and 'access_token' in response:
+            self.token = response['access_token']
+            print(f"✅ Login successful, token obtained")
+            print(f"   User: {response.get('user', {}).get('full_name', 'Unknown')}")
+            print(f"   Role: {response.get('user', {}).get('role', 'Unknown')}")
+            return True
+        
+        return False
+
+    def test_get_current_user(self):
+        """Test getting current user info"""
+        print("\n=== TESTING GET CURRENT USER ===")
+        
+        if not self.token:
+            print("❌ Cannot test - no token available")
+            return False
+        
+        success, response = self.run_test(
+            "Get Current User",
+            "GET",
+            "auth/me",
+            200
+        )
+        
+        if success:
+            print(f"✅ Current user info retrieved")
+            print(f"   Username: {response.get('username', 'Unknown')}")
+            print(f"   Role: {response.get('role', 'Unknown')}")
+        
+        return success
+
+    def test_business_config(self):
+        """Test business configuration endpoints"""
+        print("\n=== TESTING BUSINESS CONFIGURATION ===")
+        
+        if not self.token:
+            print("❌ Cannot test - no token available")
+            return False
+        
+        # Test getting current config
+        success1, current_config = self.run_test(
+            "Get Business Config",
+            "GET",
+            "business/config",
+            200,
+            auth_required=False  # This endpoint doesn't require auth
+        )
+        
+        # Test updating business config
+        new_config = {
+            "business_name": "Lavadero Premium Test",
+            "owner_name": "Juan Carlos Propietario",
+            "phone": "(555) 987-6543",
+            "email": "contacto@lavaderopremium.com",
+            "address": "Avenida Principal 456, Ciudad Test",
+            "currency": "USD",
+            "timezone": "America/Mexico_City"
+        }
+        
+        success2, updated_config = self.run_test(
+            "Update Business Config",
+            "POST",
+            "business/config",
+            200,
+            data=new_config
+        )
+        
+        if success2:
+            print(f"✅ Business config updated")
+            print(f"   Business Name: {updated_config.get('business_name', 'Unknown')}")
+            print(f"   Owner: {updated_config.get('owner_name', 'Unknown')}")
+        
+        return success1 and success2
+
+    def test_license_generation(self):
+        """Test license generation"""
+        print("\n=== TESTING LICENSE GENERATION ===")
+        
+        if not self.token:
+            print("❌ Cannot test - no token available")
+            return False
+        
+        # Generate license
+        success, response = self.run_test(
+            "Generate License",
+            "POST",
+            "business/license",
+            200,
+            params={"business_name": "Lavadero Premium Test"}
+        )
+        
+        if success:
+            license_key = response.get('license_key')
+            print(f"✅ License generated successfully")
+            print(f"   License Key: {license_key}")
+            print(f"   Business: {response.get('business_name', 'Unknown')}")
+            print(f"   Expiry: {response.get('expiry_date', 'Unknown')}")
+            
+            # Test license validation
+            if license_key:
+                success2, validation_response = self.run_test(
+                    "Validate License",
+                    "POST",
+                    "business/validate-license",
+                    200,
+                    params={"license_key": license_key},
+                    auth_required=False
+                )
+                
+                if success2:
+                    print(f"✅ License validation successful")
+                    print(f"   Valid: {validation_response.get('valid', False)}")
+                    print(f"   Features: {validation_response.get('features', [])}")
+                
+                return success and success2
+        
+        return success
+
+    def test_unauthorized_access(self):
+        """Test that protected endpoints require authentication"""
+        print("\n=== TESTING UNAUTHORIZED ACCESS ===")
+        
+        # Temporarily remove token
+        original_token = self.token
+        self.token = None
+        
+        # Try to access protected endpoint without token
+        success, response = self.run_test(
+            "Access Dashboard Without Auth",
+            "GET",
+            "dashboard/estadisticas",
+            401  # Should return 401 Unauthorized
+        )
+        
+        # Restore token
+        self.token = original_token
+        
+        if success:
+            print("✅ Protected endpoint correctly requires authentication")
+        
+        return success
+
+    def test_admin_only_access(self):
+        """Test that admin-only endpoints work correctly"""
+        print("\n=== TESTING ADMIN-ONLY ACCESS ===")
+        
+        if not self.token:
+            print("❌ Cannot test - no token available")
+            return False
+        
+        # Test business config update (admin only)
+        test_config = {
+            "business_name": "Admin Test Lavadero",
+            "owner_name": "Admin Test Owner"
+        }
+        
+        success, response = self.run_test(
+            "Admin-Only Business Config Update",
+            "POST",
+            "business/config",
+            200,
+            data=test_config
+        )
+        
+        if success:
+            print("✅ Admin-only endpoint accessible with admin token")
+        
+        return success
 
     def test_initialize_data(self):
         """Initialize basic service types"""
