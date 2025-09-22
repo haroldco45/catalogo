@@ -109,7 +109,7 @@ async def create_daily_sale(sale_data: DailySaleCreate):
 
 @api_router.get("/daily-sales/{date_str}")
 async def get_daily_sale(date_str: str):
-    sale = await db.daily_sales.find_one({"date": date_str})
+    sale = await db.daily_sales.find_one({"date": date_str}, {"_id": 0})
     if not sale:
         return {"date": date_str, "total_sales": 0, "notes": None}
     return sale
@@ -120,7 +120,7 @@ async def get_daily_sales(start_date: Optional[str] = None, end_date: Optional[s
     if start_date and end_date:
         query["date"] = {"$gte": start_date, "$lte": end_date}
     
-    sales = await db.daily_sales.find(query).sort("date", -1).to_list(100)
+    sales = await db.daily_sales.find(query, {"_id": 0}).sort("date", -1).to_list(100)
     return sales
 
 # ================ EXPENSE CATEGORIES ENDPOINTS ================
