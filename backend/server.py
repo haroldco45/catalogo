@@ -359,25 +359,25 @@ async def validate_license(license_key: str):
 
 # ==================== CLIENTES ====================
 @api_router.post("/clientes", response_model=Cliente)
-async def crear_cliente(cliente: ClienteCreate):
+async def crear_cliente(cliente: ClienteCreate, current_user: User = Depends(get_current_user)):
     cliente_obj = Cliente(**cliente.dict())
     await db.clientes.insert_one(cliente_obj.dict())
     return cliente_obj
 
 @api_router.get("/clientes", response_model=List[Cliente])
-async def obtener_clientes():
+async def obtener_clientes(current_user: User = Depends(get_current_user)):
     clientes = await db.clientes.find().to_list(1000)
     return [Cliente(**cliente) for cliente in clientes]
 
 @api_router.get("/clientes/{cliente_id}", response_model=Cliente)
-async def obtener_cliente(cliente_id: str):
+async def obtener_cliente(cliente_id: str, current_user: User = Depends(get_current_user)):
     cliente = await db.clientes.find_one({"cliente_id": cliente_id})
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
     return Cliente(**cliente)
 
 @api_router.put("/clientes/{cliente_id}", response_model=Cliente)
-async def actualizar_cliente(cliente_id: str, cliente_data: ClienteCreate):
+async def actualizar_cliente(cliente_id: str, cliente_data: ClienteCreate, current_user: User = Depends(get_current_user)):
     result = await db.clientes.update_one(
         {"cliente_id": cliente_id}, 
         {"$set": cliente_data.dict()}
@@ -389,7 +389,7 @@ async def actualizar_cliente(cliente_id: str, cliente_data: ClienteCreate):
     return Cliente(**cliente)
 
 @api_router.delete("/clientes/{cliente_id}")
-async def eliminar_cliente(cliente_id: str):
+async def eliminar_cliente(cliente_id: str, current_user: User = Depends(get_current_user)):
     result = await db.clientes.delete_one({"cliente_id": cliente_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
