@@ -580,7 +580,7 @@ async def obtener_estadisticas_dashboard(current_user: User = Depends(get_curren
     )
 
 @api_router.get("/reportes/ingresos", response_model=List[ReporteIngresos])
-async def obtener_reporte_ingresos(dias: int = 30):
+async def obtener_reporte_ingresos(dias: int = 30, current_user: User = Depends(get_current_user)):
     fecha_inicio = datetime.now() - timedelta(days=dias)
     
     pipeline = [
