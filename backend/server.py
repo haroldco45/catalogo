@@ -224,6 +224,22 @@ def calculate_debt(loan_data, payments_data):
     
     return remaining_capital, interest_due, days_overdue
 
+# Initialize admin user (only if no users exist)
+@api_router.post("/auth/init-admin", response_model=User)
+async def init_admin():
+    user_count = await db.users.count_documents({})
+    if user_count > 0:
+        raise HTTPException(status_code=400, detail="Admin user already exists")
+    
+    admin_data = UserCreate(username="admin", password="admin123")
+    hashed_password = hash_password(admin_data.password)
+    user = User(username=admin_data.username)
+    user_dict = user.dict()
+    user_dict['password_hash'] = hashed_password
+    
+    await db.users.insert_one(user_dict)
+    return user
+
 # Authentication endpoints
 @api_router.post("/auth/register", response_model=User)
 async def register(user_data: UserCreate):
