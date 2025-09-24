@@ -956,8 +956,13 @@ def main():
             tester = LinkDirectoryAPITester()
             success = tester.run_test_link_deletion()
             return 0 if success else 1
+        elif command == "approve":
+            # Run manual approval workflow test
+            tester = LinkDirectoryAPITester()
+            success = tester.run_manual_approval_test()
+            return 0 if success else 1
         else:
-            print("Usage: python backend_test.py [verify|delete]")
+            print("Usage: python backend_test.py [verify|delete|approve]")
             return 1
     else:
         # Run all tests
