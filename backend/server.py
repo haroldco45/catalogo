@@ -54,6 +54,7 @@ class LinkSubmission(BaseModel):
     location: str = Field(..., min_length=2, max_length=200)
     website_url: str = Field(..., min_length=5, max_length=500)
     payment_screenshot: Optional[str] = None
+    custom_logo: Optional[str] = None
     favicon_url: Optional[str] = None
     status: str = Field(default="pending")  # pending, approved, rejected
     rejection_reason: Optional[str] = None
