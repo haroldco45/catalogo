@@ -188,64 +188,55 @@
                     document.getElementById('pending').textContent = data.pending;
                     document.getElementById('revenue').textContent = '$' + data.revenue;
                     
-                    // Show links
+                    // Show test links for deletion
                     const linksDiv = document.getElementById('links');
-                    const pendingLinks = data.links.filter(link => link.status === 'pending');
                     
-                    if (pendingLinks.length === 0) {
-                        linksDiv.innerHTML = '<p>✅ No hay links pendientes</p>';
+                    // Find all test links
+                    const testLinks = data.links.filter(link => {
+                        const isExampleCom = link.website_url && link.website_url.includes('example.com');
+                        const isTestUser = link.owner_name && (
+                            link.owner_name.includes('Test User') || 
+                            link.owner_name.includes('Test Porno') ||
+                            link.owner_name === 'Test User Frontend'
+                        );
+                        return isExampleCom || isTestUser;
+                    });
+                    
+                    console.log('🗑️ Found test links:', testLinks);
+                    
+                    if (testLinks.length === 0) {
+                        linksDiv.innerHTML = '<p style="color: green; font-weight: bold;">✅ No hay links de prueba para eliminar</p>';
                     } else {
-                        linksDiv.innerHTML = pendingLinks.map(link => `
-                            <div class="link-item">
-                                <div class="link-info">
-                                    <h3>⚠️ ${link.owner_name}</h3>
-                                    <p><strong>URL:</strong> ${link.website_url}</p>
-                                    <p><strong>ID:</strong> ${link.id}</p>
-                                </div>
-                                <div>
-                                    <button class="approve-btn" onclick="approveLink('${link.id}')">
-                                        ✅ APROBAR YA
-                                    </button>
-                                    <button class="reject-btn" onclick="rejectLink('${link.id}')">
-                                        ❌ RECHAZAR
-                                    </button>
-                                </div>
+                        linksDiv.innerHTML = `
+                            <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <h3 style="color: #856404; margin: 0 0 10px 0;">🚨 LINKS DE PRUEBA ENCONTRADOS: ${testLinks.length}</h3>
+                                <p style="color: #856404; margin: 0;">Estos links serán eliminados de la base de datos:</p>
                             </div>
-                        `).join('');
-                    }
-                    
-                    // Show ALL links for cleaning purposes
-                    const allLinksDiv = document.createElement('div');
-                    allLinksDiv.innerHTML = `
-                        <h2 style="margin-top: 30px; color: #dc3545;">🧹 Limpiar Links de Prueba</h2>
-                        <p>Links que contienen "example.com" - ELIMINAR:</p>
-                    `;
-                    
-                    const testLinks = data.links.filter(link => link.website_url && link.website_url.includes('example.com'));
-                    
-                    if (testLinks.length > 0) {
-                        testLinks.forEach(link => {
-                            const testLinkDiv = document.createElement('div');
-                            testLinkDiv.className = 'link-item';
-                            testLinkDiv.style.background = '#f8d7da';
-                            testLinkDiv.style.borderColor = '#dc3545';
-                            testLinkDiv.innerHTML = `
-                                <div class="link-info">
-                                    <h3>🗑️ LINK DE PRUEBA</h3>
-                                    <p><strong>Nombre:</strong> ${link.owner_name}</p>
-                                    <p><strong>URL:</strong> ${link.website_url}</p>
-                                    <p><strong>Status:</strong> ${link.status}</p>
+                            ${testLinks.map(link => `
+                                <div class="link-item" style="border: 3px solid #dc3545; background: #f8d7da;">
+                                    <div class="link-info">
+                                        <h3 style="color: #721c24;">🗑️ ${link.owner_name}</h3>
+                                        <p><strong>URL:</strong> ${link.website_url}</p>
+                                        <p><strong>Status:</strong> ${link.status}</p>
+                                        <p><strong>ID:</strong> <code>${link.id}</code></p>
+                                    </div>
+                                    <div>
+                                        <button class="reject-btn" onclick="deleteLink('${link.id}')" 
+                                                style="background: #dc3545; font-size: 1.1rem; padding: 12px 20px;">
+                                            🗑️ ELIMINAR AHORA
+                                        </button>
+                                    </div>
                                 </div>
-                                <div>
-                                    <button class="reject-btn" onclick="deleteLink('${link.id}')" style="background: #dc3545;">
-                                        🗑️ ELIMINAR
-                                    </button>
-                                </div>
-                            `;
-                            allLinksDiv.appendChild(testLinkDiv);
-                        });
-                        
-                        linksDiv.appendChild(allLinksDiv);
+                            `).join('')}
+                            
+                            <div style="background: #d4edda; border: 2px solid #28a745; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                                <h3 style="color: #155724; margin: 0 0 10px 0;">✅ RESULTADO DESPUÉS DE LIMPIAR:</h3>
+                                <p style="color: #155724; margin: 0; font-weight: bold;">
+                                    Total links: ${data.total_links} → ${data.total_links - testLinks.length} links reales<br>
+                                    Links comerciales legítimos permanecerán: ${data.total_links - testLinks.length}
+                                </p>
+                            </div>
+                        `;
                     }
                     
                     showMessage(`✅ Cargados ${data.total_links} links (${data.pending} pendientes)`, 'success');
