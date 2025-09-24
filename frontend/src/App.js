@@ -585,7 +585,18 @@ const AdminPanel = ({ notify }) => {
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="mb-4 flex justify-between items-center">
+        <h2 className="text-xl font-bold text-slate-800">Dashboard Administrativo</h2>
+        <Button
+          onClick={fetchAllLinks}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          🔄 Recargar Datos
+        </Button>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card>
           <CardContent className="p-6 flex items-center">
             <Users className="w-8 h-8 text-blue-600 mr-4" />
