@@ -215,6 +215,9 @@ const SubmitLinkDialog = ({ open, onClose, onSuccess }) => {
           <DialogTitle className="text-xl font-bold text-slate-800">
             Enviar tu Link
           </DialogTitle>
+          <DialogDescription className="text-sm text-slate-600">
+            Completa el formulario para enviar tu sitio web. Será revisado antes de ser publicado.
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4" data-testid="submit-form">
