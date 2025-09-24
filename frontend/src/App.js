@@ -239,7 +239,7 @@ const Home = ({ notify }) => {
   );
 };
 
-const SubmitLinkModal = ({ isOpen, onClose, onSuccess }) => {
+const SubmitLinkModal = ({ isOpen, onClose, onSuccess, notify }) => {
   const [formData, setFormData] = useState({
     owner_name: '',
     phone: '',
@@ -263,7 +263,7 @@ const SubmitLinkModal = ({ isOpen, onClose, onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!paymentFile) {
-      toast.error("Por favor sube la captura de pantalla del pago");
+      notify.error("Por favor sube la captura de pantalla del pago");
       return;
     }
 
@@ -287,7 +287,7 @@ const SubmitLinkModal = ({ isOpen, onClose, onSuccess }) => {
         }
       });
 
-      toast.success("¡Link enviado correctamente! Será revisado antes de ser publicado.");
+      notify.success("¡Link enviado correctamente! Será revisado antes de ser publicado.");
       onClose();
       setFormData({ owner_name: '', phone: '', location: '', website_url: '' });
       setPaymentFile(null);
@@ -295,7 +295,7 @@ const SubmitLinkModal = ({ isOpen, onClose, onSuccess }) => {
       
     } catch (error) {
       const errorMessage = error.response?.data?.detail || "Error al enviar el link";
-      toast.error(errorMessage);
+      notify.error(errorMessage);
     } finally {
       setSubmitting(false);
     }
