@@ -150,6 +150,18 @@ backend:
           agent: "testing"
           comment: "TESTED: /api/links/manage works correctly - returns all 31 links sorted by created_at descending. Perfect fallback endpoint for admin panel data loading."
 
+  - task: "API endpoint DELETE /api/links/{id} functionality"
+    implemented: true
+    working: true  
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"  
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "TESTED: DELETE endpoint works perfectly. Successfully deleted 6 test links (Test User, Test Porno User, Test User Frontend with example.com and google.com URLs). All deletions returned 200 status with success:true. Database cleaned from 37 to 31 legitimate business links. No test data remaining."
+
 frontend:
   - task: "Admin panel data loading"
     implemented: true
