@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>🚨 PANEL SIMPLE - PAGINA DEL LINK</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f0f0f0; 
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+        }
+        .header { 
+            background: #dc3545; 
+            color: white; 
+            padding: 15px; 
+            text-align: center; 
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .stats { 
+            display: flex; 
+            gap: 20px; 
+            margin-bottom: 30px; 
+        }
+        .stat { 
+            flex: 1; 
+            background: #f8f9fa; 
+            padding: 15px; 
+            text-align: center; 
+            border-radius: 5px; 
+        }
+        .stat-number { 
+            font-size: 24px; 
+            font-weight: bold; 
+            color: #007bff; 
+        }
+        .message { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+        }
+        button:hover { background: #0056b3; }
+        .approve-btn { background: #28a745; }
+        .approve-btn:hover { background: #218838; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚨 PANEL SIMPLE - ADMINISTRACIÓN</h1>
+            <button onclick="cargarDatos()">🔄 CARGAR DATOS</button>
+        </div>
+
+        <div id="mensaje"></div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number" id="total">-</div>
+                <div>Total</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="aprobados">-</div>
+                <div>Aprobados</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="pendientes">-</div>
+                <div>Pendientes</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="ingresos">$-</div>
+                <div>Ingresos</div>
+            </div>
+        </div>
+
+        <div id="links">
+            <p>Haz clic en "CARGAR DATOS" para ver los links</p>
+        </div>
+    </div>
+
+    <script>
+        function mostrarMensaje(msg, tipo) {
+            document.getElementById('mensaje').innerHTML = 
+                '<div class="message ' + tipo + '">' + msg + '</div>';
+            setTimeout(() => {
+                document.getElementById('mensaje').innerHTML = '';
+            }, 5000);
+        }
+
+        async function cargarDatos() {
+            console.log('🔄 Cargando datos...');
+            
+            try {
+                const response = await fetch('https://linkverse-2.emergent.host/api/admin/status');
+                const data = await response.json();
+                
+                console.log('✅ Datos recibidos:', data);
+                
+                if (data.success) {
+                    // Actualizar estadísticas
+                    document.getElementById('total').textContent = data.total_links;
+                    document.getElementById('aprobados').textContent = data.approved;
+                    document.getElementById('pendientes').textContent = data.pending;
+                    document.getElementById('ingresos').textContent = '$' + data.revenue;
+                    
+                    // Mostrar links pendientes
+                    const linksDiv = document.getElementById('links');
+                    const linksPendientes = data.links.filter(link => link.status === 'pending');
+                    
+                    if (linksPendientes.length === 0) {
+                        linksDiv.innerHTML = '<h3>✅ No hay links pendientes</h3>';
+                    } else {
+                        let html = '<h3>⚠️ LINKS PENDIENTES (' + linksPendientes.length + '):</h3>';
+                        
+                        linksPendientes.forEach(link => {
+                            html += `
+                                <div style="border: 2px solid #ffc107; background: #fff3cd; padding: 15px; margin: 10px 0; border-radius: 5px;">
+                                    <h4>${link.owner_name}</h4>
+                                    <p><strong>URL:</strong> ${link.website_url}</p>
+                                    <button class="approve-btn" onclick="aprobarLink('${link.id}')">
+                                        ✅ APROBAR
+                                    </button>
+                                    <button style="background: #dc3545; margin-left: 10px;" onclick="rechazarLink('${link.id}')">
+                                        ❌ RECHAZAR
+                                    </button>
+                                </div>
+                            `;
+                        });
+                        
+                        linksDiv.innerHTML = html;
+                    }
+                    
+                    mostrarMensaje('✅ Datos cargados: ' + data.total_links + ' links total', 'success');
+                } else {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                mostrarMensaje('❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        async function aprobarLink(linkId) {
+            if (!confirm('¿Aprobar este link?')) return;
+            
+            try {
+                const response = await fetch('https://linkverse-2.emergent.host/api/links/' + linkId, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'approved' })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    mostrarMensaje('✅ Link aprobado!', 'success');
+                    cargarDatos(); // Recargar
+                } else {
+                    throw new Error(result.error || 'Error al aprobar');
+                }
+            } catch (error) {
+                mostrarMensaje('❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        async function rechazarLink(linkId) {
+            if (!confirm('¿Rechazar este link?')) return;
+            
+            try {
+                const response = await fetch('https://linkverse-2.emergent.host/api/links/' + linkId, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'rejected' })
+                });
+                
+                if (response.ok) {
+                    mostrarMensaje('✅ Link rechazado!', 'success');
+                    cargarDatos(); // Recargar
+                } else {
+                    throw new Error('Error al rechazar');
+                }
+            } catch (error) {
+                mostrarMensaje('❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        // Cargar datos al abrir la página
+        window.onload = cargarDatos;
+    </script>
+</body>
+</html>
