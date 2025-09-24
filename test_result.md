@@ -101,3 +101,90 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "El panel de administración (/admin) no muestra los datos correctos consistentemente. A veces muestra '0' links o conteos incorrectos (ej: 29 en lugar de 32/33). La página principal funciona bien con 32 links activos, pero el admin panel falla al cargar y mostrar estos datos de manera confiable."
+
+backend:
+  - task: "API endpoint /api/links functionality" 
+    implemented: true
+    working: true  
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"  
+    needs_retesting: true
+    status_history:
+        - working: true  
+          agent: "main"  
+          comment: "Endpoint /api/links existe pero solo retorna links con status='approved' por defecto"
+
+  - task: "API endpoint /api/admin/dashboard functionality"
+    implemented: true
+    working: "NA"  
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"  
+    needs_retesting: true
+    status_history:
+        - working: "NA"  
+          agent: "main"  
+          comment: "Endpoint /api/admin/dashboard existe y debería retornar todos los links, necesita verificación"
+
+  - task: "API endpoint /api/links/manage functionality"
+    implemented: true
+    working: "NA"  
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"  
+    needs_retesting: true
+    status_history:
+        - working: "NA"  
+          agent: "main"  
+          comment: "Endpoint /api/links/manage existe para retornar todos los links, necesita verificación"
+
+frontend:
+  - task: "Admin panel data loading"
+    implemented: true
+    working: false  
+    file: "/app/frontend/src/App.js"
+    stuck_count: 2
+    priority: "high"  
+    needs_retesting: true
+    status_history:
+        - working: false  
+          agent: "main"  
+          comment: "AdminPanel usa endpoint /api/links que solo retorna approved links, causando estadísticas incorrectas"
+        - working: false
+          agent: "user"
+          comment: "Usuario reporta que admin panel muestra 0 links o conteos incorrectos"
+
+  - task: "Admin panel statistics calculation"
+    implemented: true
+    working: false  
+    file: "/app/frontend/src/App.js"
+    stuck_count: 2
+    priority: "high"  
+    needs_retesting: true
+    status_history:
+        - working: false  
+          agent: "main"  
+          comment: "Stats calculados incorrectamente porque solo se obtienen links approved del endpoint /api/links"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Fix admin panel data loading endpoint"
+    - "Fix admin panel statistics calculation"
+  stuck_tasks:
+    - "Admin panel data loading"
+    - "Admin panel statistics calculation"  
+  test_all: false
+  test_priority: "stuck_first"
+
+agent_communication:
+    - agent: "main"  
+      message: "Problema identificado: AdminPanel usa endpoint /api/links que solo retorna approved links. Necesita usar /api/admin/dashboard o /api/links/manage para obtener TODOS los links y calcular estadísticas correctamente. Voy a corregir el endpoint en el frontend."
