@@ -417,6 +417,8 @@ const AdminPanel = () => {
   const cancelEditing = () => {
     setEditingLink(null);
     setEditForm({});
+    setEditingLogo(null);
+    setLogoFile(null);
   };
 
   const saveEdit = async (linkId) => {
@@ -428,6 +430,30 @@ const AdminPanel = () => {
       fetchAllLinks();
     } catch (error) {
       toast.error("Error al actualizar el link");
+    }
+  };
+
+  const updateLogo = async (linkId, removeLogo = false) => {
+    try {
+      const formData = new FormData();
+      if (removeLogo) {
+        formData.append('remove_logo', 'true');
+      } else if (logoFile) {
+        formData.append('custom_logo', logoFile);
+      }
+
+      await axios.put(`${API}/links/${linkId}/logo`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      toast.success("Logo actualizado correctamente");
+      setEditingLogo(null);
+      setLogoFile(null);
+      fetchAllLinks();
+    } catch (error) {
+      toast.error("Error al actualizar el logo");
     }
   };
 
