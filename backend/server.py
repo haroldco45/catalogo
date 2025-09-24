@@ -331,9 +331,9 @@ async def get_links(status: str = "approved"):
     links = await db.link_submissions.find({"status": status}).to_list(1000)
     return [LinkSubmission(**link) for link in links]
 
-@api_router.get("/links/all", response_model=List[LinkSubmission])
-async def get_all_links():
-    """Get all links for admin"""
+@api_router.get("/links/manage", response_model=List[LinkSubmission])
+async def get_all_links_for_management():
+    """Get all links grouped by status for management"""
     links = await db.link_submissions.find().sort("created_at", -1).to_list(1000)
     return [LinkSubmission(**link) for link in links]
 
