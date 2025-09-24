@@ -433,6 +433,78 @@ async def update_logo(
     
     return {"message": "Logo actualizado correctamente"}
 
+@api_router.post("/links/refresh-logos")
+async def refresh_all_logos():
+    """Refresh logos for all approved links using the improved extraction"""
+    try:
+        # Get all approved links
+        links = await db.link_submissions.find({"status": "approved"}).to_list(None)
+        
+        updated_count = 0
+        for link in links:
+            try:
+                # Only update if they don't have a custom logo
+                if not link.get("custom_logo"):
+                    print(f"Refreshing logo for: {link['owner_name']} - {link['website_url']}")
+                    
+                    # Extract better logo
+                    new_logo_url = await extract_best_logo(link["website_url"])
+                    
+                    if new_logo_url and new_logo_url != link.get("favicon_url"):
+                        # Update the database
+                        await db.link_submissions.update_one(
+                            {"id": link["id"]}, 
+                            {"$set": {"favicon_url": new_logo_url}}
+                        )
+                        print(f"✅ Updated logo for {link['owner_name']}: {new_logo_url}")
+                        updated_count += 1
+                    else:
+                        print(f"⚪ No better logo found for {link['owner_name']}")
+                        
+            except Exception as e:
+                print(f"❌ Error updating {link['owner_name']}: {e}")
+                continue
+        
+        return {
+            "message": f"Logos refreshed successfully. Updated {updated_count} links.",
+            "updated_count": updated_count,
+            "total_processed": len(links)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error refreshing logos: {str(e)}")
+
+@api_router.post("/links/{link_id}/refresh-logo")
+async def refresh_single_logo(link_id: str):
+    """Refresh logo for a specific link"""
+    try:
+        # Get the link
+        link = await db.link_submissions.find_one({"id": link_id})
+        if not link:
+            raise HTTPException(status_code=404, detail="Link no encontrado")
+        
+        # Extract better logo
+        new_logo_url = await extract_best_logo(link["website_url"])
+        
+        if new_logo_url:
+            # Update the database
+            await db.link_submissions.update_one(
+                {"id": link_id}, 
+                {"$set": {"favicon_url": new_logo_url, "custom_logo": None}}
+            )
+            return {
+                "message": "Logo actualizado correctamente",
+                "new_logo_url": new_logo_url
+            }
+        else:
+            return {
+                "message": "No se encontró un logo mejor",
+                "current_logo_url": link.get("favicon_url")
+            }
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error refreshing logo: {str(e)}")
+
 @api_router.get("/links/stats")
 async def get_stats():
     """Get statistics"""
