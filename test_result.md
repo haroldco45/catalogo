@@ -217,6 +217,8 @@ test_plan:
     - "Admin panel statistics calculation"  
   test_all: false
   test_priority: "stuck_first"
+  completed_tasks:
+    - "Manual approval workflow for pending links"
 
 agent_communication:
     - agent: "main"  
