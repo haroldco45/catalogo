@@ -465,10 +465,24 @@ const AdminPanel = ({ notify }) => {
   const fetchAllLinks = async () => {
     console.log("🔄 Fetching admin data...");
     try {
-      const [linksRes, statsRes] = await Promise.all([
-        axios.get(`${API}/links/all`),
-        axios.get(`${API}/links/stats`)
-      ]);
+      // Try different endpoints to get all links
+      let linksRes;
+      try {
+        linksRes = await axios.get(`${API}/links/all`);
+      } catch (error) {
+        // Fallback: get approved and pending separately
+        console.log("Trying fallback method...");
+        const [approvedRes, statsRes] = await Promise.all([
+          axios.get(`${API}/links?status=approved`),
+          axios.get(`${API}/links/stats`)
+        ]);
+        
+        // Create a combined response
+        linksRes = { data: approvedRes.data };
+        setStats(statsRes.data);
+      }
+      
+      const statsRes = await axios.get(`${API}/links/stats`);
       
       console.log("📊 Links data:", linksRes.data.length, "items");
       console.log("📈 Stats data:", statsRes.data);
@@ -479,7 +493,7 @@ const AdminPanel = ({ notify }) => {
       notify.success(`Cargados ${linksRes.data.length} links correctamente`);
     } catch (error) {
       console.error("❌ Error fetching admin data:", error);
-      notify.error(`Error al cargar datos: ${error.message}`);
+      notify.error(`Error al cargar datos: ${error.response?.data?.detail || error.message}`);
     } finally {
       setLoading(false);
     }
