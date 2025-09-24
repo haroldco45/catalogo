@@ -173,6 +173,15 @@ const SubmitLinkDialog = ({ open, onClose, onSuccess }) => {
   const [paymentFile, setPaymentFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setFormData({ owner_name: '', phone: '', location: '', website_url: '' });
+      setPaymentFile(null);
+      setSubmitting(false);
+    }
+  }, [open]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!paymentFile) {
