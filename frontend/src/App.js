@@ -154,11 +154,13 @@ const Home = () => {
       </section>
 
       {/* Submit Link Dialog */}
-      <SubmitLinkDialog 
-        open={showSubmitForm} 
-        onClose={() => setShowSubmitForm(false)}
-        onSuccess={fetchApprovedLinks}
-      />
+      {showSubmitForm && (
+        <SubmitLinkDialog 
+          open={showSubmitForm} 
+          onClose={() => setShowSubmitForm(false)}
+          onSuccess={fetchApprovedLinks}
+        />
+      )}
     </div>
   );
 };
