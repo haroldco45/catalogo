@@ -650,36 +650,47 @@ const AdminPanel = () => {
 
                         {/* Logo editing modal */}
                         {editingLogo === link.id && (
-                          <div className="mt-3 p-3 border rounded-lg bg-gray-50">
-                            <h4 className="font-medium mb-2">Cambiar Logo</h4>
-                            <div className="space-y-2">
-                              <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => setLogoFile(e.target.files[0])}
-                                className="text-sm"
-                              />
-                              <div className="flex gap-2">
+                          <div className="mt-3 p-4 border rounded-lg bg-blue-50 border-blue-200">
+                            <h4 className="font-semibold mb-3 text-blue-800">🎨 Cambiar Logo</h4>
+                            <div className="space-y-3">
+                              <div>
+                                <Label className="text-sm font-medium text-blue-700">Seleccionar nuevo logo:</Label>
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => setLogoFile(e.target.files[0])}
+                                  className="text-sm mt-1"
+                                />
+                                <p className="text-xs text-blue-600 mt-1">
+                                  Formatos: PNG, JPG, JPEG. Tamaño recomendado: 64x64px o superior
+                                </p>
+                              </div>
+                              
+                              <div className="flex gap-2 pt-2">
                                 <Button
                                   size="sm"
                                   onClick={() => updateLogo(link.id)}
                                   disabled={!logoFile}
+                                  className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
                                   data-testid={`save-logo-${link.id}`}
                                 >
                                   <Save className="w-3 h-3 mr-1" />
-                                  Guardar
+                                  {logoFile ? "Guardar Nuevo Logo" : "Selecciona un archivo"}
                                 </Button>
+                                
                                 {link.custom_logo && (
                                   <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => updateLogo(link.id, true)}
+                                    className="border-red-300 text-red-600 hover:bg-red-50"
                                     data-testid={`remove-logo-${link.id}`}
                                   >
                                     <Trash2 className="w-3 h-3 mr-1" />
-                                    Quitar Logo
+                                    Usar Favicon Automático
                                   </Button>
                                 )}
+                                
                                 <Button
                                   size="sm"
                                   variant="ghost"
@@ -687,11 +698,20 @@ const AdminPanel = () => {
                                     setEditingLogo(null);
                                     setLogoFile(null);
                                   }}
+                                  className="text-gray-600"
                                 >
                                   <X className="w-3 h-3 mr-1" />
                                   Cancelar
                                 </Button>
                               </div>
+                              
+                              {logoFile && (
+                                <div className="bg-white p-2 rounded border">
+                                  <p className="text-xs text-green-600 font-medium">
+                                    ✅ Archivo seleccionado: {logoFile.name}
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}
