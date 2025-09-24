@@ -299,6 +299,29 @@
             }
         }
 
+        async function deleteLink(linkId) {
+            if (!confirm('¿Estás seguro de que quieres ELIMINAR este link? Esta acción no se puede deshacer.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(API_BASE + '/links/' + linkId, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('🗑️ Link eliminado correctamente!', 'success');
+                    loadData(); // Reload
+                } else {
+                    throw new Error(result.error || 'Error al eliminar link');
+                }
+            } catch (error) {
+                showMessage(`❌ Error al eliminar: ${error.message}`, 'error');
+            }
+        }
+
         // Load data on page load
         window.onload = loadData;
     </script>
