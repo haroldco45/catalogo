@@ -514,6 +514,44 @@ async def refresh_single_logo(link_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error refreshing logo: {str(e)}")
 
+@api_router.get("/admin/dashboard")
+async def get_admin_dashboard():
+    """Special endpoint for admin dashboard - bypasses all filters"""
+    try:
+        # Get ALL links regardless of status
+        all_links = await db.link_submissions.find().sort("created_at", -1).to_list(None)
+        
+        # Get stats
+        stats_pipeline = [
+            {"$group": {
+                "_id": "$status",
+                "count": {"$sum": 1}
+            }}
+        ]
+        stats = await db.link_submissions.aggregate(stats_pipeline).to_list(None)
+        
+        total = len(all_links)
+        approved_count = len([l for l in all_links if l.get("status") == "approved"])
+        revenue = approved_count * 1  # $1 per link
+        
+        return {
+            "links": [LinkSubmission(**link) for link in all_links],
+            "stats": {
+                "total_submissions": total,
+                "approved": approved_count,
+                "pending": len([l for l in all_links if l.get("status") == "pending"]),
+                "rejected": len([l for l in all_links if l.get("status") == "rejected"]),
+                "estimated_revenue": revenue,
+                "raw_stats": stats
+            },
+            "success": True
+        }
+    except Exception as e:
+        return {
+            "error": str(e),
+            "success": False
+        }
+
 @api_router.get("/links/stats")
 async def get_stats():
     """Get statistics"""
