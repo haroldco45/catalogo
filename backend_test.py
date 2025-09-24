@@ -592,9 +592,17 @@ class LinkDirectoryAPITester:
         return self.tests_passed == self.tests_run
 
 def main():
-    tester = LinkDirectoryAPITester()
-    success = tester.run_all_tests()
-    return 0 if success else 1
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "verify":
+        # Run database verification only
+        tester = LinkDirectoryAPITester()
+        success = tester.run_database_verification()
+        return 0 if success else 1
+    else:
+        # Run all tests
+        tester = LinkDirectoryAPITester()
+        success = tester.run_all_tests()
+        return 0 if success else 1
 
 if __name__ == "__main__":
     sys.exit(main())
