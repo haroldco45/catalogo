@@ -821,10 +821,14 @@ const AdminPanel = ({ notify }) => {
 
 function App() {
   const [activeTab, setActiveTab] = useState("home");
+  const notification = useNotification();
 
   return (
     <div className="App min-h-screen">
-      <Toaster />
+      <NotificationContainer 
+        notifications={notification.notifications}
+        onRemove={notification.removeNotification}
+      />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={
@@ -839,13 +843,13 @@ function App() {
               </div>
               
               <TabsContent value="home" className="mt-0">
-                <Home />
+                <Home notify={notification} />
               </TabsContent>
               
               <TabsContent value="admin" className="mt-0">
                 <div className="max-w-7xl mx-auto px-4 py-8">
                   <h1 className="text-3xl font-bold text-slate-800 mb-8">Panel de Administración</h1>
-                  <AdminPanel />
+                  <AdminPanel notify={notification} />
                 </div>
               </TabsContent>
             </Tabs>
