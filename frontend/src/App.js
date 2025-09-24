@@ -463,32 +463,53 @@ const AdminPanel = ({ notify }) => {
     setLoading(true);
     
     try {
-      // Use the working endpoint directly  
-      const response = await axios.get(`${API}/links`);
-      console.log("✅ Data loaded:", response.data.length, "links");
+      // Use admin dashboard endpoint to get ALL links
+      const response = await axios.get(`${API}/admin/dashboard`);
+      console.log("✅ Admin dashboard data loaded:", response.data);
       
-      const allLinksData = response.data;
-      
-      // Calculate stats manually
-      const approved = allLinksData.filter(link => link.status === 'approved').length;
-      const pending = allLinksData.filter(link => link.status === 'pending').length;
-      const rejected = allLinksData.filter(link => link.status === 'rejected').length;
-      
-      const statsData = {
-        total_submissions: allLinksData.length,
-        approved: approved,
-        pending: pending,
-        rejected: rejected,
-        estimated_revenue: approved
-      };
-      
-      setAllLinks(allLinksData);
-      setStats(statsData);
-      
-      notify.success(`✅ Panel cargado: ${allLinksData.length} links total (${approved} aprobados, ${pending} pendientes)`);
+      if (response.data.success) {
+        const allLinksData = response.data.links;
+        const statsData = response.data.stats;
+        
+        setAllLinks(allLinksData);
+        setStats(statsData);
+        
+        notify.success(`✅ Panel cargado: ${statsData.total_submissions} links total (${statsData.approved} aprobados, ${statsData.pending} pendientes)`);
+      } else {
+        throw new Error(response.data.error || "Error desconocido");
+      }
     } catch (error) {
-      console.error("❌ Error loading data:", error);
-      notify.error(`Error: ${error.response?.status} - ${error.response?.data?.detail || error.message}`);
+      console.error("❌ Error loading admin data:", error);
+      
+      // Fallback to /api/links/manage if admin dashboard fails
+      try {
+        console.log("🔄 Trying fallback endpoint /api/links/manage...");
+        const fallbackResponse = await axios.get(`${API}/links/manage`);
+        console.log("✅ Fallback data loaded:", fallbackResponse.data.length, "links");
+        
+        const allLinksData = fallbackResponse.data;
+        
+        // Calculate stats manually
+        const approved = allLinksData.filter(link => link.status === 'approved').length;
+        const pending = allLinksData.filter(link => link.status === 'pending').length;
+        const rejected = allLinksData.filter(link => link.status === 'rejected').length;
+        
+        const statsData = {
+          total_submissions: allLinksData.length,
+          approved: approved,
+          pending: pending,
+          rejected: rejected,
+          estimated_revenue: approved
+        };
+        
+        setAllLinks(allLinksData);
+        setStats(statsData);
+        
+        notify.success(`✅ Panel cargado (fallback): ${allLinksData.length} links total (${approved} aprobados, ${pending} pendientes)`);
+      } catch (fallbackError) {
+        console.error("❌ Fallback also failed:", fallbackError);
+        notify.error(`Error cargando datos del admin: ${error.response?.status} - ${error.response?.data?.detail || error.message}`);
+      }
     } finally {
       setLoading(false);
     }
