@@ -233,6 +233,7 @@ const Home = ({ notify }) => {
           isOpen={showSubmitForm} 
           onClose={() => setShowSubmitForm(false)}
           onSuccess={fetchApprovedLinks}
+          notify={notify}
         />
       )}
     </div>
