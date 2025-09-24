@@ -255,6 +255,45 @@ async def update_link_status(link_id: str, update: LinkUpdate):
     
     return {"message": f"Link {update.status} correctamente"}
 
+@api_router.put("/links/{link_id}/edit")
+async def edit_link(link_id: str, update: LinkEdit):
+    """Edit link information (admin only)"""
+    # Get the current link
+    current_link = await db.link_submissions.find_one({"id": link_id})
+    if not current_link:
+        raise HTTPException(status_code=404, detail="Link no encontrado")
+    
+    # Prepare update data (only include fields that were provided)
+    update_data = {}
+    for field, value in update.dict().items():
+        if value is not None:
+            update_data[field] = value
+    
+    # If website URL was updated, try to extract new favicon
+    if "website_url" in update_data:
+        # Check for prohibited content in the new URL
+        text_to_check = f"{update_data.get('owner_name', current_link.get('owner_name', ''))} {update_data.get('location', current_link.get('location', ''))} {update_data['website_url']}"
+        if check_prohibited_content(text_to_check):
+            raise HTTPException(
+                status_code=400, 
+                detail="El contenido actualizado contiene palabras prohibidas"
+            )
+            
+        # Extract favicon for the new URL
+        favicon_url = await extract_favicon(update_data["website_url"])
+        if favicon_url:
+            update_data["favicon_url"] = favicon_url
+
+    result = await db.link_submissions.update_one(
+        {"id": link_id}, 
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Link no encontrado")
+    
+    return {"message": "Link actualizado correctamente"}
+
 @api_router.get("/links/stats")
 async def get_stats():
     """Get statistics"""
