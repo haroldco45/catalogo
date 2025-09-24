@@ -14,6 +14,65 @@ import { Globe, Upload, Users, DollarSign, Eye, CheckCircle, XCircle, Clock, Edi
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Simple notification system to replace Sonner
+const useNotification = () => {
+  const [notifications, setNotifications] = useState([]);
+
+  const showNotification = (message, type = 'info') => {
+    const id = Date.now();
+    const notification = { id, message, type };
+    
+    setNotifications(prev => [...prev, notification]);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }, 3000);
+  };
+
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  return {
+    notifications,
+    showNotification,
+    removeNotification,
+    success: (message) => showNotification(message, 'success'),
+    error: (message) => showNotification(message, 'error'),
+    info: (message) => showNotification(message, 'info')
+  };
+};
+
+const NotificationContainer = ({ notifications, onRemove }) => {
+  if (notifications.length === 0) return null;
+
+  return (
+    <div className="fixed top-4 right-4 z-[9999] space-y-2">
+      {notifications.map(notification => (
+        <div
+          key={notification.id}
+          className={`p-4 rounded-lg shadow-lg max-w-sm transition-all duration-300 ${
+            notification.type === 'success' ? 'bg-green-500 text-white' :
+            notification.type === 'error' ? 'bg-red-500 text-white' :
+            'bg-blue-500 text-white'
+          }`}
+        >
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">{notification.message}</span>
+            <button
+              onClick={() => onRemove(notification.id)}
+              className="ml-2 text-white hover:text-gray-200"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const Home = () => {
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
