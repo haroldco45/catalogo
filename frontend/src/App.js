@@ -452,431 +452,209 @@ const ClientView = ({ notify }) => {
   );
 };
 
-// Admin Panel Component
+// Simplified Admin Panel Component
 const AdminPanel = ({ notify }) => {
   const [allLinks, setAllLinks] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
-  const [editingLink, setEditingLink] = useState(null);
-  const [editForm, setEditForm] = useState({});
-  const [editingLogo, setEditingLogo] = useState(null);
-  const [logoFile, setLogoFile] = useState(null);
 
-  const fetchAllLinks = async () => {
-    console.log("🔄 Fetching admin data...");
+  const loadData = async () => {
+    console.log("🔄 Loading admin data...");
+    setLoading(true);
+    
     try {
-      // Try different endpoints to get all links
-      let linksRes;
-      try {
-        linksRes = await axios.get(`${API}/links/all`);
-      } catch (error) {
-        // Fallback: get approved and pending separately
-        console.log("Trying fallback method...");
-        const [approvedRes, statsRes] = await Promise.all([
-          axios.get(`${API}/links?status=approved`),
-          axios.get(`${API}/links/stats`)
-        ]);
-        
-        // Create a combined response
-        linksRes = { data: approvedRes.data };
-        setStats(statsRes.data);
-      }
+      // Get approved links
+      const approvedRes = await axios.get(`${API}/links?status=approved`);
+      console.log("✅ Approved links:", approvedRes.data.length);
       
+      // Get pending links  
+      const pendingRes = await axios.get(`${API}/links?status=pending`);
+      console.log("⏳ Pending links:", pendingRes.data.length);
+      
+      // Combine all links
+      const allLinksData = [...approvedRes.data, ...pendingRes.data];
+      console.log("📊 Total links loaded:", allLinksData.length);
+      
+      // Get stats
       const statsRes = await axios.get(`${API}/links/stats`);
+      console.log("📈 Stats loaded:", statsRes.data);
       
-      console.log("📊 Links data:", linksRes.data.length, "items");
-      console.log("📈 Stats data:", statsRes.data);
-      
-      setAllLinks(linksRes.data);
+      setAllLinks(allLinksData);
       setStats(statsRes.data);
       
-      notify.success(`Cargados ${linksRes.data.length} links correctamente`);
+      notify.success(`✅ Cargados ${allLinksData.length} links (${approvedRes.data.length} aprobados, ${pendingRes.data.length} pendientes)`);
     } catch (error) {
-      console.error("❌ Error fetching admin data:", error);
-      notify.error(`Error al cargar datos: ${error.response?.data?.detail || error.message}`);
+      console.error("❌ Error loading data:", error);
+      notify.error(`Error: ${error.response?.data?.detail || error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  const updateLinkStatus = async (linkId, status, rejectionReason = null) => {
+  const updateLinkStatus = async (linkId, status) => {
     try {
-      await axios.put(`${API}/links/${linkId}`, {
-        status,
-        rejection_reason: rejectionReason
-      });
-      
-      notify.success(`Link ${status === 'approved' ? 'aprobado' : 'rechazado'} correctamente`);
-      fetchAllLinks();
+      await axios.put(`${API}/links/${linkId}`, { status });
+      notify.success(`Link ${status} correctamente`);
+      loadData(); // Reload data
     } catch (error) {
       notify.error("Error al actualizar el link");
-    }
-  };
-
-  const startEditing = (link) => {
-    setEditingLink(link.id);
-    setEditForm({
-      owner_name: link.owner_name,
-      phone: link.phone,
-      location: link.location,
-      website_url: link.website_url
-    });
-  };
-
-  const cancelEditing = () => {
-    setEditingLink(null);
-    setEditForm({});
-    setEditingLogo(null);
-    setLogoFile(null);
-  };
-
-  const saveEdit = async (linkId) => {
-    try {
-      await axios.put(`${API}/links/${linkId}/edit`, editForm);
-      notify.success("Link actualizado correctamente");
-      setEditingLink(null);
-      setEditForm({});
-      fetchAllLinks();
-    } catch (error) {
-      notify.error("Error al actualizar el link");
-    }
-  };
-
-  const updateLogo = async (linkId, removeLogo = false) => {
-    try {
-      const formData = new FormData();
-      if (removeLogo) {
-        formData.append('remove_logo', 'true');
-      } else if (logoFile) {
-        formData.append('custom_logo', logoFile);
-      }
-
-      await axios.put(`${API}/links/${linkId}/logo`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      
-      notify.success("Logo actualizado correctamente");
-      setEditingLogo(null);
-      setLogoFile(null);
-      fetchAllLinks();
-    } catch (error) {
-      notify.error("Error al actualizar el logo");
     }
   };
 
   useEffect(() => {
-    fetchAllLinks();
+    loadData();
   }, []);
-
-  const getStatusBadge = (status) => {
-    const variants = {
-      pending: { variant: "secondary", icon: Clock, color: "text-yellow-600" },
-      approved: { variant: "default", icon: CheckCircle, color: "text-green-600" },
-      rejected: { variant: "destructive", icon: XCircle, color: "text-red-600" }
-    };
-    
-    const config = variants[status] || variants.pending;
-    const Icon = config.icon;
-    
-    return (
-      <Badge variant={config.variant} className="flex items-center gap-1">
-        <Icon className="w-3 h-3" />
-        {status === 'pending' ? 'Pendiente' : status === 'approved' ? 'Aprobado' : 'Rechazado'}
-      </Badge>
-    );
-  };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p>Cargando datos del panel...</p>
+        </div>
       </div>
     );
   }
 
+  const approvedCount = stats.stats?.find(s => s._id === 'approved')?.count || 0;
+  const pendingCount = stats.stats?.find(s => s._id === 'pending')?.count || 0;
+
   return (
     <div className="space-y-6">
-      {/* Stats */}
-      <div className="mb-4 flex justify-between items-center">
-        <h2 className="text-xl font-bold text-slate-800">Dashboard Administrativo</h2>
-        <Button
-          onClick={fetchAllLinks}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
+      {/* Header with reload button */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-slate-800">Panel de Administración</h2>
+        <Button onClick={loadData} className="bg-blue-600 hover:bg-blue-700">
           🔄 Recargar Datos
         </Button>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="p-6 flex items-center">
-            <Users className="w-8 h-8 text-blue-600 mr-4" />
-            <div>
-              <p className="text-sm text-slate-500">Total Envíos</p>
-              <p className="text-2xl font-bold">{stats.total_submissions || 0}</p>
-              <p className="text-xs text-slate-400">
-                {allLinks.length} links cargados
-              </p>
-            </div>
+          <CardContent className="p-4 text-center">
+            <Users className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+            <p className="text-sm text-slate-500">Total Envíos</p>
+            <p className="text-2xl font-bold">{stats.total_submissions || 0}</p>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6 flex items-center">
-            <CheckCircle className="w-8 h-8 text-green-600 mr-4" />
-            <div>
-              <p className="text-sm text-slate-500">Aprobados</p>
-              <p className="text-2xl font-bold">
-                {stats.stats?.find(s => s._id === 'approved')?.count || 0}
-              </p>
-            </div>
+          <CardContent className="p-4 text-center">
+            <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
+            <p className="text-sm text-slate-500">Aprobados</p>
+            <p className="text-2xl font-bold">{approvedCount}</p>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6 flex items-center">
-            <DollarSign className="w-8 h-8 text-green-600 mr-4" />
-            <div>
-              <p className="text-sm text-slate-500">Ingresos Estimados</p>
-              <p className="text-2xl font-bold">${stats.estimated_revenue || 0}</p>
-            </div>
+          <CardContent className="p-4 text-center">
+            <Clock className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
+            <p className="text-sm text-slate-500">Pendientes</p>
+            <p className="text-2xl font-bold">{pendingCount}</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4 text-center">
+            <DollarSign className="w-8 h-8 text-green-600 mx-auto mb-2" />
+            <p className="text-sm text-slate-500">Ingresos</p>
+            <p className="text-2xl font-bold">${stats.estimated_revenue || 0}</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Links Table */}
+      {/* Links List */}
       <Card>
         <CardContent className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Gestionar Links</h3>
-          <div className="space-y-4">
-            {allLinks.map((link) => (
-              <div key={link.id} className="border rounded-lg p-4 space-y-3" data-testid={`admin-link-${link.id}`}>
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1 flex-1">
-                    {editingLink === link.id ? (
-                      // Edit Mode
-                      <div className="space-y-3">
-                        <div>
-                          <Label className="text-sm font-medium">Nombre del propietario</Label>
-                          <Input
-                            value={editForm.owner_name}
-                            onChange={(e) => setEditForm({...editForm, owner_name: e.target.value})}
-                            className="mt-1"
+          <h3 className="text-lg font-semibold mb-4">
+            Todos los Links ({allLinks.length})
+          </h3>
+          
+          {allLinks.length === 0 ? (
+            <p className="text-center py-8 text-slate-500">
+              No hay links cargados. Haz clic en "Recargar Datos".
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {allLinks.map((link) => (
+                <div key={link.id} className="border rounded-lg p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        {/* Logo/Icon */}
+                        {link.custom_logo ? (
+                          <img
+                            src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
+                            alt="Logo"
+                            className="w-8 h-8 rounded object-contain border"
                           />
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium">Teléfono</Label>
-                          <Input
-                            value={editForm.phone}
-                            onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
-                            className="mt-1"
+                        ) : link.favicon_url ? (
+                          <img
+                            src={link.favicon_url}
+                            alt="Favicon"
+                            className="w-8 h-8 rounded object-contain border"
                           />
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium">Ubicación</Label>
-                          <Input
-                            value={editForm.location}
-                            onChange={(e) => setEditForm({...editForm, location: e.target.value})}
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium">URL del sitio web</Label>
-                          <Input
-                            value={editForm.website_url}
-                            onChange={(e) => setEditForm({...editForm, website_url: e.target.value})}
-                            className="mt-1"
-                          />
-                        </div>
-                        <div className="flex gap-2 pt-2">
-                          <Button
-                            size="sm"
-                            onClick={() => saveEdit(link.id)}
-                            className="bg-green-600 hover:bg-green-700"
-                            data-testid={`save-edit-${link.id}`}
-                          >
-                            <Save className="w-4 h-4 mr-1" />
-                            Guardar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={cancelEditing}
-                            data-testid={`cancel-edit-${link.id}`}
-                          >
-                            <X className="w-4 h-4 mr-1" />
-                            Cancelar
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      // View Mode
-                      <>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="relative">
-                              {/* Show current logo/icon */}
-                              {link.custom_logo ? (
-                                <img
-                                  src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
-                                  alt={`${link.owner_name} logo`}
-                                  className="w-12 h-12 rounded-md object-contain border"
-                                />
-                              ) : link.favicon_url ? (
-                                <img
-                                  src={link.favicon_url}
-                                  alt={`${link.owner_name} favicon`}
-                                  className="w-12 h-12 rounded-md object-contain border"
-                                />
-                              ) : (
-                                <div className="w-12 h-12 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center border">
-                                  <span className="text-white font-bold text-lg">
-                                    {link.owner_name.charAt(0).toUpperCase()}
-                                  </span>
-                                </div>
-                              )}
-                              
-                              {/* Logo edit button */}
-                              <button
-                                onClick={() => setEditingLogo(link.id)}
-                                className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-md border hover:bg-gray-50"
-                                data-testid={`edit-logo-${link.id}`}
-                              >
-                                <Camera className="w-3 h-3 text-gray-600" />
-                              </button>
-                            </div>
-                            
-                            <div>
-                              <p className="font-medium">{link.owner_name}</p>
-                              <p className="text-sm text-slate-500">{link.website_url}</p>
-                              <p className="text-xs text-slate-400">
-                                {link.location} • {link.phone}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => startEditing(link)}
-                              data-testid={`edit-${link.id}`}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            {getStatusBadge(link.status)}
-                          </div>
-                        </div>
-
-                        {/* Logo editing modal */}
-                        {editingLogo === link.id && (
-                          <div className="mt-3 p-4 border rounded-lg bg-blue-50 border-blue-200">
-                            <h4 className="font-semibold mb-3 text-blue-800">🎨 Cambiar Logo</h4>
-                            <div className="space-y-3">
-                              <div>
-                                <Label className="text-sm font-medium text-blue-700">Seleccionar nuevo logo:</Label>
-                                <Input
-                                  type="file"
-                                  accept="image/*"
-                                  onChange={(e) => setLogoFile(e.target.files[0])}
-                                  className="text-sm mt-1"
-                                />
-                                <p className="text-xs text-blue-600 mt-1">
-                                  Formatos: PNG, JPG, JPEG. Tamaño recomendado: 64x64px o superior
-                                </p>
-                              </div>
-                              
-                              <div className="flex gap-2 pt-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => updateLogo(link.id)}
-                                  disabled={!logoFile}
-                                  className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
-                                  data-testid={`save-logo-${link.id}`}
-                                >
-                                  <Save className="w-3 h-3 mr-1" />
-                                  {logoFile ? "Guardar Nuevo Logo" : "Selecciona un archivo"}
-                                </Button>
-                                
-                                {link.custom_logo && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => updateLogo(link.id, true)}
-                                    className="border-red-300 text-red-600 hover:bg-red-50"
-                                    data-testid={`remove-logo-${link.id}`}
-                                  >
-                                    <Trash2 className="w-3 h-3 mr-1" />
-                                    Usar Favicon Automático
-                                  </Button>
-                                )}
-                                
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => {
-                                    setEditingLogo(null);
-                                    setLogoFile(null);
-                                  }}
-                                  className="text-gray-600"
-                                >
-                                  <X className="w-3 h-3 mr-1" />
-                                  Cancelar
-                                </Button>
-                              </div>
-                              
-                              {logoFile && (
-                                <div className="bg-white p-2 rounded border">
-                                  <p className="text-xs text-green-600 font-medium">
-                                    ✅ Archivo seleccionado: {logoFile.name}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
+                        ) : (
+                          <div className="w-8 h-8 rounded bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                            {link.owner_name.charAt(0)}
                           </div>
                         )}
-                      </>
-                    )}
+                        
+                        <div>
+                          <p className="font-semibold">{link.owner_name}</p>
+                          <p className="text-sm text-slate-600">{link.website_url}</p>
+                          <p className="text-xs text-slate-400">{link.location} • {link.phone}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      {/* Status Badge */}
+                      <Badge 
+                        variant={link.status === 'approved' ? 'default' : link.status === 'pending' ? 'secondary' : 'destructive'}
+                      >
+                        {link.status === 'approved' ? '✅ Aprobado' : 
+                         link.status === 'pending' ? '⏳ Pendiente' : '❌ Rechazado'}
+                      </Badge>
+                      
+                      {/* Action Buttons */}
+                      {link.status === 'pending' && (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => updateLinkStatus(link.id, 'approved')}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            Aprobar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => updateLinkStatus(link.id, 'rejected')}
+                          >
+                            Rechazar
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  
+                  {/* Payment Screenshot */}
+                  {link.payment_screenshot && (
+                    <div className="mt-3 pt-3 border-t">
+                      <p className="text-xs text-slate-500 mb-2">Comprobante de pago:</p>
+                      <img
+                        src={`${BACKEND_URL}/uploads/${link.payment_screenshot}`}
+                        alt="Comprobante"
+                        className="max-w-xs max-h-24 object-contain border rounded"
+                      />
+                    </div>
+                  )}
                 </div>
-                
-                {editingLink !== link.id && link.status === 'pending' && (
-                  <div className="flex gap-2 pt-2">
-                    <Button
-                      size="sm"
-                      onClick={() => updateLinkStatus(link.id, 'approved')}
-                      className="bg-green-600 hover:bg-green-700"
-                      data-testid={`approve-${link.id}`}
-                    >
-                      Aprobar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => updateLinkStatus(link.id, 'rejected', 'No cumple con los términos')}
-                      data-testid={`reject-${link.id}`}
-                    >
-                      Rechazar
-                    </Button>
-                  </div>
-                )}
-                
-                {editingLink !== link.id && link.payment_screenshot && (
-                  <div className="pt-2">
-                    <p className="text-xs text-slate-500 mb-2">Comprobante de pago:</p>
-                    <img
-                      src={`${BACKEND_URL}/uploads/${link.payment_screenshot}`}
-                      alt="Payment screenshot"
-                      className="max-w-xs max-h-32 object-contain border rounded"
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
