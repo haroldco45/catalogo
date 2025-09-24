@@ -56,20 +56,103 @@ class LinkDirectoryAPITester:
             self.log_test("Get Approved Links", False, str(e))
             return False, []
 
-    def test_get_all_links(self):
-        """Test getting all links (admin endpoint)"""
+    def test_admin_dashboard(self):
+        """Test admin dashboard endpoint - should return ALL links with stats"""
         try:
-            response = requests.get(f"{self.api_url}/links/all", timeout=10)
+            response = requests.get(f"{self.api_url}/admin/dashboard", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            if success:
+                data = response.json()
+                links = data.get('links', [])
+                stats = data.get('stats', {})
+                details += f", Total links: {len(links)}, Success: {data.get('success', False)}"
+                details += f", Stats - Total: {stats.get('total_submissions', 0)}, Approved: {stats.get('approved', 0)}, Pending: {stats.get('pending', 0)}, Rejected: {stats.get('rejected', 0)}"
+            self.log_test("Admin Dashboard Endpoint", success, details)
+            return success, response.json() if success else {}
+        except Exception as e:
+            self.log_test("Admin Dashboard Endpoint", False, str(e))
+            return False, {}
+
+    def test_links_manage(self):
+        """Test links/manage endpoint - should return all links for management"""
+        try:
+            response = requests.get(f"{self.api_url}/links/manage", timeout=10)
             success = response.status_code == 200
             details = f"Status: {response.status_code}"
             if success:
                 data = response.json()
                 details += f", Total links: {len(data)}"
-            self.log_test("Get All Links (Admin)", success, details)
+                # Check if we have links with different statuses
+                statuses = set(link.get('status', 'unknown') for link in data)
+                details += f", Statuses found: {list(statuses)}"
+            self.log_test("Links Manage Endpoint", success, details)
             return success, response.json() if success else []
         except Exception as e:
-            self.log_test("Get All Links (Admin)", False, str(e))
+            self.log_test("Links Manage Endpoint", False, str(e))
             return False, []
+
+    def test_links_by_status(self):
+        """Test links endpoint with different status parameters"""
+        results = {}
+        
+        # Test default (approved)
+        try:
+            response = requests.get(f"{self.api_url}/links", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            if success:
+                data = response.json()
+                results['default'] = data
+                details += f", Default links count: {len(data)}"
+            self.log_test("Links Endpoint (Default/Approved)", success, details)
+        except Exception as e:
+            self.log_test("Links Endpoint (Default/Approved)", False, str(e))
+            results['default'] = []
+
+        # Test approved explicitly
+        try:
+            response = requests.get(f"{self.api_url}/links?status=approved", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            if success:
+                data = response.json()
+                results['approved'] = data
+                details += f", Approved links count: {len(data)}"
+            self.log_test("Links Endpoint (Approved)", success, details)
+        except Exception as e:
+            self.log_test("Links Endpoint (Approved)", False, str(e))
+            results['approved'] = []
+
+        # Test pending
+        try:
+            response = requests.get(f"{self.api_url}/links?status=pending", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            if success:
+                data = response.json()
+                results['pending'] = data
+                details += f", Pending links count: {len(data)}"
+            self.log_test("Links Endpoint (Pending)", success, details)
+        except Exception as e:
+            self.log_test("Links Endpoint (Pending)", False, str(e))
+            results['pending'] = []
+
+        # Test rejected
+        try:
+            response = requests.get(f"{self.api_url}/links?status=rejected", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            if success:
+                data = response.json()
+                results['rejected'] = data
+                details += f", Rejected links count: {len(data)}"
+            self.log_test("Links Endpoint (Rejected)", success, details)
+        except Exception as e:
+            self.log_test("Links Endpoint (Rejected)", False, str(e))
+            results['rejected'] = []
+
+        return results
 
     def test_get_stats(self):
         """Test getting statistics"""
