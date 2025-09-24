@@ -452,42 +452,45 @@ const ClientView = ({ notify }) => {
   );
 };
 
-// Simplified Admin Panel Component
+// Simplified Admin Panel Component - Version 2.0 - Fixed data loading
 const AdminPanel = ({ notify }) => {
   const [allLinks, setAllLinks] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
 
-  const loadData = async () => {
-    console.log("🔄 Loading admin data...");
+  const loadAdminData = async () => {
+    console.log("🔄 Loading admin data v2.0...");
     setLoading(true);
     
     try {
-      // Use admin dashboard endpoint to get ALL links
+      // Primary: Use admin dashboard endpoint to get ALL links
+      console.log("Trying primary endpoint /api/admin/dashboard");
       const response = await axios.get(`${API}/admin/dashboard`);
-      console.log("✅ Admin dashboard data loaded:", response.data);
+      console.log("✅ Admin dashboard response:", response.data);
       
-      if (response.data.success) {
-        const allLinksData = response.data.links;
-        const statsData = response.data.stats;
+      if (response.data && response.data.success) {
+        const allLinksData = response.data.links || [];
+        const statsData = response.data.stats || {};
         
         setAllLinks(allLinksData);
         setStats(statsData);
         
-        notify.success(`✅ Panel cargado: ${statsData.total_submissions} links total (${statsData.approved} aprobados, ${statsData.pending} pendientes)`);
+        notify.success(`✅ Panel cargado v2.0: ${statsData.total_submissions || 0} links total (${statsData.approved || 0} aprobados)`);
+        console.log("✅ Successfully loaded", allLinksData.length, "links");
+        return;
       } else {
-        throw new Error(response.data.error || "Error desconocido");
+        throw new Error(response.data?.error || "Admin dashboard returned error");
       }
-    } catch (error) {
-      console.error("❌ Error loading admin data:", error);
+    } catch (primaryError) {
+      console.error("❌ Primary endpoint failed:", primaryError);
       
-      // Fallback to /api/links/manage if admin dashboard fails
+      // Fallback: Use links/manage endpoint
       try {
         console.log("🔄 Trying fallback endpoint /api/links/manage...");
         const fallbackResponse = await axios.get(`${API}/links/manage`);
-        console.log("✅ Fallback data loaded:", fallbackResponse.data.length, "links");
+        console.log("✅ Fallback response:", fallbackResponse.data?.length, "links");
         
-        const allLinksData = fallbackResponse.data;
+        const allLinksData = Array.isArray(fallbackResponse.data) ? fallbackResponse.data : [];
         
         // Calculate stats manually
         const approved = allLinksData.filter(link => link.status === 'approved').length;
@@ -505,10 +508,11 @@ const AdminPanel = ({ notify }) => {
         setAllLinks(allLinksData);
         setStats(statsData);
         
-        notify.success(`✅ Panel cargado (fallback): ${allLinksData.length} links total (${approved} aprobados, ${pending} pendientes)`);
+        notify.success(`✅ Panel cargado (fallback v2.0): ${allLinksData.length} links total`);
+        console.log("✅ Successfully loaded via fallback:", allLinksData.length, "links");
       } catch (fallbackError) {
-        console.error("❌ Fallback also failed:", fallbackError);
-        notify.error(`Error cargando datos del admin: ${error.response?.status} - ${error.response?.data?.detail || error.message}`);
+        console.error("❌ Both endpoints failed:", fallbackError);
+        notify.error(`Error cargando datos: ${primaryError.message}`);
       }
     } finally {
       setLoading(false);
@@ -519,14 +523,14 @@ const AdminPanel = ({ notify }) => {
     try {
       await axios.put(`${API}/links/${linkId}`, { status });
       notify.success(`Link ${status} correctamente`);
-      loadData(); // Reload data
+      loadAdminData(); // Reload data
     } catch (error) {
       notify.error("Error al actualizar el link");
     }
   };
 
   useEffect(() => {
-    loadData();
+    loadAdminData();
   }, []);
 
   if (loading) {
@@ -534,7 +538,7 @@ const AdminPanel = ({ notify }) => {
       <div className="flex justify-center items-center py-16">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p>Cargando datos del panel...</p>
+          <p>Cargando datos del panel v2.0...</p>
         </div>
       </div>
     );
@@ -547,9 +551,9 @@ const AdminPanel = ({ notify }) => {
     <div className="space-y-6">
       {/* Header with reload button */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-slate-800">Panel de Administración</h2>
-        <Button onClick={loadData} className="bg-blue-600 hover:bg-blue-700">
-          🔄 Recargar Datos
+        <h2 className="text-2xl font-bold text-slate-800">Panel de Administración v2.0</h2>
+        <Button onClick={loadAdminData} className="bg-blue-600 hover:bg-blue-700">
+          🔄 Recargar Datos v2.0
         </Button>
       </div>
 
@@ -592,12 +596,12 @@ const AdminPanel = ({ notify }) => {
       <Card>
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">
-            Todos los Links ({allLinks.length})
+            Todos los Links ({allLinks.length}) - v2.0
           </h3>
           
           {allLinks.length === 0 ? (
             <p className="text-center py-8 text-slate-500">
-              No hay links cargados. Haz clic en "Recargar Datos".
+              No hay links cargados. Haz clic en "Recargar Datos v2.0".
             </p>
           ) : (
             <div className="space-y-4">
