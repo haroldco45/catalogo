@@ -372,18 +372,61 @@ class LinkDirectoryAPITester:
 
     def run_all_tests(self):
         """Run all API tests"""
-        print("🚀 Starting PAGINA DEL LINK API Tests")
-        print("=" * 50)
+        print("🚀 Starting PAGINA DEL LINK API Tests - ADMIN PANEL FOCUS")
+        print("=" * 60)
         
         # Basic connectivity tests
         if not self.test_api_root():
             print("❌ API is not accessible. Stopping tests.")
             return False
         
-        # Test GET endpoints
-        self.test_get_approved_links()
-        self.test_get_all_links()
-        self.test_get_stats()
+        print("\n🔍 ADMIN PANEL ENDPOINT TESTING")
+        print("-" * 40)
+        
+        # Test the main admin dashboard endpoint
+        admin_success, admin_data = self.test_admin_dashboard()
+        
+        # Test the fallback manage endpoint
+        manage_success, manage_data = self.test_links_manage()
+        
+        # Test links endpoint with different statuses
+        print("\n🔍 LINKS ENDPOINT STATUS TESTING")
+        print("-" * 40)
+        status_results = self.test_links_by_status()
+        
+        # Test stats endpoint
+        stats_success, stats_data = self.test_get_stats()
+        
+        print("\n🔍 DATA CONSISTENCY ANALYSIS")
+        print("-" * 40)
+        
+        # Analyze data consistency
+        if admin_success and manage_success:
+            admin_links = admin_data.get('links', [])
+            manage_links = manage_data
+            admin_stats = admin_data.get('stats', {})
+            
+            print(f"📊 Admin Dashboard: {len(admin_links)} links, Stats Total: {admin_stats.get('total_submissions', 0)}")
+            print(f"📊 Manage Endpoint: {len(manage_links)} links")
+            print(f"📊 Approved Links: {len(status_results.get('approved', []))}")
+            print(f"📊 Pending Links: {len(status_results.get('pending', []))}")
+            print(f"📊 Rejected Links: {len(status_results.get('rejected', []))}")
+            
+            # Check consistency
+            total_by_status = len(status_results.get('approved', [])) + len(status_results.get('pending', [])) + len(status_results.get('rejected', []))
+            
+            if len(admin_links) == len(manage_links) == total_by_status:
+                print("✅ Data consistency: All endpoints return consistent counts")
+                self.log_test("Data Consistency Check", True, f"All endpoints consistent with {len(admin_links)} total links")
+            else:
+                print(f"❌ Data inconsistency detected:")
+                print(f"   Admin dashboard: {len(admin_links)} links")
+                print(f"   Manage endpoint: {len(manage_links)} links") 
+                print(f"   Sum by status: {total_by_status} links")
+                self.log_test("Data Consistency Check", False, f"Inconsistent counts: admin={len(admin_links)}, manage={len(manage_links)}, status_sum={total_by_status}")
+        
+        print("\n🔍 ADDITIONAL FUNCTIONALITY TESTS")
+        print("-" * 40)
         
         # Test link submission
         success, link_data = self.test_submit_link_valid()
@@ -402,8 +445,8 @@ class LinkDirectoryAPITester:
         self.test_update_nonexistent_link()
         
         # Print summary
-        print("\n" + "=" * 50)
-        print(f"📊 Test Summary:")
+        print("\n" + "=" * 60)
+        print(f"📊 ADMIN PANEL TEST SUMMARY:")
         print(f"   Tests Run: {self.tests_run}")
         print(f"   Tests Passed: {self.tests_passed}")
         print(f"   Tests Failed: {self.tests_run - self.tests_passed}")
@@ -411,6 +454,10 @@ class LinkDirectoryAPITester:
         
         if self.created_links:
             print(f"   Created Links: {len(self.created_links)}")
+        
+        # Specific admin panel assessment
+        critical_tests_passed = admin_success and manage_success
+        print(f"\n🎯 CRITICAL ADMIN ENDPOINTS: {'✅ WORKING' if critical_tests_passed else '❌ FAILING'}")
         
         return self.tests_passed == self.tests_run
 
