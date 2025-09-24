@@ -152,10 +152,10 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Submit Link Dialog */}
+      {/* Submit Link Modal */}
       {showSubmitForm && (
-        <SubmitLinkDialog 
-          open={showSubmitForm} 
+        <SubmitLinkModal 
+          isOpen={showSubmitForm} 
           onClose={() => setShowSubmitForm(false)}
           onSuccess={fetchApprovedLinks}
         />
