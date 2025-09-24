@@ -115,9 +115,18 @@ class LinkEdit(BaseModel):
         return v
 
 def check_prohibited_content(text: str) -> bool:
-    """Check if text contains prohibited keywords"""
+    """Check if text contains prohibited keywords as whole words"""
+    import re
+    
     text_lower = text.lower()
-    return any(keyword in text_lower for keyword in PROHIBITED_KEYWORDS)
+    
+    # Use word boundaries to match whole words only
+    for keyword in PROHIBITED_KEYWORDS:
+        # Create pattern that matches whole words only
+        pattern = r'\b' + re.escape(keyword) + r'\b'
+        if re.search(pattern, text_lower):
+            return True
+    return False
 
 async def extract_best_logo(url: str) -> Optional[str]:
     """Extract the best available logo from website"""
