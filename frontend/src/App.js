@@ -603,6 +603,9 @@ const AdminPanel = ({ notify }) => {
             <div>
               <p className="text-sm text-slate-500">Total Envíos</p>
               <p className="text-2xl font-bold">{stats.total_submissions || 0}</p>
+              <p className="text-xs text-slate-400">
+                {allLinks.length} links cargados
+              </p>
             </div>
           </CardContent>
         </Card>
