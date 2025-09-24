@@ -119,129 +119,52 @@ def check_prohibited_content(text: str) -> bool:
     text_lower = text.lower()
     return any(keyword in text_lower for keyword in PROHIBITED_KEYWORDS)
 
-async def extract_best_logo(url: str) -> Optional[str]:
-    """Extract the best available logo from website"""
+async def extract_favicon(url: str) -> Optional[str]:
+    """Extract favicon from website"""
     try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-        
-        # Get the main page content
-        response = requests.get(url, timeout=15, headers=headers)
-        if response.status_code != 200:
-            return None
-            
-        html_content = response.text.lower()
-        
-        # List to store potential logo URLs with their priorities
-        logo_candidates = []
-        
-        # 1. Look for Apple Touch Icons (usually high quality)
-        apple_touch_patterns = [
-            r'<link[^>]*rel=["\']apple-touch-icon[^"\']*["\'][^>]*href=["\']([^"\']+)',
-            r'<link[^>]*href=["\']([^"\']+)["\'][^>]*rel=["\']apple-touch-icon',
-        ]
-        
-        for pattern in apple_touch_patterns:
-            matches = re.findall(pattern, html_content, re.IGNORECASE)
-            for match in matches:
-                logo_candidates.append((match, 5))  # High priority
-        
-        # 2. Look for Open Graph images (social media logos)
-        og_pattern = r'<meta[^>]*property=["\']og:image["\'][^>]*content=["\']([^"\']+)'
-        og_matches = re.findall(og_pattern, html_content, re.IGNORECASE)
-        for match in og_matches:
-            logo_candidates.append((match, 4))  # Medium-high priority
-        
-        # 3. Look for high-resolution favicons
-        favicon_patterns = [
-            r'<link[^>]*rel=["\']icon["\'][^>]*href=["\']([^"\']+)["\'][^>]*sizes=["\'][^"\']*(?:192|512|256|128)',
-            r'<link[^>]*sizes=["\'][^"\']*(?:192|512|256|128)[^"\']*["\'][^>]*href=["\']([^"\']+)',
-        ]
-        
-        for pattern in favicon_patterns:
-            matches = re.findall(pattern, html_content, re.IGNORECASE)
-            for match in matches:
-                logo_candidates.append((match, 4))
-        
-        # 4. Look for logo images in common locations
-        logo_img_patterns = [
-            r'<img[^>]*(?:class|id|alt)[^>]*logo[^>]*src=["\']([^"\']+)',
-            r'<img[^>]*src=["\']([^"\']*logo[^"\']*)',
-            r'<img[^>]*src=["\']([^"\']*brand[^"\']*)',
-        ]
-        
-        for pattern in logo_img_patterns:
-            matches = re.findall(pattern, html_content, re.IGNORECASE)
-            for match in matches:
-                logo_candidates.append((match, 3))  # Medium priority
-        
-        # 5. Standard favicon
-        favicon_standard_patterns = [
-            r'<link[^>]*rel=["\'](?:shortcut )?icon["\'][^>]*href=["\']([^"\']+)',
-            r'<link[^>]*href=["\']([^"\']+)["\'][^>]*rel=["\'](?:shortcut )?icon',
-        ]
-        
-        for pattern in favicon_standard_patterns:
-            matches = re.findall(pattern, html_content, re.IGNORECASE)
-            for match in matches:
-                logo_candidates.append((match, 2))  # Lower priority
-        
-        # 6. Try common logo locations
-        common_logo_paths = [
+        # Try common favicon locations
+        favicon_urls = [
+            f"{url}/favicon.ico",
             f"{url}/apple-touch-icon.png",
-            f"{url}/apple-touch-icon-192x192.png",
-            f"{url}/android-chrome-192x192.png",
-            f"{url}/logo.png",
-            f"{url}/logo.jpg",
-            f"{url}/assets/logo.png",
-            f"{url}/images/logo.png",
-            f"{url}/img/logo.png",
+            f"{url}/android-chrome-192x192.png"
         ]
         
-        for logo_path in common_logo_paths:
-            logo_candidates.append((logo_path, 1))  # Lowest priority
-        
-        # Remove duplicates and sort by priority
-        seen = set()
-        unique_candidates = []
-        for logo_url, priority in logo_candidates:
-            if logo_url not in seen:
-                seen.add(logo_url)
-                unique_candidates.append((logo_url, priority))
-        
-        # Sort by priority (highest first)
-        unique_candidates.sort(key=lambda x: x[1], reverse=True)
-        
-        # Test each candidate URL
-        for logo_url, priority in unique_candidates:
+        for favicon_url in favicon_urls:
             try:
-                # Make URL absolute
-                if logo_url.startswith('//'):
-                    logo_url = f"https:{logo_url}"
-                elif logo_url.startswith('/'):
-                    parsed_url = urlparse(url)
-                    logo_url = f"{parsed_url.scheme}://{parsed_url.netloc}{logo_url}"
-                elif not logo_url.startswith('http'):
-                    logo_url = f"{url.rstrip('/')}/{logo_url.lstrip('/')}"
-                
-                # Test if the logo URL is accessible and is an image
-                logo_response = requests.head(logo_url, timeout=8, headers=headers)
-                if logo_response.status_code == 200:
-                    content_type = logo_response.headers.get('content-type', '').lower()
-                    if any(img_type in content_type for img_type in ['image/', 'png', 'jpg', 'jpeg', 'gif', 'webp']):
-                        print(f"Found logo for {url}: {logo_url} (priority: {priority})")
-                        return logo_url
-                        
-            except Exception as e:
+                response = requests.get(favicon_url, timeout=10, headers={
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                })
+                if response.status_code == 200:
+                    return favicon_url
+            except:
                 continue
         
-        print(f"No suitable logo found for {url}")
-        return None
-        
+        # Try to get favicon from main page
+        try:
+            response = requests.get(url, timeout=10, headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            })
+            if response.status_code == 200:
+                import re
+                # Look for favicon link in HTML
+                favicon_match = re.search(r'<link[^>]*rel=["\'](?:shortcut )?icon["\'][^>]*href=["\']([^"\']+)', response.text, re.IGNORECASE)
+                if favicon_match:
+                    favicon_path = favicon_match.group(1)
+                    if favicon_path.startswith('//'):
+                        return f"https:{favicon_path}"
+                    elif favicon_path.startswith('/'):
+                        parsed_url = urlparse(url)
+                        return f"{parsed_url.scheme}://{parsed_url.netloc}{favicon_path}"
+                    elif not favicon_path.startswith('http'):
+                        return f"{url.rstrip('/')}/{favicon_path}"
+                    return favicon_path
+        except:
+            pass
+            
     except Exception as e:
-        print(f"Error extracting logo from {url}: {e}")
-        return None
+        print(f"Error extracting favicon: {e}")
+    
+    return None
 
 # Routes
 @api_router.get("/")
@@ -301,7 +224,7 @@ async def submit_link(
     # Extract favicon only if no custom logo was provided
     favicon_url = None
     if not logo_filename:
-        favicon_url = await extract_best_logo(link_data.website_url)
+        favicon_url = await extract_favicon(link_data.website_url)
 
     # Create link submission
     submission = LinkSubmission(
@@ -374,7 +297,7 @@ async def edit_link(link_id: str, update: LinkEdit):
             
         # Extract favicon for the new URL only if no custom logo exists
         if not current_link.get("custom_logo"):
-            favicon_url = await extract_best_logo(update_data["website_url"])
+            favicon_url = await extract_favicon(update_data["website_url"])
             if favicon_url:
                 update_data["favicon_url"] = favicon_url
 
@@ -405,7 +328,7 @@ async def update_logo(
     if remove_logo:
         # Remove custom logo and get favicon instead
         update_data["custom_logo"] = None
-        favicon_url = await extract_best_logo(current_link["website_url"])
+        favicon_url = await extract_favicon(current_link["website_url"])
         if favicon_url:
             update_data["favicon_url"] = favicon_url
     elif custom_logo and custom_logo.filename:
