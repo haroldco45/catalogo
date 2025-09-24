@@ -246,6 +246,26 @@
             } catch (error) {
                 console.error('❌ Error:', error);
                 showMessage(`❌ Error: ${error.message}`, 'error');
+                
+                // Show manual fallback
+                document.getElementById('links').innerHTML = `
+                    <div style="background: #f8d7da; border: 2px solid #dc3545; padding: 20px; border-radius: 8px;">
+                        <h3 style="color: #721c24;">❌ Error cargando datos</h3>
+                        <p>No se pudieron cargar los datos automáticamente.</p>
+                        <p><strong>Los IDs de los links de prueba a eliminar son:</strong></p>
+                        <ul style="font-family: monospace; font-size: 14px;">
+                            <li>9754de9c-d108-4b80-8481-f3b4652fc7db - Test Porno User</li>
+                            <li>df281af5-effc-49cf-81a5-716033516f41 - Test User</li>
+                            <li>a86bf7f7-3dd6-48c5-8196-a92f65ed257e - Test Porno User</li>
+                            <li>753722dc-dd29-4b05-95a2-f55501663de1 - Test User</li>
+                            <li>8e8df112-bc6e-4586-a31a-9f8e8e58034f - Test User</li>
+                            <li>786dfd74-ba7a-4ede-9b38-2b9ede72b3bf - Test User Frontend</li>
+                        </ul>
+                        <button onclick="loadData()" style="background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                            🔄 REINTENTAR
+                        </button>
+                    </div>
+                `;
             }
         }
 
