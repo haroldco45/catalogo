@@ -421,7 +421,7 @@ const SubmitLinkModal = ({ isOpen, onClose, onSuccess, notify }) => {
   );
 };
 
-const AdminPanel = () => {
+const AdminPanel = ({ notify }) => {
   const [allLinks, setAllLinks] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
@@ -441,7 +441,7 @@ const AdminPanel = () => {
       setStats(statsRes.data);
     } catch (error) {
       console.error("Error fetching admin data:", error);
-      toast.error("Error al cargar datos de administración");
+      notify.error("Error al cargar datos de administración");
     } finally {
       setLoading(false);
     }
@@ -454,10 +454,10 @@ const AdminPanel = () => {
         rejection_reason: rejectionReason
       });
       
-      toast.success(`Link ${status === 'approved' ? 'aprobado' : 'rechazado'} correctamente`);
+      notify.success(`Link ${status === 'approved' ? 'aprobado' : 'rechazado'} correctamente`);
       fetchAllLinks();
     } catch (error) {
-      toast.error("Error al actualizar el link");
+      notify.error("Error al actualizar el link");
     }
   };
 
@@ -481,12 +481,12 @@ const AdminPanel = () => {
   const saveEdit = async (linkId) => {
     try {
       await axios.put(`${API}/links/${linkId}/edit`, editForm);
-      toast.success("Link actualizado correctamente");
+      notify.success("Link actualizado correctamente");
       setEditingLink(null);
       setEditForm({});
       fetchAllLinks();
     } catch (error) {
-      toast.error("Error al actualizar el link");
+      notify.error("Error al actualizar el link");
     }
   };
 
@@ -505,12 +505,12 @@ const AdminPanel = () => {
         }
       });
       
-      toast.success("Logo actualizado correctamente");
+      notify.success("Logo actualizado correctamente");
       setEditingLogo(null);
       setLogoFile(null);
       fetchAllLinks();
     } catch (error) {
-      toast.error("Error al actualizar el logo");
+      notify.error("Error al actualizar el logo");
     }
   };
 
