@@ -438,17 +438,89 @@ const AdminPanel = () => {
             {allLinks.map((link) => (
               <div key={link.id} className="border rounded-lg p-4 space-y-3" data-testid={`admin-link-${link.id}`}>
                 <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <p className="font-medium">{link.owner_name}</p>
-                    <p className="text-sm text-slate-500">{link.website_url}</p>
-                    <p className="text-xs text-slate-400">
-                      {link.location} • {link.phone}
-                    </p>
+                  <div className="space-y-1 flex-1">
+                    {editingLink === link.id ? (
+                      // Edit Mode
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-sm font-medium">Nombre del propietario</Label>
+                          <Input
+                            value={editForm.owner_name}
+                            onChange={(e) => setEditForm({...editForm, owner_name: e.target.value})}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">Teléfono</Label>
+                          <Input
+                            value={editForm.phone}
+                            onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">Ubicación</Label>
+                          <Input
+                            value={editForm.location}
+                            onChange={(e) => setEditForm({...editForm, location: e.target.value})}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">URL del sitio web</Label>
+                          <Input
+                            value={editForm.website_url}
+                            onChange={(e) => setEditForm({...editForm, website_url: e.target.value})}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div className="flex gap-2 pt-2">
+                          <Button
+                            size="sm"
+                            onClick={() => saveEdit(link.id)}
+                            className="bg-green-600 hover:bg-green-700"
+                            data-testid={`save-edit-${link.id}`}
+                          >
+                            <Save className="w-4 h-4 mr-1" />
+                            Guardar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={cancelEditing}
+                            data-testid={`cancel-edit-${link.id}`}
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Cancelar
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      // View Mode
+                      <>
+                        <div className="flex items-center justify-between">
+                          <p className="font-medium">{link.owner_name}</p>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => startEditing(link)}
+                            className="ml-2"
+                            data-testid={`edit-${link.id}`}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <p className="text-sm text-slate-500">{link.website_url}</p>
+                        <p className="text-xs text-slate-400">
+                          {link.location} • {link.phone}
+                        </p>
+                      </>
+                    )}
                   </div>
-                  {getStatusBadge(link.status)}
+                  {editingLink !== link.id && getStatusBadge(link.status)}
                 </div>
                 
-                {link.status === 'pending' && (
+                {editingLink !== link.id && link.status === 'pending' && (
                   <div className="flex gap-2 pt-2">
                     <Button
                       size="sm"
@@ -469,7 +541,7 @@ const AdminPanel = () => {
                   </div>
                 )}
                 
-                {link.payment_screenshot && (
+                {editingLink !== link.id && link.payment_screenshot && (
                   <div className="pt-2">
                     <p className="text-xs text-slate-500 mb-2">Comprobante de pago:</p>
                     <img
