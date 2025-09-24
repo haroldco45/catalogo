@@ -38,11 +38,11 @@ app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-# Prohibited keywords list (Spanish)
+# Prohibited keywords list (Spanish) - Updated to avoid false positives
 PROHIBITED_KEYWORDS = [
-    'porno', 'pornografia', 'xxx', 'sexo', 'escort', 'prostituta', 'trata', 'blancas',
+    'pornografia', 'xxx', 'sexo', 'escort', 'prostituta', 'trata de blancas',
     'estafa', 'fraude', 'piramidal', 'ponzi', 'scam', 'hack', 'virus', 'malware',
-    'droga', 'cocaina', 'marihuana', 'arma', 'armas', 'niños', 'menores', 'infantil',
+    'droga', 'cocaina', 'marihuana', 'armas de fuego', 'armas blancas', 'menores de edad', 'abuso infantil',
     'abuso', 'violencia', 'terror', 'terrorismo', 'bomba', 'explosivo'
 ]
 
