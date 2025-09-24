@@ -644,6 +644,8 @@ const EmergencyAdminPanel = ({ notify }) => {
 const AdminView = ({ notify }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
+  const [adminData, setAdminData] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -656,6 +658,50 @@ const AdminView = ({ notify }) => {
       setPassword('');
     }
   };
+
+  const loadAdminData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/admin/status`);
+      if (response.data.success) {
+        setAdminData(response.data);
+        notify.success(`✅ ${response.data.total_links} links cargados (${response.data.pending} pendientes)`);
+      } else {
+        throw new Error(response.data.error || 'Error cargando datos');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      notify.error(`Error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const approveLink = async (linkId) => {
+    try {
+      await axios.put(`${API}/links/${linkId}`, { status: 'approved' });
+      notify.success('✅ Link aprobado');
+      loadAdminData();
+    } catch (error) {
+      notify.error('Error al aprobar link');
+    }
+  };
+
+  const rejectLink = async (linkId) => {
+    try {
+      await axios.put(`${API}/links/${linkId}`, { status: 'rejected' });
+      notify.success('✅ Link rechazado');
+      loadAdminData();
+    } catch (error) {
+      notify.error('Error al rechazar link');
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadAdminData();
+    }
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return (
@@ -729,7 +775,104 @@ const AdminView = ({ notify }) => {
       </header>
       
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <EmergencyAdminPanel notify={notify} />
+        {/* Header */}
+        <div className="bg-red-600 text-white p-6 rounded-lg mb-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold">🚨 PANEL FUNCIONAL DE ADMINISTRACIÓN</h1>
+            <Button onClick={loadAdminData} disabled={loading} className="bg-white text-red-600 hover:bg-gray-100">
+              {loading ? '⏳ Cargando...' : '🔄 RECARGAR DATOS'}
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Users className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+              <p className="text-sm text-slate-500">Total Links</p>
+              <p className="text-2xl font-bold">{adminData.total_links || 0}</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
+              <p className="text-sm text-slate-500">Aprobados</p>
+              <p className="text-2xl font-bold">{adminData.approved || 0}</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Clock className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
+              <p className="text-sm text-slate-500">Pendientes</p>
+              <p className="text-2xl font-bold">{adminData.pending || 0}</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <DollarSign className="w-8 h-8 text-green-600 mx-auto mb-2" />
+              <p className="text-sm text-slate-500">Ingresos</p>
+              <p className="text-2xl font-bold">${adminData.revenue || 0}</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Pending Links */}
+        <Card>
+          <CardContent className="p-6">
+            <h2 className="text-xl font-bold mb-4">⚠️ Links Pendientes de Aprobación</h2>
+            
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p>Cargando datos...</p>
+              </div>
+            ) : (
+              <div>
+                {adminData.links ? (
+                  adminData.links.filter(link => link.status === 'pending').length === 0 ? (
+                    <p className="text-green-600 font-bold text-center py-8">✅ No hay links pendientes</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {adminData.links.filter(link => link.status === 'pending').map(link => (
+                        <div key={link.id} className="border-2 border-yellow-300 bg-yellow-50 rounded-lg p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-bold text-yellow-800">⚠️ {link.owner_name}</h3>
+                              <p className="text-sm text-blue-600 underline">{link.website_url}</p>
+                              <p className="text-xs text-gray-500">ID: {link.id}</p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => approveLink(link.id)}
+                                className="bg-green-600 hover:bg-green-700"
+                                size="sm"
+                              >
+                                ✅ APROBAR
+                              </Button>
+                              <Button
+                                onClick={() => rejectLink(link.id)}
+                                variant="destructive"
+                                size="sm"
+                              >
+                                ❌ RECHAZAR
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                ) : (
+                  <p className="text-center py-8">Haz clic en "RECARGAR DATOS" para cargar los links</p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
