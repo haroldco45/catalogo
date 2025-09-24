@@ -123,11 +123,27 @@ const Home = () => {
                   data-testid={`link-card-${link.id}`}
                 >
                   <CardContent className="p-3 flex flex-col items-center justify-center aspect-square">
-                    {link.favicon_url ? (
+                    {/* Custom logo has priority, then favicon, then fallback */}
+                    {link.custom_logo ? (
+                      <img
+                        src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
+                        alt={`${link.owner_name} logo`}
+                        className="w-8 h-8 mb-2 rounded-md object-contain"
+                        onError={(e) => {
+                          // If custom logo fails, try favicon
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = link.favicon_url ? 'block' : 'none';
+                          if (!link.favicon_url) {
+                            e.target.nextSibling.nextSibling.style.display = 'flex';
+                          }
+                        }}
+                      />
+                    ) : link.favicon_url ? (
                       <img
                         src={link.favicon_url}
                         alt={`${link.owner_name} favicon`}
                         className="w-8 h-8 mb-2 rounded-md object-contain"
+                        style={{ display: link.custom_logo ? 'none' : 'block' }}
                         onError={(e) => {
                           e.target.style.display = 'none';
                           e.target.nextSibling.style.display = 'flex';
@@ -135,7 +151,9 @@ const Home = () => {
                       />
                     ) : null}
                     <div
-                      className={`w-8 h-8 mb-2 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center ${link.favicon_url ? 'hidden' : 'flex'}`}
+                      className={`w-8 h-8 mb-2 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center ${
+                        (link.custom_logo || link.favicon_url) ? 'hidden' : 'flex'
+                      }`}
                     >
                       <span className="text-white font-bold text-sm">
                         {link.owner_name.charAt(0).toUpperCase()}
