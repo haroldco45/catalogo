@@ -295,10 +295,11 @@ async def edit_link(link_id: str, update: LinkEdit):
                 detail="El contenido actualizado contiene palabras prohibidas"
             )
             
-        # Extract favicon for the new URL
-        favicon_url = await extract_favicon(update_data["website_url"])
-        if favicon_url:
-            update_data["favicon_url"] = favicon_url
+        # Extract favicon for the new URL only if no custom logo exists
+        if not current_link.get("custom_logo"):
+            favicon_url = await extract_favicon(update_data["website_url"])
+            if favicon_url:
+                update_data["favicon_url"] = favicon_url
 
     result = await db.link_submissions.update_one(
         {"id": link_id}, 
@@ -309,6 +310,51 @@ async def edit_link(link_id: str, update: LinkEdit):
         raise HTTPException(status_code=404, detail="Link no encontrado")
     
     return {"message": "Link actualizado correctamente"}
+
+@api_router.put("/links/{link_id}/logo")
+async def update_logo(
+    link_id: str, 
+    custom_logo: UploadFile = File(None),
+    remove_logo: bool = False
+):
+    """Update or remove custom logo for a link (admin only)"""
+    # Get the current link
+    current_link = await db.link_submissions.find_one({"id": link_id})
+    if not current_link:
+        raise HTTPException(status_code=404, detail="Link no encontrado")
+    
+    update_data = {}
+    
+    if remove_logo:
+        # Remove custom logo and get favicon instead
+        update_data["custom_logo"] = None
+        favicon_url = await extract_favicon(current_link["website_url"])
+        if favicon_url:
+            update_data["favicon_url"] = favicon_url
+    elif custom_logo and custom_logo.filename:
+        # Save new custom logo
+        file_extension = custom_logo.filename.split('.')[-1] if '.' in custom_logo.filename else 'png'
+        logo_filename = f"logo_{uuid.uuid4()}.{file_extension}"
+        logo_path = UPLOAD_DIR / logo_filename
+        
+        async with aiofiles.open(logo_path, 'wb') as f:
+            content = await custom_logo.read()
+            await f.write(content)
+            
+        update_data["custom_logo"] = logo_filename
+        # Remove favicon when custom logo is added
+        update_data["favicon_url"] = None
+    
+    if update_data:
+        result = await db.link_submissions.update_one(
+            {"id": link_id}, 
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Link no encontrado")
+    
+    return {"message": "Logo actualizado correctamente"}
 
 @api_router.get("/links/stats")
 async def get_stats():
