@@ -137,15 +137,18 @@ backend:
 
   - task: "API endpoint /api/links/manage functionality"
     implemented: true
-    working: "NA"  
+    working: true  
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"  
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"  
           agent: "main"  
           comment: "Endpoint /api/links/manage existe para retornar todos los links, necesita verificación"
+        - working: true
+          agent: "testing"
+          comment: "TESTED: /api/links/manage works correctly - returns all 31 links sorted by created_at descending. Perfect fallback endpoint for admin panel data loading."
 
 frontend:
   - task: "Admin panel data loading"
