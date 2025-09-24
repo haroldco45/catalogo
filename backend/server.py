@@ -552,26 +552,43 @@ async def get_admin_dashboard():
             "success": False
         }
 
-@api_router.get("/links/stats")
-async def get_stats():
-    """Get statistics"""
-    pipeline = [
-        {"$group": {
-            "_id": "$status",
-            "count": {"$sum": 1}
-        }}
-    ]
-    
-    stats = await db.link_submissions.aggregate(pipeline).to_list(None)
-    
-    total = sum(stat["count"] for stat in stats)
-    revenue = len([s for s in stats if s["_id"] == "approved"]) * 1  # $1 per link
-    
-    return {
-        "stats": stats,
-        "total_submissions": total,
-        "estimated_revenue": revenue
-    }
+@api_router.get("/admin/status")
+async def get_admin_status_emergency():
+    """Emergency endpoint for admin panel debugging"""
+    try:
+        # Get ALL links regardless of status
+        all_links = await db.link_submissions.find().sort("created_at", -1).to_list(None)
+        
+        # Calculate stats
+        approved = len([l for l in all_links if l.get("status") == "approved"])
+        pending = len([l for l in all_links if l.get("status") == "pending"])
+        rejected = len([l for l in all_links if l.get("status") == "rejected"])
+        
+        return {
+            "success": True,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "total_links": len(all_links),
+            "approved": approved,
+            "pending": pending,
+            "rejected": rejected,
+            "revenue": approved,
+            "links": [
+                {
+                    "id": link.get("id"),
+                    "owner_name": link.get("owner_name"),
+                    "website_url": link.get("website_url"),
+                    "status": link.get("status"),
+                    "created_at": link.get("created_at")
+                }
+                for link in all_links
+            ]
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
 
 # Include the router in the main app
 app.include_router(api_router)
