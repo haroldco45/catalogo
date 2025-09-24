@@ -111,11 +111,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"  
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true  
           agent: "main"  
           comment: "Endpoint /api/links existe pero solo retorna links con status='approved' por defecto"
+        - working: true
+          agent: "testing"
+          comment: "TESTED: /api/links works correctly - returns 29 approved links by default, supports status parameter (approved/pending/rejected). Endpoint functioning as designed."
 
   - task: "API endpoint /api/admin/dashboard functionality"
     implemented: true
