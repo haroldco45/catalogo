@@ -480,6 +480,186 @@ class LinkDirectoryAPITester:
             self.log_test("Admin Status Detailed Analysis", False, str(e))
             return False, {}
 
+    def test_delete_link(self, link_id):
+        """Test deleting a specific link by ID"""
+        try:
+            response = requests.delete(f"{self.api_url}/links/{link_id}", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                details += f", Success: {data.get('success', False)}, Message: {data.get('message', '')}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('error', 'Unknown error')}"
+                except:
+                    details += f", Response: {response.text[:100]}"
+            
+            self.log_test(f"Delete Link {link_id[:8]}...", success, details)
+            return success, response.json() if success else {}
+            
+        except Exception as e:
+            self.log_test(f"Delete Link {link_id[:8]}...", False, str(e))
+            return False, {}
+
+    def delete_test_links_batch(self):
+        """Delete all identified test links from the database"""
+        print("🗑️  DELETING TEST LINKS FROM DATABASE")
+        print("=" * 60)
+        
+        # First, get current database state
+        try:
+            response = requests.get(f"{self.api_url}/admin/status", timeout=10)
+            if response.status_code != 200:
+                print("❌ Could not retrieve database information")
+                return False
+                
+            data = response.json()
+            links = data.get('links', [])
+            total_before = len(links)
+            
+            print(f"📊 BEFORE DELETION: {total_before} total links")
+            
+            # Identify test links to delete
+            test_links_to_delete = []
+            
+            # Specific IDs mentioned in the request
+            specific_ids = [
+                "9754de9c-d108-4b80-8481-f3b4652fc7db",  # Test Porno User - example.com
+                "df281af5-effc-49cf-81a5-716033516f41",  # Test User - example.com  
+                "a86bf7f7-3dd6-48c5-8196-a92f65ed257e",  # Test Porno User - example.com
+                "753722dc-dd29-4b05-95a2-f55501663de1",  # Test User - example.com
+                "8e8df112-bc6e-4586-a31a-9f8e8e58034f",  # Test User - example.com
+                "786dfd74-ba7a-4ede-9b38-2b9ede72b3bf"   # Test User Frontend - google.com
+            ]
+            
+            # Find all test links in database
+            for link in links:
+                link_id = link.get('id', '')
+                owner_name = link.get('owner_name', '').lower()
+                website_url = link.get('website_url', '').lower()
+                
+                # Check if it's a test link
+                is_test_link = False
+                reason = ""
+                
+                # Check specific IDs first
+                if link_id in specific_ids:
+                    is_test_link = True
+                    reason = "Specific ID in deletion list"
+                # Check for example.com URLs
+                elif 'example.com' in website_url:
+                    is_test_link = True
+                    reason = "example.com URL"
+                # Check for test users
+                elif 'test' in owner_name:
+                    is_test_link = True
+                    reason = "Test user name"
+                
+                if is_test_link:
+                    test_links_to_delete.append({
+                        'id': link_id,
+                        'owner_name': link.get('owner_name', ''),
+                        'website_url': link.get('website_url', ''),
+                        'reason': reason
+                    })
+            
+            print(f"🎯 IDENTIFIED {len(test_links_to_delete)} TEST LINKS FOR DELETION:")
+            print("-" * 60)
+            
+            for i, link in enumerate(test_links_to_delete, 1):
+                print(f"{i:2d}. ID: {link['id']}")
+                print(f"    Owner: {link['owner_name']}")
+                print(f"    URL: {link['website_url']}")
+                print(f"    Reason: {link['reason']}")
+                print()
+            
+            # Perform deletions
+            deleted_count = 0
+            failed_deletions = []
+            
+            print("🗑️  STARTING DELETION PROCESS...")
+            print("-" * 40)
+            
+            for link in test_links_to_delete:
+                link_id = link['id']
+                owner_name = link['owner_name']
+                
+                print(f"Deleting: {owner_name} ({link_id[:8]}...)")
+                success, result = self.test_delete_link(link_id)
+                
+                if success:
+                    deleted_count += 1
+                    print(f"  ✅ Successfully deleted")
+                else:
+                    failed_deletions.append(link)
+                    print(f"  ❌ Failed to delete")
+            
+            print(f"\n📊 DELETION RESULTS:")
+            print(f"   Successfully deleted: {deleted_count}")
+            print(f"   Failed deletions: {len(failed_deletions)}")
+            
+            if failed_deletions:
+                print(f"\n❌ FAILED DELETIONS:")
+                for link in failed_deletions:
+                    print(f"   - {link['owner_name']} ({link['id']})")
+            
+            # Verify final state
+            print(f"\n🔍 VERIFYING FINAL DATABASE STATE...")
+            response = requests.get(f"{self.api_url}/admin/status", timeout=10)
+            if response.status_code == 200:
+                final_data = response.json()
+                final_links = final_data.get('links', [])
+                total_after = len(final_links)
+                
+                print(f"📊 AFTER DELETION: {total_after} total links")
+                print(f"📊 LINKS REMOVED: {total_before - total_after}")
+                
+                # Check for remaining test links
+                remaining_test_links = []
+                for link in final_links:
+                    owner_name = link.get('owner_name', '').lower()
+                    website_url = link.get('website_url', '').lower()
+                    
+                    if 'example.com' in website_url or 'test' in owner_name:
+                        remaining_test_links.append(link)
+                
+                if remaining_test_links:
+                    print(f"\n⚠️  WARNING: {len(remaining_test_links)} TEST LINKS STILL REMAIN:")
+                    for link in remaining_test_links:
+                        print(f"   - {link.get('owner_name')} - {link.get('website_url')} ({link.get('id')})")
+                else:
+                    print(f"\n✅ SUCCESS: No test links remaining in database")
+                
+                # Show breakdown of remaining links
+                approved = final_data.get('approved', 0)
+                pending = final_data.get('pending', 0)
+                rejected = final_data.get('rejected', 0)
+                
+                print(f"\n📊 FINAL DATABASE BREAKDOWN:")
+                print(f"   Total links: {total_after}")
+                print(f"   Approved: {approved}")
+                print(f"   Pending: {pending}")
+                print(f"   Rejected: {rejected}")
+                
+                # Success criteria
+                deletion_successful = (deleted_count > 0 and len(remaining_test_links) == 0)
+                
+                self.log_test("Test Links Deletion", deletion_successful, 
+                             f"Deleted {deleted_count} test links, {len(remaining_test_links)} remaining")
+                
+                return deletion_successful
+            else:
+                print("❌ Could not verify final database state")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error during deletion process: {e}")
+            self.log_test("Test Links Deletion", False, str(e))
+            return False
+
     def run_database_verification(self):
         """Run database verification focused on identifying test data"""
         print("🔍 DATABASE VERIFICATION - IDENTIFYING TEST DATA")
@@ -499,6 +679,26 @@ class LinkDirectoryAPITester:
         
         print("\n✅ DATABASE VERIFICATION COMPLETE")
         return True
+
+    def run_test_link_deletion(self):
+        """Run test link deletion process"""
+        print("🗑️  TEST LINK DELETION PROCESS")
+        print("=" * 60)
+        
+        # Basic connectivity test
+        if not self.test_api_root():
+            print("❌ API is not accessible. Stopping deletion.")
+            return False
+        
+        # Run the deletion process
+        success = self.delete_test_links_batch()
+        
+        if success:
+            print("\n✅ TEST LINK DELETION COMPLETED SUCCESSFULLY")
+        else:
+            print("\n❌ TEST LINK DELETION FAILED OR INCOMPLETE")
+        
+        return success
 
     def run_all_tests(self):
         """Run all API tests"""
