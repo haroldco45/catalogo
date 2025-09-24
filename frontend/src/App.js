@@ -73,386 +73,7 @@ const NotificationContainer = ({ notifications, onRemove }) => {
   );
 };
 
-// Public client view - only submit form
-const ClientView = ({ notify }) => {
-  const [showSubmitForm, setShowSubmitForm] = useState(false);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                <Globe className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                PAGINA DEL LINK
-              </h1>
-            </div>
-            <Button
-              onClick={() => setShowSubmitForm(true)}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-6 py-2 rounded-xl shadow-md transition-all duration-300"
-              data-testid="submit-link-button"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Enviar Mi Link
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="py-16 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-6 leading-tight">
-            ¡Haz que tu sitio web sea visible para miles!
-          </h2>
-          <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Por solo <span className="font-bold text-green-600">$1 USD</span> puedes mostrar tu sitio web 
-            como un ícono en nuestra página. <span className="font-bold">Pago único, exposición permanente.</span>
-          </p>
-          
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 max-w-md mx-auto shadow-lg mb-8">
-            <h3 className="font-semibold text-slate-700 mb-4 text-lg">💳 Información de Pago</h3>
-            <div className="text-left space-y-3">
-              <p className="text-sm"><span className="font-medium">Método:</span> Nequi</p>
-              <p className="text-sm"><span className="font-medium">Número:</span> 3117700431</p>
-              <p className="text-sm"><span className="font-medium">Valor:</span> $1 USD (equivalente en COP)</p>
-              <p className="text-xs text-slate-500 mt-3">
-                ⚡ Proceso simple: Paga → Envía tu link → ¡Listo!
-              </p>
-            </div>
-          </div>
-
-          <Button
-            onClick={() => setShowSubmitForm(true)}
-            size="lg"
-            className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
-          >
-            <Upload className="w-5 h-5 mr-3" />
-            ¡Enviar Mi Sitio Web Ahora!
-          </Button>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-12 px-4 bg-white/40">
-        <div className="max-w-6xl mx-auto">
-          <h3 className="text-2xl font-bold text-slate-800 mb-8 text-center">
-            ¿Por qué elegir PAGINA DEL LINK?
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <DollarSign className="w-8 h-8 text-green-600" />
-              </div>
-              <h4 className="font-semibold text-slate-800 mb-2">Pago Único</h4>
-              <p className="text-slate-600 text-sm">Solo $1 USD una vez y tu sitio estará visible para siempre</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Eye className="w-8 h-8 text-blue-600" />
-              </div>
-              <h4 className="font-semibold text-slate-800 mb-2">Máxima Exposición</h4>
-              <p className="text-slate-600 text-sm">Miles de personas podrán ver y hacer clic en tu sitio</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Globe className="w-8 h-8 text-indigo-600" />
-              </div>
-              <h4 className="font-semibold text-slate-800 mb-2">Fácil y Rápido</h4>
-              <p className="text-slate-600 text-sm">Proceso simple: envía tu información y listo</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-8 px-4 bg-slate-800 text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="text-sm text-slate-400">
-            © 2025 PAGINA DEL LINK. Haz que tu sitio web sea visible para el mundo.
-          </p>
-        </div>
-      </footer>
-
-      {/* Submit Link Modal */}
-      {showSubmitForm && (
-        <SubmitLinkModal 
-          isOpen={showSubmitForm} 
-          onClose={() => setShowSubmitForm(false)}
-          notify={notify}
-        />
-      )}
-    </div>
-  );
-};
-
-// Admin view with authentication
-const AdminView = ({ notify }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
-  const [showLogin, setShowLogin] = useState(true);
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    // Simple password check (you can make this more secure)
-    if (password === 'admin123') {
-      setIsAuthenticated(true);
-      setShowLogin(false);
-      notify.success('Acceso administrativo autorizado');
-    } else {
-      notify.error('Contraseña incorrecta');
-      setPassword('');
-    }
-  };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-8">
-            <div className="text-center mb-6">
-              <h1 className="text-2xl font-bold text-slate-800">Panel de Administración</h1>
-              <p className="text-slate-600 mt-2">Ingresa la contraseña para continuar</p>
-            </div>
-            
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <Label htmlFor="password">Contraseña</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Ingresa la contraseña"
-                  className="mt-1"
-                  data-testid="admin-password"
-                />
-              </div>
-              <Button 
-                type="submit" 
-                className="w-full bg-slate-800 hover:bg-slate-900"
-                data-testid="admin-login-button"
-              >
-                Acceder
-              </Button>
-            </form>
-            
-            <div className="mt-6 pt-6 border-t text-center">
-              <a 
-                href="/" 
-                className="text-sm text-blue-600 hover:text-blue-800"
-              >
-                ← Volver a la página principal
-              </a>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-slate-800">Panel de Administración</h1>
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsAuthenticated(false);
-                  setPassword('');
-                  notify.info('Sesión cerrada');
-                }}
-              >
-                Cerrar Sesión
-              </Button>
-              <a href="/" className="text-sm text-blue-600 hover:text-blue-800">
-                Ver sitio público
-              </a>
-            </div>
-          </div>
-        </div>
-      </header>
-      
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <AdminPanel notify={notify} />
-      </div>
-    </div>
-  );
-};
-  const [links, setLinks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showSubmitForm, setShowSubmitForm] = useState(false);
-
-  const fetchApprovedLinks = async () => {
-    try {
-      const response = await axios.get(`${API}/links?status=approved`);
-      setLinks(response.data);
-    } catch (error) {
-      console.error("Error fetching links:", error);
-      notify.error("Error al cargar los links");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchApprovedLinks();
-  }, []);
-
-  const handleLinkClick = (url) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                <Globe className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                PAGINA DEL LINK
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Badge variant="secondary" className="text-sm">
-                {links.length} Links Activos
-              </Badge>
-              <Button
-                onClick={() => setShowSubmitForm(true)}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-6 py-2 rounded-xl shadow-md transition-all duration-300"
-                data-testid="submit-link-button"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Enviar Link
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="py-16 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-6 leading-tight">
-            Comparte tu sitio web con el mundo
-          </h2>
-          <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Por solo <span className="font-bold text-green-600">$1 USD</span> puedes mostrar tu sitio web 
-            como un ícono en nuestra página. Pago único, exposición permanente.
-          </p>
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 max-w-md mx-auto shadow-lg">
-            <h3 className="font-semibold text-slate-700 mb-3">Información de Pago</h3>
-            <div className="text-left space-y-2">
-              <p className="text-sm"><span className="font-medium">Método:</span> Nequi</p>
-              <p className="text-sm"><span className="font-medium">Número:</span> 3117700431</p>
-              <p className="text-sm"><span className="font-medium">Valor:</span> $1 USD (equivalente en COP)</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Links Grid */}
-      <section className="py-8 px-4">
-        <div className="max-w-7xl mx-auto">
-          <h3 className="text-2xl font-bold text-slate-800 mb-8 text-center">
-            Links Publicados ({links.length})
-          </h3>
-          
-          {loading ? (
-            <div className="flex justify-center items-center py-16">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-          ) : links.length === 0 ? (
-            <div className="text-center py-16">
-              <Globe className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-              <p className="text-slate-500 text-lg">Aún no hay links publicados</p>
-              <p className="text-slate-400">¡Sé el primero en enviar tu sitio web!</p>
-            </div>
-          ) : (
-            <div 
-              className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-4"
-              data-testid="links-grid"
-            >
-              {links.map((link) => (
-                <Card
-                  key={link.id}
-                  className="group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg bg-white/80 backdrop-blur-sm border-slate-200 hover:border-blue-300"
-                  onClick={() => handleLinkClick(link.website_url)}
-                  data-testid={`link-card-${link.id}`}
-                >
-                  <CardContent className="p-3 flex flex-col items-center justify-center aspect-square">
-                    {/* Custom logo has priority, then favicon, then fallback */}
-                    {link.custom_logo ? (
-                      <img
-                        src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
-                        alt={`${link.owner_name} logo`}
-                        className="w-8 h-8 mb-2 rounded-md object-contain"
-                        onError={(e) => {
-                          // If custom logo fails, try favicon
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = link.favicon_url ? 'block' : 'none';
-                          if (!link.favicon_url) {
-                            e.target.nextSibling.nextSibling.style.display = 'flex';
-                          }
-                        }}
-                      />
-                    ) : link.favicon_url ? (
-                      <img
-                        src={link.favicon_url}
-                        alt={`${link.owner_name} favicon`}
-                        className="w-8 h-8 mb-2 rounded-md object-contain"
-                        style={{ display: link.custom_logo ? 'none' : 'block' }}
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    <div
-                      className={`w-8 h-8 mb-2 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center ${
-                        (link.custom_logo || link.favicon_url) ? 'hidden' : 'flex'
-                      }`}
-                    >
-                      <span className="text-white font-bold text-sm">
-                        {link.owner_name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <p className="text-xs text-center font-medium text-slate-700 group-hover:text-blue-600 transition-colors line-clamp-2">
-                      {new URL(link.website_url).hostname.replace('www.', '')}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Submit Link Modal */}
-      {showSubmitForm && (
-        <SubmitLinkModal 
-          isOpen={showSubmitForm} 
-          onClose={() => setShowSubmitForm(false)}
-          onSuccess={fetchApprovedLinks}
-          notify={notify}
-        />
-      )}
-    </div>
-  );
-};
-
-const SubmitLinkModal = ({ isOpen, onClose, onSuccess, notify }) => {
+const SubmitLinkModal = ({ isOpen, onClose, notify }) => {
   const [formData, setFormData] = useState({
     owner_name: '',
     phone: '',
@@ -600,7 +221,7 @@ const SubmitLinkModal = ({ isOpen, onClose, onSuccess, notify }) => {
                 data-testid="custom-logo-input"
               />
               <p className="text-xs text-slate-500">
-                Sube tu logo personalizado (PNG, JPG). Si no lo subes, usaremos el favicon de tu sitio automáticamente.
+                Sube tu logo personalizado (PNG, JPG). Si no lo subes, usaremos el logo de tu sitio automáticamente.
               </p>
             </div>
 
@@ -634,6 +255,124 @@ const SubmitLinkModal = ({ isOpen, onClose, onSuccess, notify }) => {
   );
 };
 
+// Public client view - only submit form
+const ClientView = ({ notify }) => {
+  const [showSubmitForm, setShowSubmitForm] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-md shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                <Globe className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                PAGINA DEL LINK
+              </h1>
+            </div>
+            <Button
+              onClick={() => setShowSubmitForm(true)}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-6 py-2 rounded-xl shadow-md transition-all duration-300"
+              data-testid="submit-link-button"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Enviar Mi Link
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="py-16 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-6 leading-tight">
+            ¡Haz que tu sitio web sea visible para miles!
+          </h2>
+          <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Por solo <span className="font-bold text-green-600">$1 USD</span> puedes mostrar tu sitio web 
+            como un ícono en nuestra página. <span className="font-bold">Pago único, exposición permanente.</span>
+          </p>
+          
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 max-w-md mx-auto shadow-lg mb-8">
+            <h3 className="font-semibold text-slate-700 mb-4 text-lg">💳 Información de Pago</h3>
+            <div className="text-left space-y-3">
+              <p className="text-sm"><span className="font-medium">Método:</span> Nequi</p>
+              <p className="text-sm"><span className="font-medium">Número:</span> 3117700431</p>
+              <p className="text-sm"><span className="font-medium">Valor:</span> $1 USD (equivalente en COP)</p>
+              <p className="text-xs text-slate-500 mt-3">
+                ⚡ Proceso simple: Paga → Envía tu link → ¡Listo!
+              </p>
+            </div>
+          </div>
+
+          <Button
+            onClick={() => setShowSubmitForm(true)}
+            size="lg"
+            className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
+          >
+            <Upload className="w-5 h-5 mr-3" />
+            ¡Enviar Mi Sitio Web Ahora!
+          </Button>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-12 px-4 bg-white/40">
+        <div className="max-w-6xl mx-auto">
+          <h3 className="text-2xl font-bold text-slate-800 mb-8 text-center">
+            ¿Por qué elegir PAGINA DEL LINK?
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <DollarSign className="w-8 h-8 text-green-600" />
+              </div>
+              <h4 className="font-semibold text-slate-800 mb-2">Pago Único</h4>
+              <p className="text-slate-600 text-sm">Solo $1 USD una vez y tu sitio estará visible para siempre</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Eye className="w-8 h-8 text-blue-600" />
+              </div>
+              <h4 className="font-semibold text-slate-800 mb-2">Máxima Exposición</h4>
+              <p className="text-slate-600 text-sm">Miles de personas podrán ver y hacer clic en tu sitio</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Globe className="w-8 h-8 text-indigo-600" />
+              </div>
+              <h4 className="font-semibold text-slate-800 mb-2">Fácil y Rápido</h4>
+              <p className="text-slate-600 text-sm">Proceso simple: envía tu información y listo</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-8 px-4 bg-slate-800 text-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-sm text-slate-400">
+            © 2025 PAGINA DEL LINK. Haz que tu sitio web sea visible para el mundo.
+          </p>
+        </div>
+      </footer>
+
+      {/* Submit Link Modal */}
+      {showSubmitForm && (
+        <SubmitLinkModal 
+          isOpen={showSubmitForm} 
+          onClose={() => setShowSubmitForm(false)}
+          notify={notify}
+        />
+      )}
+    </div>
+  );
+};
+
+// Admin Panel Component
 const AdminPanel = ({ notify }) => {
   const [allLinks, setAllLinks] = useState([]);
   const [stats, setStats] = useState({});
@@ -988,7 +727,6 @@ const AdminPanel = ({ notify }) => {
                       </>
                     )}
                   </div>
-                  {editingLink !== link.id && getStatusBadge(link.status) && <span></span>}
                 </div>
                 
                 {editingLink !== link.id && link.status === 'pending' && (
@@ -1027,6 +765,101 @@ const AdminPanel = ({ notify }) => {
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+};
+
+// Admin view with authentication
+const AdminView = ({ notify }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    // Simple password check (you can make this more secure)
+    if (password === 'admin123') {
+      setIsAuthenticated(true);
+      notify.success('Acceso administrativo autorizado');
+    } else {
+      notify.error('Contraseña incorrecta');
+      setPassword('');
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-8">
+            <div className="text-center mb-6">
+              <h1 className="text-2xl font-bold text-slate-800">Panel de Administración</h1>
+              <p className="text-slate-600 mt-2">Ingresa la contraseña para continuar</p>
+            </div>
+            
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <Label htmlFor="password">Contraseña</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Ingresa la contraseña"
+                  className="mt-1"
+                  data-testid="admin-password"
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full bg-slate-800 hover:bg-slate-900"
+                data-testid="admin-login-button"
+              >
+                Acceder
+              </Button>
+            </form>
+            
+            <div className="mt-6 pt-6 border-t text-center">
+              <a 
+                href="/" 
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                ← Volver a la página principal
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-slate-800">Panel de Administración</h1>
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsAuthenticated(false);
+                  setPassword('');
+                  notify.info('Sesión cerrada');
+                }}
+              >
+                Cerrar Sesión
+              </Button>
+              <a href="/" className="text-sm text-blue-600 hover:text-blue-800">
+                Ver sitio público
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <AdminPanel notify={notify} />
+      </div>
     </div>
   );
 };
