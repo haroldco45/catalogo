@@ -463,17 +463,23 @@ const AdminPanel = ({ notify }) => {
   const [logoFile, setLogoFile] = useState(null);
 
   const fetchAllLinks = async () => {
+    console.log("🔄 Fetching admin data...");
     try {
       const [linksRes, statsRes] = await Promise.all([
         axios.get(`${API}/links/all`),
         axios.get(`${API}/links/stats`)
       ]);
       
+      console.log("📊 Links data:", linksRes.data.length, "items");
+      console.log("📈 Stats data:", statsRes.data);
+      
       setAllLinks(linksRes.data);
       setStats(statsRes.data);
+      
+      notify.success(`Cargados ${linksRes.data.length} links correctamente`);
     } catch (error) {
-      console.error("Error fetching admin data:", error);
-      notify.error("Error al cargar datos de administración");
+      console.error("❌ Error fetching admin data:", error);
+      notify.error(`Error al cargar datos: ${error.message}`);
     } finally {
       setLoading(false);
     }
