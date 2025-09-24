@@ -698,7 +698,7 @@ const AdminPanel = () => {
                       </>
                     )}
                   </div>
-                  {editingLink !== link.id && getStatusBadge(link.status)}
+                  {editingLink !== link.id && getStatusBadge(link.status) && <span></span>}
                 </div>
                 
                 {editingLink !== link.id && link.status === 'pending' && (
