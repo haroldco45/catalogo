@@ -452,233 +452,184 @@ const ClientView = ({ notify }) => {
   );
 };
 
-// Simplified Admin Panel Component - Version 2.0 - Fixed data loading
-const AdminPanel = ({ notify }) => {
-  const [allLinks, setAllLinks] = useState([]);
+// EMERGENCY ADMIN PANEL - COMPLETELY NEW COMPONENT
+const EmergencyAdminPanel = ({ notify }) => {
+  const [links, setLinks] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
 
-  const loadAdminData = async () => {
-    console.log("🔄 Loading admin data v2.0...");
+  const emergencyLoadData = async () => {
+    console.log("🚨 EMERGENCY: Loading admin data from /api/admin/status");
     setLoading(true);
     
     try {
-      // Primary: Use admin dashboard endpoint to get ALL links
-      console.log("Trying primary endpoint /api/admin/dashboard");
-      const response = await axios.get(`${API}/admin/dashboard`);
-      console.log("✅ Admin dashboard response:", response.data);
+      const response = await axios.get(`${API}/admin/status`);
+      console.log("🚨 EMERGENCY: Response received", response.data);
       
-      if (response.data && response.data.success) {
-        const allLinksData = response.data.links || [];
-        const statsData = response.data.stats || {};
+      if (response.data.success) {
+        const data = response.data;
+        setLinks(data.links || []);
+        setStats({
+          total_submissions: data.total_links,
+          approved: data.approved,
+          pending: data.pending,
+          rejected: data.rejected,
+          estimated_revenue: data.revenue
+        });
         
-        setAllLinks(allLinksData);
-        setStats(statsData);
-        
-        notify.success(`✅ Panel cargado v2.0: ${statsData.total_submissions || 0} links total (${statsData.approved || 0} aprobados)`);
-        console.log("✅ Successfully loaded", allLinksData.length, "links");
-        return;
+        notify.success(`🚨 EMERGENCY: ${data.total_links} links cargados (${data.pending} pendientes)`);
       } else {
-        throw new Error(response.data?.error || "Admin dashboard returned error");
+        throw new Error(response.data.error || "Error en endpoint de emergencia");
       }
-    } catch (primaryError) {
-      console.error("❌ Primary endpoint failed:", primaryError);
-      
-      // Fallback: Use links/manage endpoint
-      try {
-        console.log("🔄 Trying fallback endpoint /api/links/manage...");
-        const fallbackResponse = await axios.get(`${API}/links/manage`);
-        console.log("✅ Fallback response:", fallbackResponse.data?.length, "links");
-        
-        const allLinksData = Array.isArray(fallbackResponse.data) ? fallbackResponse.data : [];
-        
-        // Calculate stats manually
-        const approved = allLinksData.filter(link => link.status === 'approved').length;
-        const pending = allLinksData.filter(link => link.status === 'pending').length;
-        const rejected = allLinksData.filter(link => link.status === 'rejected').length;
-        
-        const statsData = {
-          total_submissions: allLinksData.length,
-          approved: approved,
-          pending: pending,
-          rejected: rejected,
-          estimated_revenue: approved
-        };
-        
-        setAllLinks(allLinksData);
-        setStats(statsData);
-        
-        notify.success(`✅ Panel cargado (fallback v2.0): ${allLinksData.length} links total`);
-        console.log("✅ Successfully loaded via fallback:", allLinksData.length, "links");
-      } catch (fallbackError) {
-        console.error("❌ Both endpoints failed:", fallbackError);
-        notify.error(`Error cargando datos: ${primaryError.message}`);
-      }
+    } catch (error) {
+      console.error("🚨 EMERGENCY: Error loading data", error);
+      notify.error(`🚨 ERROR: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  const updateLinkStatus = async (linkId, status) => {
+  const emergencyApprove = async (linkId) => {
     try {
-      await axios.put(`${API}/links/${linkId}`, { status });
-      notify.success(`Link ${status} correctamente`);
-      loadAdminData(); // Reload data
+      await axios.put(`${API}/links/${linkId}`, { status: 'approved' });
+      notify.success("✅ Link aprobado");
+      emergencyLoadData(); // Reload
     } catch (error) {
-      notify.error("Error al actualizar el link");
+      notify.error("❌ Error al aprobar");
+    }
+  };
+
+  const emergencyReject = async (linkId) => {
+    try {
+      await axios.put(`${API}/links/${linkId}`, { status: 'rejected' });
+      notify.success("✅ Link rechazado");
+      emergencyLoadData(); // Reload
+    } catch (error) {
+      notify.error("❌ Error al rechazar");
     }
   };
 
   useEffect(() => {
-    loadAdminData();
+    emergencyLoadData();
   }, []);
 
   if (loading) {
     return (
       <div className="flex justify-center items-center py-16">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p>Cargando datos del panel v2.0...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-red-600 font-bold">🚨 CARGANDO PANEL DE EMERGENCIA...</p>
         </div>
       </div>
     );
   }
 
-  const approvedCount = stats.approved || 0;
-  const pendingCount = stats.pending || 0;
-
   return (
     <div className="space-y-6">
-      {/* Header with reload button */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-slate-800">Panel de Administración v2.0</h2>
-        <Button onClick={loadAdminData} className="bg-blue-600 hover:bg-blue-700">
-          🔄 Recargar Datos v2.0
-        </Button>
+      {/* EMERGENCY HEADER */}
+      <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-red-800">🚨 PANEL DE EMERGENCIA</h2>
+          <Button onClick={emergencyLoadData} className="bg-red-600 hover:bg-red-700 text-white">
+            🔄 RECARGAR AHORA
+          </Button>
+        </div>
+        <p className="text-red-700 mt-2">Panel de emergencia activado - {stats.pending || 0} links esperando aprobación</p>
       </div>
 
-      {/* Stats Cards */}
+      {/* EMERGENCY STATS */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="border-2 border-blue-200">
           <CardContent className="p-4 text-center">
             <Users className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <p className="text-sm text-slate-500">Total Envíos</p>
-            <p className="text-2xl font-bold">{stats.total_submissions || 0}</p>
+            <p className="text-sm text-slate-500">Total</p>
+            <p className="text-3xl font-bold text-blue-600">{stats.total_submissions || 0}</p>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="border-2 border-green-200">
           <CardContent className="p-4 text-center">
             <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
             <p className="text-sm text-slate-500">Aprobados</p>
-            <p className="text-2xl font-bold">{approvedCount}</p>
+            <p className="text-3xl font-bold text-green-600">{stats.approved || 0}</p>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="border-2 border-yellow-200">
           <CardContent className="p-4 text-center">
             <Clock className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-            <p className="text-sm text-slate-500">Pendientes</p>
-            <p className="text-2xl font-bold">{pendingCount}</p>
+            <p className="text-sm text-slate-500">⚠️ PENDIENTES</p>
+            <p className="text-3xl font-bold text-yellow-600">{stats.pending || 0}</p>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="border-2 border-green-200">
           <CardContent className="p-4 text-center">
             <DollarSign className="w-8 h-8 text-green-600 mx-auto mb-2" />
-            <p className="text-sm text-slate-500">Ingresos</p>
-            <p className="text-2xl font-bold">${stats.estimated_revenue || 0}</p>
+            <p className="text-sm text-slate-500">💰 Ingresos</p>
+            <p className="text-3xl font-bold text-green-600">${stats.estimated_revenue || 0}</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Links List */}
+      {/* EMERGENCY LINKS LIST */}
       <Card>
         <CardContent className="p-6">
-          <h3 className="text-lg font-semibold mb-4">
-            Todos los Links ({allLinks.length}) - v2.0
+          <h3 className="text-lg font-semibold mb-4 text-red-800">
+            🚨 TODOS LOS LINKS ({links.length}) - ACCIÓN INMEDIATA REQUERIDA
           </h3>
           
-          {allLinks.length === 0 ? (
-            <p className="text-center py-8 text-slate-500">
-              No hay links cargados. Haz clic en "Recargar Datos v2.0".
-            </p>
+          {links.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-red-600 font-bold">🚨 NO SE CARGARON LINKS</p>
+              <Button onClick={emergencyLoadData} className="mt-4 bg-red-600">
+                RECARGAR AHORA
+              </Button>
+            </div>
           ) : (
-            <div className="space-y-4">
-              {allLinks.map((link) => (
-                <div key={link.id} className="border rounded-lg p-4">
+            <div className="space-y-3">
+              {/* PENDING LINKS FIRST */}
+              {links.filter(link => link.status === 'pending').map((link) => (
+                <div key={link.id} className="border-2 border-yellow-300 bg-yellow-50 rounded-lg p-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        {/* Logo/Icon */}
-                        {link.custom_logo ? (
-                          <img
-                            src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
-                            alt="Logo"
-                            className="w-8 h-8 rounded object-contain border"
-                          />
-                        ) : link.favicon_url ? (
-                          <img
-                            src={link.favicon_url}
-                            alt="Favicon"
-                            className="w-8 h-8 rounded object-contain border"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 rounded bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
-                            {link.owner_name.charAt(0)}
-                          </div>
-                        )}
-                        
-                        <div>
-                          <p className="font-semibold">{link.owner_name}</p>
-                          <p className="text-sm text-slate-600">{link.website_url}</p>
-                          <p className="text-xs text-slate-400">{link.location} • {link.phone}</p>
-                        </div>
-                      </div>
+                      <p className="font-bold text-yellow-800">⚠️ PENDIENTE DE APROBACIÓN</p>
+                      <p className="font-semibold text-lg">{link.owner_name}</p>
+                      <p className="text-sm text-blue-600 underline">{link.website_url}</p>
+                      <p className="text-xs text-gray-500">ID: {link.id}</p>
                     </div>
                     
-                    <div className="flex items-center gap-2">
-                      {/* Status Badge */}
-                      <Badge 
-                        variant={link.status === 'approved' ? 'default' : link.status === 'pending' ? 'secondary' : 'destructive'}
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={() => emergencyApprove(link.id)}
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold"
+                        size="sm"
                       >
-                        {link.status === 'approved' ? '✅ Aprobado' : 
-                         link.status === 'pending' ? '⏳ Pendiente' : '❌ Rechazado'}
-                      </Badge>
-                      
-                      {/* Action Buttons */}
-                      {link.status === 'pending' && (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => updateLinkStatus(link.id, 'approved')}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            Aprobar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => updateLinkStatus(link.id, 'rejected')}
-                          >
-                            Rechazar
-                          </Button>
-                        </div>
-                      )}
+                        ✅ APROBAR YA
+                      </Button>
+                      <Button
+                        onClick={() => emergencyReject(link.id)}
+                        variant="destructive"
+                        size="sm"
+                      >
+                        ❌ RECHAZAR
+                      </Button>
                     </div>
                   </div>
-                  
-                  {/* Payment Screenshot */}
-                  {link.payment_screenshot && (
-                    <div className="mt-3 pt-3 border-t">
-                      <p className="text-xs text-slate-500 mb-2">Comprobante de pago:</p>
-                      <img
-                        src={`${BACKEND_URL}/uploads/${link.payment_screenshot}`}
-                        alt="Comprobante"
-                        className="max-w-xs max-h-24 object-contain border rounded"
-                      />
+                </div>
+              ))}
+              
+              {/* APPROVED LINKS */}
+              {links.filter(link => link.status === 'approved').map((link) => (
+                <div key={link.id} className="border border-green-200 bg-green-50 rounded-lg p-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="text-green-600 font-bold">✅</span>
+                      <span className="ml-2 font-semibold">{link.owner_name}</span>
+                      <span className="ml-2 text-sm text-blue-600">{link.website_url}</span>
                     </div>
-                  )}
+                    <Badge className="bg-green-100 text-green-800">APROBADO</Badge>
+                  </div>
                 </div>
               ))}
             </div>
