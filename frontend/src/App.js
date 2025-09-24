@@ -509,8 +509,8 @@ const AdminPanel = ({ notify }) => {
     );
   }
 
-  const approvedCount = stats.stats?.find(s => s._id === 'approved')?.count || 0;
-  const pendingCount = stats.stats?.find(s => s._id === 'pending')?.count || 0;
+  const approvedCount = stats.approved || 0;
+  const pendingCount = stats.pending || 0;
 
   return (
     <div className="space-y-6">
