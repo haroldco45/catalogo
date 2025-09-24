@@ -239,7 +239,7 @@
                         `;
                     }
                     
-                    showMessage(`✅ Cargados ${data.total_links} links (${data.pending} pendientes)`, 'success');
+                    showMessage(`✅ Cargados ${data.total_links} links (${testLinks.length} para eliminar)`, 'success');
                 } else {
                     throw new Error(data.error || 'Error desconocido');
                 }
