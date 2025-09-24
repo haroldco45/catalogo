@@ -590,6 +590,18 @@ async def get_admin_status_emergency():
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
 
+@api_router.delete("/links/{link_id}")
+async def delete_link_emergency(link_id: str):
+    """Emergency endpoint to delete test links"""
+    try:
+        result = await db.link_submissions.delete_one({"id": link_id})
+        if result.deleted_count > 0:
+            return {"success": True, "message": "Link eliminado correctamente"}
+        else:
+            return {"success": False, "error": "Link no encontrado"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 # Include the router in the main app
 app.include_router(api_router)
 
