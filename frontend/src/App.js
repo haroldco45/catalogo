@@ -593,21 +593,108 @@ const AdminPanel = () => {
                       // View Mode
                       <>
                         <div className="flex items-center justify-between">
-                          <p className="font-medium">{link.owner_name}</p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => startEditing(link)}
-                            className="ml-2"
-                            data-testid={`edit-${link.id}`}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
+                          <div className="flex items-center space-x-3">
+                            <div className="relative">
+                              {/* Show current logo/icon */}
+                              {link.custom_logo ? (
+                                <img
+                                  src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
+                                  alt={`${link.owner_name} logo`}
+                                  className="w-12 h-12 rounded-md object-contain border"
+                                />
+                              ) : link.favicon_url ? (
+                                <img
+                                  src={link.favicon_url}
+                                  alt={`${link.owner_name} favicon`}
+                                  className="w-12 h-12 rounded-md object-contain border"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 rounded-md bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center border">
+                                  <span className="text-white font-bold text-lg">
+                                    {link.owner_name.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {/* Logo edit button */}
+                              <button
+                                onClick={() => setEditingLogo(link.id)}
+                                className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-md border hover:bg-gray-50"
+                                data-testid={`edit-logo-${link.id}`}
+                              >
+                                <Camera className="w-3 h-3 text-gray-600" />
+                              </button>
+                            </div>
+                            
+                            <div>
+                              <p className="font-medium">{link.owner_name}</p>
+                              <p className="text-sm text-slate-500">{link.website_url}</p>
+                              <p className="text-xs text-slate-400">
+                                {link.location} • {link.phone}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => startEditing(link)}
+                              data-testid={`edit-${link.id}`}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            {getStatusBadge(link.status)}
+                          </div>
                         </div>
-                        <p className="text-sm text-slate-500">{link.website_url}</p>
-                        <p className="text-xs text-slate-400">
-                          {link.location} • {link.phone}
-                        </p>
+
+                        {/* Logo editing modal */}
+                        {editingLogo === link.id && (
+                          <div className="mt-3 p-3 border rounded-lg bg-gray-50">
+                            <h4 className="font-medium mb-2">Cambiar Logo</h4>
+                            <div className="space-y-2">
+                              <Input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => setLogoFile(e.target.files[0])}
+                                className="text-sm"
+                              />
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateLogo(link.id)}
+                                  disabled={!logoFile}
+                                  data-testid={`save-logo-${link.id}`}
+                                >
+                                  <Save className="w-3 h-3 mr-1" />
+                                  Guardar
+                                </Button>
+                                {link.custom_logo && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => updateLogo(link.id, true)}
+                                    data-testid={`remove-logo-${link.id}`}
+                                  >
+                                    <Trash2 className="w-3 h-3 mr-1" />
+                                    Quitar Logo
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setEditingLogo(null);
+                                    setLogoFile(null);
+                                  }}
+                                >
+                                  <X className="w-3 h-3 mr-1" />
+                                  Cancelar
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </>
                     )}
                   </div>
