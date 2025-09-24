@@ -463,28 +463,21 @@ const AdminPanel = ({ notify }) => {
     setLoading(true);
     
     try {
-      // Get approved links
-      const approvedRes = await axios.get(`${API}/links?status=approved`);
-      console.log("✅ Approved links:", approvedRes.data.length);
+      // Use the special admin endpoint
+      const response = await axios.get(`${API}/admin/dashboard`);
       
-      // Get pending links  
-      const pendingRes = await axios.get(`${API}/links?status=pending`);
-      console.log("⏳ Pending links:", pendingRes.data.length);
-      
-      // Combine all links
-      const allLinksData = [...approvedRes.data, ...pendingRes.data];
-      console.log("📊 Total links loaded:", allLinksData.length);
-      
-      // Get stats
-      const statsRes = await axios.get(`${API}/links/stats`);
-      console.log("📈 Stats loaded:", statsRes.data);
-      
-      setAllLinks(allLinksData);
-      setStats(statsRes.data);
-      
-      notify.success(`✅ Cargados ${allLinksData.length} links (${approvedRes.data.length} aprobados, ${pendingRes.data.length} pendientes)`);
+      if (response.data.success) {
+        console.log("✅ Dashboard data loaded:", response.data);
+        
+        setAllLinks(response.data.links);
+        setStats(response.data.stats);
+        
+        notify.success(`✅ Panel cargado: ${response.data.links.length} links total`);
+      } else {
+        throw new Error(response.data.error || "Error en el dashboard");
+      }
     } catch (error) {
-      console.error("❌ Error loading data:", error);
+      console.error("❌ Error loading dashboard:", error);
       notify.error(`Error: ${error.response?.data?.detail || error.message}`);
     } finally {
       setLoading(false);
