@@ -162,6 +162,18 @@ backend:
           agent: "testing"
           comment: "TESTED: DELETE endpoint works perfectly. Successfully deleted 6 test links (Test User, Test Porno User, Test User Frontend with example.com and google.com URLs). All deletions returned 200 status with success:true. Database cleaned from 37 to 31 legitimate business links. No test data remaining."
 
+  - task: "Manual approval workflow for pending links"
+    implemented: true
+    working: true  
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"  
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "TESTED: Manual approval workflow completed successfully. Used /api/admin/status to identify 1 pending link (Hotel Botanico), approved it using PUT /api/links/{id} with status='approved'. Verified counts updated correctly: approved 30→31, pending 1→0. Main page now shows 31 active links generating $31 USD revenue. Platform fully functional for receiving new links."
+
 frontend:
   - task: "Admin panel data loading"
     implemented: true
