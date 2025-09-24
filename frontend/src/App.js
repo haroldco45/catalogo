@@ -164,7 +164,7 @@ const Home = () => {
   );
 };
 
-const SubmitLinkDialog = ({ open, onClose, onSuccess }) => {
+const SubmitLinkModal = ({ isOpen, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     owner_name: '',
     phone: '',
@@ -174,14 +174,14 @@ const SubmitLinkDialog = ({ open, onClose, onSuccess }) => {
   const [paymentFile, setPaymentFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Reset form when dialog closes
+  // Reset form when modal closes
   useEffect(() => {
-    if (!open) {
+    if (!isOpen) {
       setFormData({ owner_name: '', phone: '', location: '', website_url: '' });
       setPaymentFile(null);
       setSubmitting(false);
     }
-  }, [open]);
+  }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -218,93 +218,109 @@ const SubmitLinkDialog = ({ open, onClose, onSuccess }) => {
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-slate-800">
-            Enviar tu Link
-          </DialogTitle>
-          <DialogDescription className="text-sm text-slate-600">
-            Completa el formulario para enviar tu sitio web. Será revisado antes de ser publicado.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4" data-testid="submit-form">
-          <div className="space-y-2">
-            <Label htmlFor="owner_name">Nombre del propietario *</Label>
-            <Input
-              id="owner_name"
-              value={formData.owner_name}
-              onChange={(e) => setFormData({...formData, owner_name: e.target.value})}
-              placeholder="Tu nombre completo"
-              required
-              data-testid="owner-name-input"
-            />
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-slate-800">Enviar tu Link</h2>
+              <p className="text-sm text-slate-600 mt-1">
+                Completa el formulario para enviar tu sitio web. Será revisado antes de ser publicado.
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-slate-400 hover:text-slate-600 p-1"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">Teléfono *</Label>
-            <Input
-              id="phone"
-              value={formData.phone}
-              onChange={(e) => setFormData({...formData, phone: e.target.value})}
-              placeholder="3001234567"
-              required
-              data-testid="phone-input"
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4" data-testid="submit-form">
+            <div className="space-y-2">
+              <Label htmlFor="owner_name">Nombre del propietario *</Label>
+              <Input
+                id="owner_name"
+                value={formData.owner_name}
+                onChange={(e) => setFormData({...formData, owner_name: e.target.value})}
+                placeholder="Tu nombre completo"
+                required
+                data-testid="owner-name-input"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="location">Ubicación *</Label>
-            <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) => setFormData({...formData, location: e.target.value})}
-              placeholder="Ciudad, País"
-              required
-              data-testid="location-input"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Teléfono *</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                placeholder="3001234567"
+                required
+                data-testid="phone-input"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="website_url">URL del sitio web *</Label>
-            <Input
-              id="website_url"
-              value={formData.website_url}
-              onChange={(e) => setFormData({...formData, website_url: e.target.value})}
-              placeholder="https://tusitio.com"
-              required
-              data-testid="website-url-input"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="location">Ubicación *</Label>
+              <Input
+                id="location"
+                value={formData.location}
+                onChange={(e) => setFormData({...formData, location: e.target.value})}
+                placeholder="Ciudad, País"
+                required
+                data-testid="location-input"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="payment_screenshot">Captura de pantalla del pago *</Label>
-            <Input
-              id="payment_screenshot"
-              type="file"
-              accept="image/*"
-              onChange={(e) => setPaymentFile(e.target.files[0])}
-              required
-              data-testid="payment-screenshot-input"
-            />
-            <p className="text-xs text-slate-500">
-              Sube una captura del pago de $1 USD enviado a Nequi 3117700431
-            </p>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="website_url">URL del sitio web *</Label>
+              <Input
+                id="website_url"
+                value={formData.website_url}
+                onChange={(e) => setFormData({...formData, website_url: e.target.value})}
+                placeholder="https://tusitio.com"
+                required
+                data-testid="website-url-input"
+              />
+            </div>
 
-          <Button
-            type="submit"
-            disabled={submitting}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-            data-testid="submit-form-button"
-          >
-            {submitting ? "Enviando..." : "Enviar Link"}
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <div className="space-y-2">
+              <Label htmlFor="payment_screenshot">Captura de pantalla del pago *</Label>
+              <Input
+                id="payment_screenshot"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setPaymentFile(e.target.files[0])}
+                required
+                data-testid="payment-screenshot-input"
+              />
+              <p className="text-xs text-slate-500">
+                Sube una captura del pago de $1 USD enviado a Nequi 3117700431
+              </p>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+              data-testid="submit-form-button"
+            >
+              {submitting ? "Enviando..." : "Enviar Link"}
+            </Button>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 };
 
