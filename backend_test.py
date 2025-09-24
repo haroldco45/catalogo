@@ -700,6 +700,137 @@ class LinkDirectoryAPITester:
         
         return success
 
+    def test_manual_approval_workflow(self):
+        """Test the manual approval workflow for pending links"""
+        print("🎯 TESTING MANUAL APPROVAL WORKFLOW")
+        print("=" * 60)
+        
+        try:
+            # Step 1: Get current status using /api/admin/status
+            print("📊 Step 1: Getting current database status...")
+            response = requests.get(f"{self.api_url}/admin/status", timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test("Manual Approval - Get Status", False, f"Status endpoint failed: {response.status_code}")
+                return False
+            
+            data = response.json()
+            total_links = data.get('total_links', 0)
+            approved_before = data.get('approved', 0)
+            pending_before = data.get('pending', 0)
+            rejected_before = data.get('rejected', 0)
+            links = data.get('links', [])
+            
+            print(f"   📊 Current state: {total_links} total, {approved_before} approved, {pending_before} pending, {rejected_before} rejected")
+            
+            # Step 2: Find pending links
+            pending_links = [link for link in links if link.get('status') == 'pending']
+            
+            if not pending_links:
+                print("   ⚠️  No pending links found to approve")
+                self.log_test("Manual Approval - Find Pending", False, "No pending links available for approval")
+                return False
+            
+            print(f"   🔍 Found {len(pending_links)} pending link(s):")
+            for i, link in enumerate(pending_links, 1):
+                print(f"      {i}. ID: {link.get('id')}")
+                print(f"         Owner: {link.get('owner_name')}")
+                print(f"         URL: {link.get('website_url')}")
+                print(f"         Created: {link.get('created_at')}")
+                print()
+            
+            # Step 3: Approve the first pending link
+            link_to_approve = pending_links[0]
+            link_id = link_to_approve.get('id')
+            owner_name = link_to_approve.get('owner_name')
+            
+            print(f"📝 Step 2: Approving link from {owner_name} (ID: {link_id[:8]}...)")
+            
+            update_data = {"status": "approved"}
+            response = requests.put(
+                f"{self.api_url}/links/{link_id}",
+                json=update_data,
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                try:
+                    error_data = response.json()
+                    error_msg = error_data.get('detail', 'Unknown error')
+                except:
+                    error_msg = response.text[:100]
+                self.log_test("Manual Approval - Approve Link", False, f"Approval failed: {error_msg}")
+                return False
+            
+            approval_result = response.json()
+            print(f"   ✅ {approval_result.get('message', 'Link approved successfully')}")
+            
+            # Step 4: Verify the changes
+            print("🔍 Step 3: Verifying approval changes...")
+            response = requests.get(f"{self.api_url}/admin/status", timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test("Manual Approval - Verify Changes", False, "Could not verify changes")
+                return False
+            
+            new_data = response.json()
+            approved_after = new_data.get('approved', 0)
+            pending_after = new_data.get('pending', 0)
+            total_after = new_data.get('total_links', 0)
+            
+            print(f"   📊 After approval: {total_after} total, {approved_after} approved, {pending_after} pending")
+            
+            # Verify the counts changed correctly
+            expected_approved = approved_before + 1
+            expected_pending = pending_before - 1
+            
+            approval_success = (approved_after == expected_approved and pending_after == expected_pending)
+            
+            if approval_success:
+                print(f"   ✅ Counts updated correctly:")
+                print(f"      Approved: {approved_before} → {approved_after} (+1)")
+                print(f"      Pending: {pending_before} → {pending_after} (-1)")
+                
+                # Step 5: Verify main page will show the new approved link
+                print("🌐 Step 4: Verifying main page will show approved links...")
+                response = requests.get(f"{self.api_url}/links?status=approved", timeout=10)
+                
+                if response.status_code == 200:
+                    approved_links = response.json()
+                    main_page_count = len(approved_links)
+                    print(f"   📊 Main page will show {main_page_count} approved links")
+                    
+                    # Check if our newly approved link is in the list
+                    newly_approved_found = any(link.get('id') == link_id for link in approved_links)
+                    if newly_approved_found:
+                        print(f"   ✅ Newly approved link is included in main page results")
+                    else:
+                        print(f"   ⚠️  Newly approved link not found in main page results")
+                    
+                    # Calculate revenue
+                    revenue = main_page_count * 1  # $1 per approved link
+                    print(f"   💰 Estimated revenue: ${revenue} USD")
+                    
+                    self.log_test("Manual Approval Workflow", True, 
+                                f"Successfully approved 1 link. Approved count: {approved_before}→{approved_after}, Main page links: {main_page_count}, Revenue: ${revenue}")
+                    
+                    return True
+                else:
+                    print(f"   ❌ Could not verify main page links (status: {response.status_code})")
+                    self.log_test("Manual Approval Workflow", False, "Could not verify main page links")
+                    return False
+            else:
+                print(f"   ❌ Counts did not update correctly:")
+                print(f"      Expected approved: {expected_approved}, got: {approved_after}")
+                print(f"      Expected pending: {expected_pending}, got: {pending_after}")
+                self.log_test("Manual Approval Workflow", False, 
+                            f"Count mismatch - expected approved: {expected_approved}, got: {approved_after}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Manual Approval Workflow", False, str(e))
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting PAGINA DEL LINK API Tests - ADMIN PANEL FOCUS")
