@@ -700,6 +700,26 @@ class LinkDirectoryAPITester:
         
         return success
 
+    def run_manual_approval_test(self):
+        """Run manual approval workflow test"""
+        print("🎯 MANUAL APPROVAL WORKFLOW TEST")
+        print("=" * 60)
+        
+        # Basic connectivity test
+        if not self.test_api_root():
+            print("❌ API is not accessible. Stopping test.")
+            return False
+        
+        # Run the manual approval workflow test
+        success = self.test_manual_approval_workflow()
+        
+        if success:
+            print("\n✅ MANUAL APPROVAL WORKFLOW TEST COMPLETED SUCCESSFULLY")
+        else:
+            print("\n❌ MANUAL APPROVAL WORKFLOW TEST FAILED")
+        
+        return success
+
     def test_manual_approval_workflow(self):
         """Test the manual approval workflow for pending links"""
         print("🎯 TESTING MANUAL APPROVAL WORKFLOW")
