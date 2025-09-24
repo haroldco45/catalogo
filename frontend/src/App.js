@@ -336,6 +336,33 @@ const AdminPanel = () => {
     }
   };
 
+  const startEditing = (link) => {
+    setEditingLink(link.id);
+    setEditForm({
+      owner_name: link.owner_name,
+      phone: link.phone,
+      location: link.location,
+      website_url: link.website_url
+    });
+  };
+
+  const cancelEditing = () => {
+    setEditingLink(null);
+    setEditForm({});
+  };
+
+  const saveEdit = async (linkId) => {
+    try {
+      await axios.put(`${API}/links/${linkId}/edit`, editForm);
+      toast.success("Link actualizado correctamente");
+      setEditingLink(null);
+      setEditForm({});
+      fetchAllLinks();
+    } catch (error) {
+      toast.error("Error al actualizar el link");
+    }
+  };
+
   useEffect(() => {
     fetchAllLinks();
   }, []);
