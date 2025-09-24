@@ -370,6 +370,136 @@ class LinkDirectoryAPITester:
             self.log_test("Update Non-existent Link", False, str(e))
             return False
 
+    def test_admin_status_detailed(self):
+        """Test admin status endpoint and provide detailed link analysis"""
+        try:
+            response = requests.get(f"{self.api_url}/admin/status", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                links = data.get('links', [])
+                total_links = data.get('total_links', 0)
+                approved = data.get('approved', 0)
+                pending = data.get('pending', 0)
+                rejected = data.get('rejected', 0)
+                
+                details += f", Total: {total_links}, Approved: {approved}, Pending: {pending}, Rejected: {rejected}"
+                
+                print(f"\n🔍 DETAILED DATABASE ANALYSIS")
+                print("=" * 60)
+                print(f"📊 TOTAL LINKS IN DATABASE: {total_links}")
+                print(f"📊 BREAKDOWN: {approved} approved, {pending} pending, {rejected} rejected")
+                print()
+                
+                # Identify example.com links
+                example_links = []
+                test_user_links = []
+                other_test_links = []
+                
+                for link in links:
+                    website_url = link.get('website_url', '').lower()
+                    owner_name = link.get('owner_name', '').lower()
+                    
+                    if 'example.com' in website_url:
+                        example_links.append(link)
+                    
+                    if 'test' in owner_name:
+                        if 'test user' in owner_name:
+                            test_user_links.append(link)
+                        elif 'porno' in owner_name:
+                            other_test_links.append(link)
+                        else:
+                            other_test_links.append(link)
+                
+                print(f"🎯 LINKS THAT NEED TO BE ELIMINATED:")
+                print(f"   - Links with 'example.com': {len(example_links)}")
+                print(f"   - Links with 'Test User': {len(test_user_links)}")
+                print(f"   - Other test links: {len(other_test_links)}")
+                print()
+                
+                # Show first 10 links with complete details
+                print("📋 FIRST 10 LINKS IN DATABASE:")
+                print("-" * 80)
+                for i, link in enumerate(links[:10], 1):
+                    link_id = link.get('id', 'N/A')
+                    owner_name = link.get('owner_name', 'N/A')
+                    website_url = link.get('website_url', 'N/A')
+                    status = link.get('status', 'N/A')
+                    created_at = link.get('created_at', 'N/A')
+                    
+                    # Highlight problematic links
+                    flag = ""
+                    if 'example.com' in website_url.lower():
+                        flag = " ⚠️ EXAMPLE.COM"
+                    elif 'test' in owner_name.lower():
+                        flag = " ⚠️ TEST USER"
+                    
+                    print(f"{i:2d}. ID: {link_id}")
+                    print(f"    Owner: {owner_name}{flag}")
+                    print(f"    URL: {website_url}")
+                    print(f"    Status: {status}")
+                    print(f"    Created: {created_at}")
+                    print()
+                
+                # Show all example.com links
+                if example_links:
+                    print("🚨 ALL EXAMPLE.COM LINKS THAT NEED DELETION:")
+                    print("-" * 60)
+                    for i, link in enumerate(example_links, 1):
+                        print(f"{i}. ID: {link.get('id')}")
+                        print(f"   Owner: {link.get('owner_name')}")
+                        print(f"   URL: {link.get('website_url')}")
+                        print(f"   Status: {link.get('status')}")
+                        print()
+                
+                # Show all test user links
+                if test_user_links or other_test_links:
+                    print("🚨 ALL TEST USER LINKS THAT NEED DELETION:")
+                    print("-" * 60)
+                    all_test_links = test_user_links + other_test_links
+                    for i, link in enumerate(all_test_links, 1):
+                        print(f"{i}. ID: {link.get('id')}")
+                        print(f"   Owner: {link.get('owner_name')}")
+                        print(f"   URL: {link.get('website_url')}")
+                        print(f"   Status: {link.get('status')}")
+                        print()
+                
+                # Summary of what needs to be deleted
+                total_to_delete = len(example_links) + len(test_user_links) + len(other_test_links)
+                print(f"📊 SUMMARY:")
+                print(f"   Total links in database: {total_links}")
+                print(f"   Links that need deletion: {total_to_delete}")
+                print(f"   Links that will remain: {total_links - total_to_delete}")
+                
+            self.log_test("Admin Status Detailed Analysis", success, details)
+            return success, response.json() if success else {}
+            
+        except Exception as e:
+            self.log_test("Admin Status Detailed Analysis", False, str(e))
+            return False, {}
+
+    def run_database_verification(self):
+        """Run database verification focused on identifying test data"""
+        print("🔍 DATABASE VERIFICATION - IDENTIFYING TEST DATA")
+        print("=" * 60)
+        
+        # Basic connectivity test
+        if not self.test_api_root():
+            print("❌ API is not accessible. Stopping verification.")
+            return False
+        
+        # Run detailed admin status analysis
+        success, data = self.test_admin_status_detailed()
+        
+        if not success:
+            print("❌ Could not retrieve database information")
+            return False
+        
+        print("\n✅ DATABASE VERIFICATION COMPLETE")
+        return True
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting PAGINA DEL LINK API Tests - ADMIN PANEL FOCUS")
