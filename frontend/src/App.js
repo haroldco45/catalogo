@@ -370,6 +370,8 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true);
   const [editingLink, setEditingLink] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [editingLogo, setEditingLogo] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
 
   const fetchAllLinks = async () => {
     try {
