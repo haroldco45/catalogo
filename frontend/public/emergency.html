@@ -213,6 +213,40 @@
                         `).join('');
                     }
                     
+                    // Show ALL links for cleaning purposes
+                    const allLinksDiv = document.createElement('div');
+                    allLinksDiv.innerHTML = `
+                        <h2 style="margin-top: 30px; color: #dc3545;">🧹 Limpiar Links de Prueba</h2>
+                        <p>Links que contienen "example.com" - ELIMINAR:</p>
+                    `;
+                    
+                    const testLinks = data.links.filter(link => link.website_url && link.website_url.includes('example.com'));
+                    
+                    if (testLinks.length > 0) {
+                        testLinks.forEach(link => {
+                            const testLinkDiv = document.createElement('div');
+                            testLinkDiv.className = 'link-item';
+                            testLinkDiv.style.background = '#f8d7da';
+                            testLinkDiv.style.borderColor = '#dc3545';
+                            testLinkDiv.innerHTML = `
+                                <div class="link-info">
+                                    <h3>🗑️ LINK DE PRUEBA</h3>
+                                    <p><strong>Nombre:</strong> ${link.owner_name}</p>
+                                    <p><strong>URL:</strong> ${link.website_url}</p>
+                                    <p><strong>Status:</strong> ${link.status}</p>
+                                </div>
+                                <div>
+                                    <button class="reject-btn" onclick="deleteLink('${link.id}')" style="background: #dc3545;">
+                                        🗑️ ELIMINAR
+                                    </button>
+                                </div>
+                            `;
+                            allLinksDiv.appendChild(testLinkDiv);
+                        });
+                        
+                        linksDiv.appendChild(allLinksDiv);
+                    }
+                    
                     showMessage(`✅ Cargados ${data.total_links} links (${data.pending} pendientes)`, 'success');
                 } else {
                     throw new Error(data.error || 'Error desconocido');
