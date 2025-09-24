@@ -172,6 +172,7 @@ const SubmitLinkModal = ({ isOpen, onClose, onSuccess }) => {
     website_url: ''
   });
   const [paymentFile, setPaymentFile] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   // Reset form when modal closes
@@ -179,6 +180,7 @@ const SubmitLinkModal = ({ isOpen, onClose, onSuccess }) => {
     if (!isOpen) {
       setFormData({ owner_name: '', phone: '', location: '', website_url: '' });
       setPaymentFile(null);
+      setLogoFile(null);
       setSubmitting(false);
     }
   }, [isOpen]);
@@ -198,6 +200,11 @@ const SubmitLinkModal = ({ isOpen, onClose, onSuccess }) => {
         formDataToSend.append(key, formData[key]);
       });
       formDataToSend.append('payment_screenshot', paymentFile);
+      
+      // Add custom logo if provided
+      if (logoFile) {
+        formDataToSend.append('custom_logo', logoFile);
+      }
 
       await axios.post(`${API}/links/submit`, formDataToSend, {
         headers: {
@@ -209,6 +216,7 @@ const SubmitLinkModal = ({ isOpen, onClose, onSuccess }) => {
       onClose();
       setFormData({ owner_name: '', phone: '', location: '', website_url: '' });
       setPaymentFile(null);
+      setLogoFile(null);
       
     } catch (error) {
       const errorMessage = error.response?.data?.detail || "Error al enviar el link";
