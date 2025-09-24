@@ -1032,7 +1032,6 @@ const AdminPanel = ({ notify }) => {
 };
 
 function App() {
-  const [activeTab, setActiveTab] = useState("home");
   const notification = useNotification();
 
   return (
@@ -1043,29 +1042,8 @@ function App() {
       />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
-                <div className="max-w-7xl mx-auto px-4">
-                  <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
-                    <TabsTrigger value="home" data-testid="home-tab">Inicio</TabsTrigger>
-                    <TabsTrigger value="admin" data-testid="admin-tab">Administración</TabsTrigger>
-                  </TabsList>
-                </div>
-              </div>
-              
-              <TabsContent value="home" className="mt-0">
-                <Home notify={notification} />
-              </TabsContent>
-              
-              <TabsContent value="admin" className="mt-0">
-                <div className="max-w-7xl mx-auto px-4 py-8">
-                  <h1 className="text-3xl font-bold text-slate-800 mb-8">Panel de Administración</h1>
-                  <AdminPanel notify={notification} />
-                </div>
-              </TabsContent>
-            </Tabs>
-          } />
+          <Route path="/" element={<ClientView notify={notification} />} />
+          <Route path="/admin" element={<AdminView notify={notification} />} />
         </Routes>
       </BrowserRouter>
     </div>
