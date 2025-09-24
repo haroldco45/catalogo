@@ -7,7 +7,7 @@ from io import BytesIO
 import tempfile
 
 class LinkDirectoryAPITester:
-    def __init__(self, base_url="https://linkverse-2.preview.emergentagent.com"):
+    def __init__(self, base_url="https://linkhub-28.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
