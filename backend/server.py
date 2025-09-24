@@ -87,6 +87,32 @@ class LinkUpdate(BaseModel):
     status: str
     rejection_reason: Optional[str] = None
 
+class LinkEdit(BaseModel):
+    owner_name: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    website_url: Optional[str] = None
+
+    @validator('website_url')
+    def validate_url(cls, v):
+        if v is not None:
+            if not v.startswith(('http://', 'https://')):
+                v = 'https://' + v
+            parsed = urlparse(v)
+            if not parsed.netloc:
+                raise ValueError('URL inválida')
+        return v
+
+    @validator('phone')
+    def validate_phone(cls, v):
+        if v is not None:
+            # Remove spaces and special characters
+            cleaned = re.sub(r'[^\d+]', '', v)
+            if len(cleaned) < 10:
+                raise ValueError('Número de teléfono inválido')
+            return cleaned
+        return v
+
 def check_prohibited_content(text: str) -> bool:
     """Check if text contains prohibited keywords"""
     text_lower = text.lower()
