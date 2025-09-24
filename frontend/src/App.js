@@ -303,6 +303,20 @@ const SubmitLinkModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="custom_logo">Logo personalizado (opcional)</Label>
+              <Input
+                id="custom_logo"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setLogoFile(e.target.files[0])}
+                data-testid="custom-logo-input"
+              />
+              <p className="text-xs text-slate-500">
+                Sube tu logo personalizado (PNG, JPG). Si no lo subes, usaremos el favicon de tu sitio automáticamente.
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="payment_screenshot">Captura de pantalla del pago *</Label>
               <Input
                 id="payment_screenshot"
