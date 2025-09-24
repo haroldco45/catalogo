@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 PANEL EMERGENCIA - PAGINA DEL LINK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .header {
+            background: #ff4757;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #dee2e6;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .links-container {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .link-item {
+            border: 2px solid #ffc107;
+            background: #fff3cd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .link-info h3 {
+            margin: 0 0 5px 0;
+            color: #856404;
+        }
+        .link-info p {
+            margin: 2px 0;
+            color: #6c757d;
+        }
+        .approve-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .reject-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .approve-btn:hover {
+            background: #218838;
+        }
+        .reject-btn:hover {
+            background: #c82333;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2rem;
+            color: #6c757d;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .reload-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚨 PANEL DE EMERGENCIA</h1>
+            <p>Solución directa para aprobar links pendientes</p>
+            <button class="reload-btn" onclick="loadData()">🔄 RECARGAR DATOS</button>
+        </div>
+
+        <div id="message"></div>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="total">-</div>
+                <div>Total Links</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="approved">-</div>
+                <div>Aprobados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pending">-</div>
+                <div>⚠️ Pendientes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="revenue">$-</div>
+                <div>💰 Ingresos</div>
+            </div>
+        </div>
+
+        <div class="links-container">
+            <h2>Links Pendientes de Aprobación</h2>
+            <div id="links">
+                <div class="loading">🔄 Cargando datos...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://linkhub-28.preview.emergentagent.com/api';
+        
+        function showMessage(msg, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class="${type}">${msg}</div>`;
+            setTimeout(() => messageDiv.innerHTML = '', 5000);
+        }
+
+        async function loadData() {
+            console.log('🚨 EMERGENCY: Loading data from', API_BASE + '/admin/status');
+            
+            try {
+                const response = await fetch(API_BASE + '/admin/status');
+                const data = await response.json();
+                
+                console.log('🚨 Response:', data);
+                
+                if (data.success) {
+                    // Update stats
+                    document.getElementById('total').textContent = data.total_links;
+                    document.getElementById('approved').textContent = data.approved;
+                    document.getElementById('pending').textContent = data.pending;
+                    document.getElementById('revenue').textContent = '$' + data.revenue;
+                    
+                    // Show links
+                    const linksDiv = document.getElementById('links');
+                    const pendingLinks = data.links.filter(link => link.status === 'pending');
+                    
+                    if (pendingLinks.length === 0) {
+                        linksDiv.innerHTML = '<p>✅ No hay links pendientes</p>';
+                    } else {
+                        linksDiv.innerHTML = pendingLinks.map(link => `
+                            <div class="link-item">
+                                <div class="link-info">
+                                    <h3>⚠️ ${link.owner_name}</h3>
+                                    <p><strong>URL:</strong> ${link.website_url}</p>
+                                    <p><strong>ID:</strong> ${link.id}</p>
+                                </div>
+                                <div>
+                                    <button class="approve-btn" onclick="approveLink('${link.id}')">
+                                        ✅ APROBAR YA
+                                    </button>
+                                    <button class="reject-btn" onclick="rejectLink('${link.id}')">
+                                        ❌ RECHAZAR
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                    
+                    showMessage(`✅ Cargados ${data.total_links} links (${data.pending} pendientes)`, 'success');
+                } else {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                showMessage(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function approveLink(linkId) {
+            try {
+                const response = await fetch(API_BASE + '/links/' + linkId, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'approved' })
+                });
+                
+                if (response.ok) {
+                    showMessage('✅ Link aprobado correctamente!', 'success');
+                    loadData(); // Reload
+                } else {
+                    throw new Error('Error al aprobar link');
+                }
+            } catch (error) {
+                showMessage(`❌ Error al aprobar: ${error.message}`, 'error');
+            }
+        }
+
+        async function rejectLink(linkId) {
+            try {
+                const response = await fetch(API_BASE + '/links/' + linkId, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'rejected' })
+                });
+                
+                if (response.ok) {
+                    showMessage('✅ Link rechazado correctamente!', 'success');
+                    loadData(); // Reload
+                } else {
+                    throw new Error('Error al rechazar link');
+                }
+            } catch (error) {
+                showMessage(`❌ Error al rechazar: ${error.message}`, 'error');
+            }
+        }
+
+        // Load data on page load
+        window.onload = loadData;
+    </script>
+</body>
+</html>
