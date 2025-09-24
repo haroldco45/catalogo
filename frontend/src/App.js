@@ -73,7 +73,7 @@ const NotificationContainer = ({ notifications, onRemove }) => {
   );
 };
 
-const Home = () => {
+const Home = ({ notify }) => {
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showSubmitForm, setShowSubmitForm] = useState(false);
@@ -84,7 +84,7 @@ const Home = () => {
       setLinks(response.data);
     } catch (error) {
       console.error("Error fetching links:", error);
-      toast.error("Error al cargar los links");
+      notify.error("Error al cargar los links");
     } finally {
       setLoading(false);
     }
