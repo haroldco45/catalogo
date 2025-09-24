@@ -176,7 +176,8 @@ async def submit_link(
     phone: str = Form(...),
     location: str = Form(...),
     website_url: str = Form(...),
-    payment_screenshot: UploadFile = File(...)
+    payment_screenshot: UploadFile = File(...),
+    custom_logo: UploadFile = File(None)
 ):
     # Validate form data
     try:
@@ -208,14 +209,28 @@ async def submit_link(
             content = await payment_screenshot.read()
             await f.write(content)
 
-    # Extract favicon
-    favicon_url = await extract_favicon(link_data.website_url)
+    # Save custom logo if provided
+    logo_filename = None
+    if custom_logo and custom_logo.filename:
+        file_extension = custom_logo.filename.split('.')[-1] if '.' in custom_logo.filename else 'png'
+        logo_filename = f"logo_{uuid.uuid4()}.{file_extension}"
+        logo_path = UPLOAD_DIR / logo_filename
+        
+        async with aiofiles.open(logo_path, 'wb') as f:
+            content = await custom_logo.read()
+            await f.write(content)
+
+    # Extract favicon only if no custom logo was provided
+    favicon_url = None
+    if not logo_filename:
+        favicon_url = await extract_favicon(link_data.website_url)
 
     # Create link submission
     submission = LinkSubmission(
         **link_data.dict(),
         payment_screenshot=screenshot_filename,
-        favicon_url=favicon_url
+        favicon_url=favicon_url,
+        custom_logo=logo_filename
     )
 
     # Save to database
