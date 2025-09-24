@@ -793,11 +793,21 @@ class LinkDirectoryAPITester:
 
 def main():
     import sys
-    if len(sys.argv) > 1 and sys.argv[1] == "verify":
-        # Run database verification only
-        tester = LinkDirectoryAPITester()
-        success = tester.run_database_verification()
-        return 0 if success else 1
+    if len(sys.argv) > 1:
+        command = sys.argv[1]
+        if command == "verify":
+            # Run database verification only
+            tester = LinkDirectoryAPITester()
+            success = tester.run_database_verification()
+            return 0 if success else 1
+        elif command == "delete":
+            # Run test link deletion
+            tester = LinkDirectoryAPITester()
+            success = tester.run_test_link_deletion()
+            return 0 if success else 1
+        else:
+            print("Usage: python backend_test.py [verify|delete]")
+            return 1
     else:
         # Run all tests
         tester = LinkDirectoryAPITester()
