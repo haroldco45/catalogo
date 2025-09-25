@@ -604,40 +604,7 @@ async def delete_link_emergency(link_id: str):
         return {"success": False, "error": str(e)}
 
 # Admin panel endpoint removed - was causing syntax errors
-        
-        # Generate pending links HTML
-        pending_html = ""
-        if pending:
-            for link in pending:
-                pending_html += f"""
-                <div style="border: 3px solid #ff6b35; background: #fff8e1; padding: 20px; margin: 15px 0; border-radius: 10px; box-shadow: 0 2px 10px rgba(255,107,53,0.2);">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div>
-                            <h3 style="color: #d84315; margin: 0 0 10px 0; font-size: 18px;">⚠️ {link.get('owner_name', 'Sin nombre')}</h3>
-                            <p style="margin: 5px 0; color: #424242;"><strong>🌐 URL:</strong> <a href="{link.get('website_url', '#')}" target="_blank" style="color: #1976d2;">{link.get('website_url', 'Sin URL')}</a></p>
-                            <p style="margin: 5px 0; color: #424242;"><strong>📍 Ubicación:</strong> {link.get('location', 'Sin ubicación')}</p>
-                            <p style="margin: 5px 0; color: #424242;"><strong>📞 Teléfono:</strong> {link.get('phone', 'Sin teléfono')}</p>
-                            <p style="margin: 5px 0; color: #666; font-size: 12px;"><strong>ID:</strong> {link.get('id', 'Sin ID')}</p>
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <button onclick="aprobarLink('{link.get('id')}')" 
-                                    style="background: linear-gradient(135deg, #4caf50, #45a049); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(76,175,80,0.3); transition: all 0.3s;">
-                                ✅ APROBAR AHORA
-                            </button>
-                            <button onclick="rechazarLink('{link.get('id')}')" 
-                                    style="background: linear-gradient(135deg, #f44336, #d32f2f); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(244,67,54,0.3); transition: all 0.3s;">
-                                ❌ RECHAZAR
-                            </button>
-                        </div>
-                    </div>
-                </div>"""
-        else:
-            pending_html = """
-            <div style="background: linear-gradient(135deg, #e8f5e8, #c8e6c8); border: 2px solid #4caf50; padding: 30px; border-radius: 15px; text-align: center; margin: 20px 0;">
-                <h2 style="color: #2e7d32; margin: 0; font-size: 24px;">✅ ¡EXCELENTE!</h2>
-                <p style="color: #388e3c; margin: 10px 0 0 0; font-size: 16px; font-weight: bold;">No hay links pendientes de aprobación</p>
-                <p style="color: #4caf50; margin: 5px 0 0 0; font-size: 14px;">Todos los envíos han sido procesados</p>
-            </div>"""
+# Removed broken HTML content
         
         html = f"""
         <!DOCTYPE html>
