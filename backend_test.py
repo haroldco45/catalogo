@@ -1315,8 +1315,13 @@ def main():
             tester = LinkDirectoryAPITester()
             success = tester.test_complete_manual_approval_process()
             return 0 if success else 1
+        elif command == "status":
+            # Test admin status data structure specifically
+            tester = LinkDirectoryAPITester()
+            success, data = tester.test_admin_status_data_structure()
+            return 0 if success else 1
         else:
-            print("Usage: python backend_test.py [verify|delete|approve|approve-all]")
+            print("Usage: python backend_test.py [verify|delete|approve|approve-all|status]")
             return 1
     else:
         # Run all tests
