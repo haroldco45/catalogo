@@ -1191,36 +1191,6 @@ const AdminView = ({ notify }) => {
                     )}
                   </div>
                 ) : (
-                    <div className="space-y-4">
-                      {adminData.links.filter(link => link.status === 'pending').map(link => (
-                        <div key={link.id} className="border-2 border-yellow-300 bg-yellow-50 rounded-lg p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="font-bold text-yellow-800">⚠️ {link.owner_name}</h3>
-                              <p className="text-sm text-blue-600 underline">{link.website_url}</p>
-                              <p className="text-xs text-gray-500">ID: {link.id}</p>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                onClick={() => approveLink(link.id)}
-                                className="bg-green-600 hover:bg-green-700"
-                                size="sm"
-                              >
-                                ✅ APROBAR
-                              </Button>
-                              <Button
-                                onClick={() => rejectLink(link.id)}
-                                variant="destructive"
-                                size="sm"
-                              >
-                                ❌ RECHAZAR
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                ) : (
                   <p className="text-center py-8">Haz clic en "RECARGAR DATOS" para cargar los links</p>
                 )}
               </div>
