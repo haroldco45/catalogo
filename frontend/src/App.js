@@ -1116,6 +1116,12 @@ const AdminView = ({ notify }) => {
           <CardContent className="p-6">
             <h2 className="text-xl font-bold mb-4 text-green-800">✅ Links Aprobados ({adminData.approved || 0})</h2>
             
+            {/* Debug Info */}
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+              <p className="text-sm">Debug: adminData.links = {adminData.links ? `${adminData.links.length} links` : 'null'}</p>
+              <p className="text-sm">Approved links: {adminData.links ? adminData.links.filter(link => link.status === 'approved').length : 0}</p>
+            </div>
+            
             {adminData.links && adminData.links.filter(link => link.status === 'approved').length > 0 ? (
               <div className="space-y-3">
                 {adminData.links.filter(link => link.status === 'approved').map(link => (
