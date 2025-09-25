@@ -1073,7 +1073,91 @@ const AdminView = ({ notify }) => {
                   <div>
                     {/* Links Pendientes */}
                     {adminData.links.filter(link => link.status === 'pending').length === 0 ? (
-                      <p className="text-green-600 font-bold text-center py-4 mb-6">✅ No hay links pendientes</p>
+                      <div>
+                        <p className="text-green-600 font-bold text-center py-4 mb-6">✅ No hay links pendientes</p>
+                        
+                        {/* GESTIÓN DE LINKS APROBADOS - INTEGRADO AQUÍ */}
+                        <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6">
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-bold text-green-800">📋 Gestionar Links Aprobados</h3>
+                            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
+                              {adminData.approved || 0} Links Activos
+                            </span>
+                          </div>
+                          
+                          {adminData.links && adminData.links.length > 0 ? (
+                            <div className="space-y-3">
+                              {adminData.links.filter(link => link.status === 'approved').slice(0, 10).map(link => (
+                                <div key={link.id} className="border border-green-300 bg-white rounded-lg p-4 hover:shadow-md transition-shadow">
+                                  <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-3">
+                                      <div className="flex-shrink-0">
+                                        {link.custom_logo ? (
+                                          <img
+                                            src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
+                                            alt="Logo"
+                                            className="w-12 h-12 rounded object-cover border-2 border-green-400"
+                                          />
+                                        ) : link.favicon_url ? (
+                                          <img
+                                            src={link.favicon_url}
+                                            alt="Favicon"
+                                            className="w-12 h-12 rounded object-cover border-2 border-green-400"
+                                          />
+                                        ) : (
+                                          <div className="w-12 h-12 rounded bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center text-white font-bold border-2 border-green-400">
+                                            {link.owner_name?.charAt(0).toUpperCase() || '?'}
+                                          </div>
+                                        )}
+                                      </div>
+                                      
+                                      <div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-green-600 font-bold">✅</span>
+                                          <span className="font-semibold text-lg">{link.owner_name}</span>
+                                        </div>
+                                        <p className="text-sm text-blue-600 hover:underline cursor-pointer" 
+                                           onClick={() => window.open(link.website_url, '_blank')}>
+                                          {link.website_url}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                          📞 {link.phone} | 📍 {link.location}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        onClick={() => openLogoEditModal(link)}
+                                        size="sm"
+                                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2"
+                                      >
+                                        🖼️ EDITAR LOGO
+                                      </Button>
+                                      <Button
+                                        onClick={() => rejectLink(link.id)}
+                                        variant="destructive"
+                                        size="sm"
+                                        className="px-3 py-2"
+                                      >
+                                        ❌ RECHAZAR
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                              
+                              {adminData.links.filter(link => link.status === 'approved').length > 10 && (
+                                <p className="text-center text-gray-500 text-sm py-2">
+                                  Mostrando los primeros 10 links de {adminData.links.filter(link => link.status === 'approved').length} totales
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-center py-8 text-gray-600">No hay datos de links disponibles</p>
+                          )}
+                        </div>
+                      </div>
                     ) : (
                       <div className="space-y-4 mb-6">
                         {adminData.links.filter(link => link.status === 'pending').map(link => (
