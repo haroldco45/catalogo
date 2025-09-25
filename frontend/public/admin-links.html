@@ -326,7 +326,7 @@
             if (!currentLink) return;
 
             try {
-                const response = await fetch(`/api/links/${currentLink.id}/refresh-logo`, {
+                const response = await fetch(`https://panel-logo-editor.preview.emergentagent.com/api/links/${currentLink.id}/refresh-logo`, {
                     method: 'POST'
                 });
 
