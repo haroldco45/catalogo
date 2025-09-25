@@ -457,6 +457,65 @@ const EmergencyAdminPanel = ({ notify }) => {
   const [links, setLinks] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
+  const [logoEditModal, setLogoEditModal] = useState({
+    open: false,
+    link: null
+  });
+
+  const openLogoEditModal = (link) => {
+    setLogoEditModal({
+      open: true,
+      link: link
+    });
+  };
+
+  const closeLogoEditModal = () => {
+    setLogoEditModal({
+      open: false,
+      link: null
+    });
+  };
+
+  const uploadNewLogo = async (linkId, file) => {
+    try {
+      const formData = new FormData();
+      formData.append('custom_logo', file);
+
+      await axios.put(`${API}/links/${linkId}/logo`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      notify.success('✅ Logo actualizado correctamente');
+      emergencyLoadData();
+      closeLogoEditModal();
+    } catch (error) {
+      notify.error('❌ Error al actualizar el logo');
+    }
+  };
+
+  const removeLogo = async (linkId) => {
+    try {
+      await axios.put(`${API}/links/${linkId}/logo`, { remove_logo: true });
+      notify.success('✅ Logo eliminado, se extrajo favicon automático');
+      emergencyLoadData();
+      closeLogoEditModal();
+    } catch (error) {
+      notify.error('❌ Error al eliminar el logo');
+    }
+  };
+
+  const refreshFavicon = async (linkId) => {
+    try {
+      await axios.post(`${API}/links/${linkId}/refresh-logo`);
+      notify.success('✅ Favicon actualizado');
+      emergencyLoadData();
+      closeLogoEditModal();
+    } catch (error) {
+      notify.error('❌ Error al actualizar favicon');
+    }
+  };
 
   const emergencyLoadData = async () => {
     console.log("🚨 EMERGENCY: Loading admin data from /api/admin/status");
