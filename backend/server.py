@@ -910,10 +910,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Admin panel endpoint
-@api_router.get("/admin-final", response_class=HTMLResponse)
+# Admin panel endpoint - test
+@api_router.get("/admin-final")
 async def admin_panel_final_working():
     """Panel admin final que funciona"""
+    return {"message": "Admin panel working!"}
     return """<!DOCTYPE html>
 <html lang="es">
 <head>
