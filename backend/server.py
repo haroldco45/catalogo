@@ -579,12 +579,10 @@ async def get_admin_status_emergency():
                     "owner_name": link.get("owner_name"),
                     "website_url": link.get("website_url"),
                     "status": link.get("status"),
-                    "created_at": link.get("created_at"),
-                    "location": link.get("location"),
-                    "phone": link.get("phone")
+                    "created_at": link.get("created_at")
                 }
                 for link in all_links
-            ],
+            ]
             "html_admin": f"""
             <html>
             <head><title>ADMIN DIRECTO</title><meta charset="UTF-8"></head>
