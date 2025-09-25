@@ -1070,7 +1070,23 @@ const AdminView = ({ notify }) => {
         {/* Pending Links */}
         <Card className="mb-8">
           <CardContent className="p-6">
-            <h2 className="text-xl font-bold mb-4">⚠️ Links Pendientes de Aprobación</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">⚠️ Links Pendientes de Aprobación</h2>
+              {adminData.links && adminData.links.filter(link => link.status === 'approved').length > 0 && (
+                <button
+                  onClick={() => {
+                    const approvedLinks = adminData.links.filter(link => link.status === 'approved');
+                    const linksText = approvedLinks.slice(0, 5).map((link, i) => 
+                      `${i+1}. ${link.owner_name} - ${link.website_url}`
+                    ).join('\n');
+                    alert(`✅ LINKS APROBADOS (${approvedLinks.length} total):\n\n${linksText}\n\n🖼️ Para editar logos, use el botón "GESTIONAR LOGOS" arriba.`);
+                  }}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold text-sm"
+                >
+                  📋 VER LINKS APROBADOS ({adminData.approved || 0})
+                </button>
+              )}
+            </div>
             
             {loading ? (
               <div className="text-center py-8">
