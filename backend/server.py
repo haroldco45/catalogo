@@ -579,10 +579,82 @@ async def get_admin_status_emergency():
                     "owner_name": link.get("owner_name"),
                     "website_url": link.get("website_url"),
                     "status": link.get("status"),
-                    "created_at": link.get("created_at")
+                    "created_at": link.get("created_at"),
+                    "location": link.get("location"),
+                    "phone": link.get("phone")
                 }
                 for link in all_links
-            ]
+            ],
+            "html_admin": f"""
+            <html>
+            <head><title>ADMIN DIRECTO</title><meta charset="UTF-8"></head>
+            <body style="font-family:Arial;margin:20px;">
+                <h1 style="color:#dc3545;">🚨 PANEL ADMIN DIRECTO</h1>
+                <div style="display:flex;gap:20px;margin:20px 0;">
+                    <div style="background:#e3f2fd;padding:20px;border-radius:8px;text-align:center;">
+                        <h2 style="margin:0;color:#1976d2;font-size:36px;">{len(all_links)}</h2>
+                        <p style="margin:5px 0 0 0;color:#1976d2;">TOTAL</p>
+                    </div>
+                    <div style="background:#e8f5e8;padding:20px;border-radius:8px;text-align:center;">
+                        <h2 style="margin:0;color:#388e3c;font-size:36px;">{approved}</h2>
+                        <p style="margin:5px 0 0 0;color:#388e3c;">APROBADOS</p>
+                    </div>
+                    <div style="background:#fff3e0;padding:20px;border-radius:8px;text-align:center;">
+                        <h2 style="margin:0;color:#f57c00;font-size:36px;">{pending}</h2>
+                        <p style="margin:5px 0 0 0;color:#f57c00;">PENDIENTES</p>
+                    </div>
+                    <div style="background:#e8f5e8;padding:20px;border-radius:8px;text-align:center;">
+                        <h2 style="margin:0;color:#388e3c;font-size:36px;">${approved}</h2>
+                        <p style="margin:5px 0 0 0;color:#388e3c;">INGRESOS</p>
+                    </div>
+                </div>
+                <h2>Links Pendientes ({pending}):</h2>
+                {"".join([f'<div style="border:2px solid #ffc107;background:#fff3cd;padding:15px;margin:10px 0;border-radius:5px;"><h3>{l.get("owner_name","N/A")}</h3><p><b>URL:</b> {l.get("website_url","N/A")}</p><p><b>Tel:</b> {l.get("phone","N/A")}</p><button onclick="aprobar(\\"{l.get("id")}\\")" style="background:#28a745;color:white;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;margin:5px;">✅ APROBAR</button><button onclick="rechazar(\\"{l.get("id")}\\")" style="background:#dc3545;color:white;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;margin:5px;">❌ RECHAZAR</button></div>' for l in all_links if l.get("status") == "pending"]) if pending > 0 else "<p style='color:green;font-weight:bold;'>✅ NO HAY LINKS PENDIENTES</p>"}
+                <script>
+                async function aprobar(id) {{
+                    if (!confirm('¿Aprobar este link?')) return;
+                    try {{
+                        const response = await fetch('/api/links/' + id, {{
+                            method: 'PUT',
+                            headers: {{'Content-Type': 'application/json'}},
+                            body: JSON.stringify({{'status': 'approved'}})
+                        }});
+                        if (response.ok) {{
+                            alert('✅ Link aprobado');
+                            location.reload();
+                        }} else {{
+                            alert('❌ Error al aprobar');
+                        }}
+                    }} catch (e) {{
+                        alert('❌ Error: ' + e.message);
+                    }}
+                }}
+                async function rechazar(id) {{
+                    if (!confirm('¿Rechazar este link?')) return;
+                    try {{
+                        const response = await fetch('/api/links/' + id, {{
+                            method: 'PUT',
+                            headers: {{'Content-Type': 'application/json'}},
+                            body: JSON.stringify({{'status': 'rejected'}})
+                        }});
+                        if (response.ok) {{
+                            alert('✅ Link rechazado');
+                            location.reload();
+                        }} else {{
+                            alert('❌ Error al rechazar');
+                        }}
+                    }} catch (e) {{
+                        alert('❌ Error: ' + e.message);
+                    }}
+                }}
+                </script>
+                <p style="text-align:center;margin-top:30px;">
+                    <a href="https://linkverse-2.emergent.host" target="_blank">Ver página principal</a> | 
+                    <button onclick="location.reload()" style="background:#007bff;color:white;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;">🔄 RECARGAR</button>
+                </p>
+            </body>
+            </html>
+            """
         }
     except Exception as e:
         return {
