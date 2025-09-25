@@ -922,18 +922,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Test endpoint
-@api_router.get("/test-endpoint")
-async def test_endpoint():
-    """Test endpoint"""
-    return {"message": "Test endpoint working!"}
-
-# Admin panel endpoint - test
-@api_router.get("/admin-final")
-async def admin_panel_final_working():
-    """Panel admin final que funciona"""
-    return {"message": "Admin panel working!"}
-
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
