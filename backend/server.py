@@ -603,15 +603,7 @@ async def delete_link_emergency(link_id: str):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-@api_router.get("/admin", response_class=HTMLResponse)
-async def admin_panel_direct():
-    """Panel admin directo que SÍ funciona"""
-    try:
-        # Get all links
-        all_links = await db.link_submissions.find().sort("created_at", -1).to_list(None)
-        approved = [l for l in all_links if l.get("status") == "approved"]
-        pending = [l for l in all_links if l.get("status") == "pending"]
-        rejected = [l for l in all_links if l.get("status") == "rejected"]
+# Admin panel endpoint removed - was causing syntax errors
         
         # Generate pending links HTML
         pending_html = ""
