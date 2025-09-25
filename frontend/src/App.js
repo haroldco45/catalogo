@@ -671,6 +671,90 @@ const EmergencyAdminPanel = ({ notify }) => {
           )}
         </CardContent>
       </Card>
+
+      {/* Logo Edit Modal */}
+      {logoEditModal.open && logoEditModal.link && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Editar Logo - {logoEditModal.link.owner_name}</h3>
+              <button 
+                onClick={closeLogoEditModal}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            
+            {/* Current Logo Preview */}
+            <div className="mb-4">
+              <p className="text-sm font-medium mb-2">Logo Actual:</p>
+              <div className="flex items-center justify-center w-20 h-20 border-2 border-dashed border-gray-300 rounded">
+                {logoEditModal.link.custom_logo ? (
+                  <img
+                    src={`${BACKEND_URL}/uploads/${logoEditModal.link.custom_logo}`}
+                    alt="Logo actual"
+                    className="w-full h-full object-cover rounded"
+                  />
+                ) : logoEditModal.link.favicon_url ? (
+                  <img
+                    src={logoEditModal.link.favicon_url}
+                    alt="Favicon actual"
+                    className="w-full h-full object-cover rounded"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-blue-500 flex items-center justify-center text-white font-bold rounded">
+                    {logoEditModal.link.owner_name?.charAt(0) || '?'}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Upload New Logo */}
+            <div className="mb-4">
+              <p className="text-sm font-medium mb-2">Subir Nuevo Logo:</p>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    uploadNewLogo(logoEditModal.link.id, file);
+                  }
+                }}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              <Button
+                onClick={() => refreshFavicon(logoEditModal.link.id)}
+                className="bg-yellow-600 hover:bg-yellow-700 text-white flex-1"
+              >
+                🔄 Actualizar Favicon
+              </Button>
+              
+              <Button
+                onClick={() => removeLogo(logoEditModal.link.id)}
+                variant="destructive"
+                className="flex-1"
+              >
+                🗑️ Eliminar Logo
+              </Button>
+            </div>
+
+            <div className="mt-4">
+              <Button
+                onClick={closeLogoEditModal}
+                className="w-full bg-gray-500 hover:bg-gray-600"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
