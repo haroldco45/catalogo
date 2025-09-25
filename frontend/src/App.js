@@ -1113,7 +1113,6 @@ const AdminView = ({ notify }) => {
 
         <p>TEST FINAL</p>
       </div>
-      </div>
     </div>
   );
 };
