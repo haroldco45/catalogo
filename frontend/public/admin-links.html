@@ -279,7 +279,7 @@
             formData.append('custom_logo', file);
 
             try {
-                const response = await fetch(`/api/links/${currentLink.id}/logo`, {
+                const response = await fetch(`https://panel-logo-editor.preview.emergentagent.com/api/links/${currentLink.id}/logo`, {
                     method: 'PUT',
                     body: formData
                 });
@@ -303,7 +303,7 @@
             if (!confirm('¿Estás seguro de eliminar el logo personalizado?')) return;
 
             try {
-                const response = await fetch(`/api/links/${currentLink.id}/logo`, {
+                const response = await fetch(`https://panel-logo-editor.preview.emergentagent.com/api/links/${currentLink.id}/logo`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ remove_logo: true })
