@@ -583,7 +583,7 @@ async def get_admin_status_emergency():
                 }
                 for link in all_links
             ]
-            "html_admin": f"""
+        }
             <html>
             <head><title>ADMIN DIRECTO</title><meta charset="UTF-8"></head>
             <body style="font-family:Arial;margin:20px;">
