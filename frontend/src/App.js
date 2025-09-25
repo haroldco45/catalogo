@@ -1111,6 +1111,9 @@ const AdminView = ({ notify }) => {
           </CardContent>
         </Card>
 
+        {/* DEBUG: Check if we reach this point */}
+        {console.log("🔍 DEBUG: Rendering approved links section", adminData)}
+        
         {/* Approved Links */}
         <Card>
           <CardContent className="p-6">
