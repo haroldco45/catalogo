@@ -345,7 +345,7 @@
 
         async function approveLink(linkId) {
             try {
-                const response = await fetch(`/api/links/${linkId}`, {
+                const response = await fetch(`https://panel-logo-editor.preview.emergentagent.com/api/links/${linkId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: 'approved' })
@@ -367,7 +367,7 @@
             if (!confirm('¿Estás seguro de rechazar este link?')) return;
             
             try {
-                const response = await fetch(`/api/links/${linkId}`, {
+                const response = await fetch(`https://panel-logo-editor.preview.emergentagent.com/api/links/${linkId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: 'rejected' })
