@@ -1172,6 +1172,102 @@ const AdminView = ({ notify }) => {
             )}
           </CardContent>
         </Card>
+
+        {/* Logo Edit Modal */}
+        {logoEditModal.open && logoEditModal.link && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold text-gray-800">🖼️ Editar Logo</h3>
+                <button 
+                  onClick={closeLogoEditModal}
+                  className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              {/* Link Info */}
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                <p className="font-semibold text-blue-800">{logoEditModal.link.owner_name}</p>
+                <p className="text-sm text-blue-600">{logoEditModal.link.website_url}</p>
+              </div>
+              
+              {/* Current Logo Preview */}
+              <div className="mb-6">
+                <p className="text-sm font-semibold mb-3 text-gray-700">Logo Actual:</p>
+                <div className="flex items-center justify-center w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg mx-auto">
+                  {logoEditModal.link.custom_logo ? (
+                    <img
+                      src={`${BACKEND_URL}/uploads/${logoEditModal.link.custom_logo}`}
+                      alt="Logo actual"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : logoEditModal.link.favicon_url ? (
+                    <img
+                      src={logoEditModal.link.favicon_url}
+                      alt="Favicon actual"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xl rounded-lg">
+                      {logoEditModal.link.owner_name?.charAt(0).toUpperCase() || '?'}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Upload New Logo */}
+              <div className="mb-6">
+                <p className="text-sm font-semibold mb-3 text-gray-700">Subir Nuevo Logo:</p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      uploadNewLogo(logoEditModal.link.id, file);
+                    }
+                  }}
+                  className="block w-full text-sm text-gray-500 
+                           file:mr-4 file:py-2 file:px-4 
+                           file:rounded-full file:border-0 
+                           file:text-sm file:font-semibold 
+                           file:bg-blue-50 file:text-blue-700 
+                           hover:file:bg-blue-100
+                           border border-gray-300 rounded-lg p-2"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => refreshFavicon(logoEditModal.link.id)}
+                    className="bg-yellow-600 hover:bg-yellow-700 text-white flex-1 font-semibold"
+                  >
+                    🔄 Actualizar Favicon
+                  </Button>
+                  
+                  <Button
+                    onClick={() => removeLogo(logoEditModal.link.id)}
+                    variant="destructive"
+                    className="flex-1 font-semibold"
+                  >
+                    🗑️ Eliminar Logo
+                  </Button>
+                </div>
+
+                <Button
+                  onClick={closeLogoEditModal}
+                  className="w-full bg-gray-500 hover:bg-gray-600 text-white font-semibold"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
