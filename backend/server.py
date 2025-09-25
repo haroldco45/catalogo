@@ -675,46 +675,329 @@ async def delete_link_emergency(link_id: str):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-@api_router.get("/working")
-async def admin_working():
-    """Panel admin que funciona 100%"""
+@api_router.get("/admin", response_class=HTMLResponse)
+async def admin_panel_direct():
+    """Panel admin directo que SÍ funciona"""
     try:
         # Get all links
-        links = await db.link_submissions.find().to_list(None)
-        approved = [l for l in links if l.get("status") == "approved"]  
-        pending = [l for l in links if l.get("status") == "pending"]
+        all_links = await db.link_submissions.find().sort("created_at", -1).to_list(None)
+        approved = [l for l in all_links if l.get("status") == "approved"]
+        pending = [l for l in all_links if l.get("status") == "pending"]
+        rejected = [l for l in all_links if l.get("status") == "rejected"]
         
-        html = f"""<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ADMIN FUNCIONAL</title><style>body{{font-family:Arial;margin:20px;background:#f0f0f0}}.container{{max-width:800px;margin:0 auto;background:white;padding:20px;border-radius:10px}}.header{{background:#dc3545;color:white;padding:15px;text-align:center;border-radius:5px;margin-bottom:20px}}.stats{{display:flex;gap:20px;margin-bottom:30px}}.stat{{flex:1;background:#f8f9fa;padding:15px;text-align:center;border-radius:5px}}.stat-number{{font-size:24px;font-weight:bold;color:#007bff}}button{{background:#28a745;color:white;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;margin:5px}}</style></head><body><div class="container"><div class="header"><h1>🚨 PANEL ADMIN FUNCIONAL</h1></div><div class="stats"><div class="stat"><div class="stat-number">{len(links)}</div><div>Total</div></div><div class="stat"><div class="stat-number">{len(approved)}</div><div>Aprobados</div></div><div class="stat"><div class="stat-number">{len(pending)}</div><div>Pendientes</div></div><div class="stat"><div class="stat-number">${len(approved)}</div><div>Ingresos</div></div></div><h2>Links Pendientes ({len(pending)}):</h2>"""
-        
-        if not pending:
-            html += "<p style='color:green;font-weight:bold;'>✅ NO HAY LINKS PENDIENTES</p>"
-        else:
+        # Generate pending links HTML
+        pending_html = ""
+        if pending:
             for link in pending:
-                html += f"""<div style="border:2px solid #ffc107;background:#fff3cd;padding:15px;margin:10px 0;border-radius:5px;"><h3>{link.get('owner_name','N/A')}</h3><p><b>URL:</b> {link.get('website_url','N/A')}</p><form method="post" action="/api/approve/{link.get('id')}" style="display:inline;"><button type="submit">✅ APROBAR</button></form><form method="post" action="/api/reject/{link.get('id')}" style="display:inline;"><button type="submit" style="background:#dc3545;">❌ RECHAZAR</button></form></div>"""
+                pending_html += f"""
+                <div style="border: 3px solid #ff6b35; background: #fff8e1; padding: 20px; margin: 15px 0; border-radius: 10px; box-shadow: 0 2px 10px rgba(255,107,53,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h3 style="color: #d84315; margin: 0 0 10px 0; font-size: 18px;">⚠️ {link.get('owner_name', 'Sin nombre')}</h3>
+                            <p style="margin: 5px 0; color: #424242;"><strong>🌐 URL:</strong> <a href="{link.get('website_url', '#')}" target="_blank" style="color: #1976d2;">{link.get('website_url', 'Sin URL')}</a></p>
+                            <p style="margin: 5px 0; color: #424242;"><strong>📍 Ubicación:</strong> {link.get('location', 'Sin ubicación')}</p>
+                            <p style="margin: 5px 0; color: #424242;"><strong>📞 Teléfono:</strong> {link.get('phone', 'Sin teléfono')}</p>
+                            <p style="margin: 5px 0; color: #666; font-size: 12px;"><strong>ID:</strong> {link.get('id', 'Sin ID')}</p>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <button onclick="aprobarLink('{link.get('id')}')" 
+                                    style="background: linear-gradient(135deg, #4caf50, #45a049); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(76,175,80,0.3); transition: all 0.3s;">
+                                ✅ APROBAR AHORA
+                            </button>
+                            <button onclick="rechazarLink('{link.get('id')}')" 
+                                    style="background: linear-gradient(135deg, #f44336, #d32f2f); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(244,67,54,0.3); transition: all 0.3s;">
+                                ❌ RECHAZAR
+                            </button>
+                        </div>
+                    </div>
+                </div>"""
+        else:
+            pending_html = """
+            <div style="background: linear-gradient(135deg, #e8f5e8, #c8e6c8); border: 2px solid #4caf50; padding: 30px; border-radius: 15px; text-align: center; margin: 20px 0;">
+                <h2 style="color: #2e7d32; margin: 0; font-size: 24px;">✅ ¡EXCELENTE!</h2>
+                <p style="color: #388e3c; margin: 10px 0 0 0; font-size: 16px; font-weight: bold;">No hay links pendientes de aprobación</p>
+                <p style="color: #4caf50; margin: 5px 0 0 0; font-size: 14px;">Todos los envíos han sido procesados</p>
+            </div>"""
         
-        html += f"""<p style='text-align:center;margin-top:30px;'><a href="https://linkverse-2.emergent.host" target="_blank">Ver página principal</a> | <a href="/api/working">🔄 Recargar</a></p></div></body></html>"""
+        html = f"""
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>🚨 ADMIN PAGINA DEL LINK</title>
+            <meta http-equiv="refresh" content="60">
+            <style>
+                body {{ 
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+                    margin: 0; 
+                    padding: 20px; 
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    min-height: 100vh;
+                }}
+                .container {{ 
+                    max-width: 1200px; 
+                    margin: 0 auto; 
+                    background: white; 
+                    padding: 30px; 
+                    border-radius: 20px; 
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                }}
+                .header {{ 
+                    background: linear-gradient(135deg, #ff6b35, #f7931e); 
+                    color: white; 
+                    padding: 25px; 
+                    border-radius: 15px; 
+                    text-align: center; 
+                    margin-bottom: 30px;
+                    box-shadow: 0 5px 15px rgba(255,107,53,0.3);
+                }}
+                .stats {{ 
+                    display: grid; 
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+                    gap: 20px; 
+                    margin-bottom: 30px; 
+                }}
+                .stat {{ 
+                    background: linear-gradient(135deg, #f8f9fa, #e9ecef); 
+                    padding: 25px; 
+                    border-radius: 15px; 
+                    text-align: center; 
+                    border: 2px solid #dee2e6;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+                    transition: transform 0.3s;
+                }}
+                .stat:hover {{ 
+                    transform: translateY(-5px); 
+                }}
+                .stat-number {{ 
+                    font-size: 2.5rem; 
+                    font-weight: bold; 
+                    margin-bottom: 10px;
+                }}
+                .reload-btn {{
+                    background: linear-gradient(135deg, #2196f3, #21cbf3);
+                    color: white;
+                    border: none;
+                    padding: 15px 30px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-size: 16px;
+                    box-shadow: 0 3px 10px rgba(33,150,243,0.3);
+                    transition: all 0.3s;
+                }}
+                .reload-btn:hover {{
+                    transform: translateY(-2px);
+                    box-shadow: 0 5px 15px rgba(33,150,243,0.4);
+                }}
+                button:hover {{
+                    transform: translateY(-2px);
+                }}
+                .total {{ color: #2196f3; }}
+                .approved {{ color: #4caf50; }}
+                .pending {{ color: #ff9800; }}
+                .revenue {{ color: #4caf50; }}
+                .footer {{
+                    margin-top: 40px;
+                    text-align: center;
+                    padding: 20px;
+                    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                    border-radius: 15px;
+                    border: 1px solid #dee2e6;
+                }}
+                .success-msg {{
+                    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+                    color: #155724;
+                    padding: 15px;
+                    border-radius: 10px;
+                    margin: 15px 0;
+                    border: 2px solid #28a745;
+                    text-align: center;
+                    font-weight: bold;
+                }}
+                .error-msg {{
+                    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+                    color: #721c24;
+                    padding: 15px;
+                    border-radius: 10px;
+                    margin: 15px 0;
+                    border: 2px solid #dc3545;
+                    text-align: center;
+                    font-weight: bold;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1 style="margin: 0 0 10px 0; font-size: 2.2rem;">🚨 PANEL DE ADMINISTRACIÓN</h1>
+                    <p style="margin: 0; font-size: 1.1rem; opacity: 0.9;">PAGINA DEL LINK - Actualización automática cada 60s</p>
+                    <button class="reload-btn" onclick="location.reload()" style="margin-top: 15px;">
+                        🔄 RECARGAR AHORA
+                    </button>
+                </div>
+
+                <div id="mensaje" style="display: none;"></div>
+
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-number total">{len(all_links)}</div>
+                        <div><strong>TOTAL LINKS</strong></div>
+                        <div style="font-size: 12px; color: #666; margin-top: 5px;">En base de datos</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number approved">{len(approved)}</div>
+                        <div><strong>APROBADOS</strong></div>
+                        <div style="font-size: 12px; color: #666; margin-top: 5px;">Visibles en página</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number pending">{len(pending)}</div>
+                        <div><strong>PENDIENTES</strong></div>
+                        <div style="font-size: 12px; color: #666; margin-top: 5px;">Esperando aprobación</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number revenue">${len(approved)}</div>
+                        <div><strong>INGRESOS USD</strong></div>
+                        <div style="font-size: 12px; color: #666; margin-top: 5px;">Total generado</div>
+                    </div>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #fff, #f8f9fa); border-radius: 15px; padding: 25px; border: 2px solid #e9ecef;">
+                    <h2 style="color: #333; margin: 0 0 20px 0; font-size: 1.5rem;">
+                        ⚠️ LINKS PENDIENTES DE APROBACIÓN ({len(pending)})
+                    </h2>
+                    {pending_html}
+                </div>
+
+                <div class="footer">
+                    <p style="color: #666; margin: 0 0 10px 0; font-size: 16px;">
+                        <strong>🌐 Página principal:</strong> 
+                        <a href="https://linkverse-2.emergent.host" target="_blank" style="color: #1976d2; text-decoration: none; font-weight: bold;">
+                            https://linkverse-2.emergent.host
+                        </a>
+                    </p>
+                    <p style="color: #666; margin: 0; font-size: 14px;">
+                        <strong>💰 Total ingresos generados:</strong> ${len(approved)} USD | 
+                        <strong>📊 Estado:</strong> Operativo | 
+                        <strong>🕒 Última actualización:</strong> {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
+                    </p>
+                </div>
+            </div>
+
+            <script>
+                function mostrarMensaje(texto, tipo) {{
+                    const mensajeDiv = document.getElementById('mensaje');
+                    mensajeDiv.style.display = 'block';
+                    mensajeDiv.className = tipo === 'success' ? 'success-msg' : 'error-msg';
+                    mensajeDiv.innerHTML = texto;
+                    
+                    setTimeout(() => {{
+                        mensajeDiv.style.display = 'none';
+                    }}, 5000);
+                }}
+
+                async function aprobarLink(linkId) {{
+                    if (!confirm('¿Estás seguro de que deseas APROBAR este link?\\n\\nEsto lo hará visible en la página principal.')) {{
+                        return;
+                    }}
+
+                    try {{
+                        mostrarMensaje('⏳ Aprobando link...', 'success');
+                        
+                        const response = await fetch('/api/links/' + linkId, {{
+                            method: 'PUT',
+                            headers: {{
+                                'Content-Type': 'application/json'
+                            }},
+                            body: JSON.stringify({{ status: 'approved' }})
+                        }});
+
+                        if (response.ok) {{
+                            mostrarMensaje('✅ ¡Link aprobado exitosamente! La página se actualizará en 3 segundos...', 'success');
+                            setTimeout(() => {{
+                                location.reload();
+                            }}, 3000);
+                        }} else {{
+                            const errorText = await response.text();
+                            throw new Error(`Error ${response.status}: ${{errorText}}`);
+                        }}
+                    }} catch (error) {{
+                        console.error('Error aprobando link:', error);
+                        mostrarMensaje('❌ Error al aprobar el link: ' + error.message, 'error');
+                    }}
+                }}
+
+                async function rechazarLink(linkId) {{
+                    if (!confirm('¿Estás seguro de que deseas RECHAZAR este link?\\n\\nEsta acción no se puede deshacer.')) {{
+                        return;
+                    }}
+
+                    try {{
+                        mostrarMensaje('⏳ Rechazando link...', 'success');
+                        
+                        const response = await fetch('/api/links/' + linkId, {{
+                            method: 'PUT',
+                            headers: {{
+                                'Content-Type': 'application/json'
+                            }},
+                            body: JSON.stringify({{ status: 'rejected' }})
+                        }});
+
+                        if (response.ok) {{
+                            mostrarMensaje('✅ Link rechazado exitosamente. La página se actualizará en 3 segundos...', 'success');
+                            setTimeout(() => {{
+                                location.reload();
+                            }}, 3000);
+                        }} else {{
+                            const errorText = await response.text();
+                            throw new Error(`Error ${{response.status}}: ${{errorText}}`);
+                        }}
+                    }} catch (error) {{
+                        console.error('Error rechazando link:', error);
+                        mostrarMensaje('❌ Error al rechazar el link: ' + error.message, 'error');
+                    }}
+                }}
+
+                // Auto-refresh notification
+                let refreshTimer = 60;
+                setInterval(() => {{
+                    refreshTimer--;
+                    if (refreshTimer <= 10 && refreshTimer > 0) {{
+                        document.title = `🚨 ADMIN (${refreshTimer}s)`;
+                    }} else if (refreshTimer === 0) {{
+                        document.title = '🚨 ADMIN PAGINA DEL LINK';
+                    }}
+                }}, 1000);
+            </script>
+        </body>
+        </html>
+        """
         
-        return HTMLResponse(html)
+        return html
     except Exception as e:
-        return HTMLResponse(f"<html><body><h1>ERROR: {str(e)}</h1></body></html>")
-
-@api_router.post("/approve/{link_id}")
-async def approve_now(link_id: str):
-    """Aprobar link ahora"""
-    try:
-        await db.link_submissions.update_one({"id": link_id}, {"$set": {"status": "approved"}})
-        return RedirectResponse(url="/api/working", status_code=303)
-    except:
-        return HTMLResponse("<html><body><h1>Error aprobando link</h1><a href='/api/working'>Volver</a></body></html>")
-
-@api_router.post("/reject/{link_id}")  
-async def reject_now(link_id: str):
-    """Rechazar link ahora"""
-    try:
-        await db.link_submissions.update_one({"id": link_id}, {"$set": {"status": "rejected"}})
-        return RedirectResponse(url="/api/working", status_code=303)
-    except:
-        return HTMLResponse("<html><body><h1>Error rechazando link</h1><a href='/api/working'>Volver</a></body></html>")
+        error_html = f"""
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <title>Error - Admin Panel</title>
+        </head>
+        <body style="font-family: Arial; padding: 20px; background: #f8d7da;">
+            <div style="max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; border: 2px solid #dc3545;">
+                <h1 style="color: #721c24;">❌ ERROR EN PANEL ADMIN</h1>
+                <p><strong>Error técnico:</strong> {str(e)}</p>
+                <p>Por favor, contacta al desarrollador o intenta nuevamente.</p>
+                <button onclick="location.reload()" style="background: #dc3545; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    🔄 REINTENTAR
+                </button>
+                <br><br>
+                <a href="https://linkverse-2.emergent.host" style="color: #1976d2;">← Volver a página principal</a>
+            </div>
+        </body>
+        </html>
+        """
+        return error_html
 
 # Include the router in the main app
 app.include_router(api_router)
