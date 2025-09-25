@@ -1142,8 +1142,13 @@ def main():
             tester = LinkDirectoryAPITester()
             success = tester.run_manual_approval_test()
             return 0 if success else 1
+        elif command == "approve-all":
+            # Run complete manual approval process - approve ALL pending links
+            tester = LinkDirectoryAPITester()
+            success = tester.test_complete_manual_approval_process()
+            return 0 if success else 1
         else:
-            print("Usage: python backend_test.py [verify|delete|approve]")
+            print("Usage: python backend_test.py [verify|delete|approve|approve-all]")
             return 1
     else:
         # Run all tests
