@@ -1071,7 +1071,80 @@ const AdminView = ({ notify }) => {
               <div>
                 {adminData.links ? (
                   adminData.links.filter(link => link.status === 'pending').length === 0 ? (
-                    <p className="text-green-600 font-bold text-center py-8">✅ No hay links pendientes</p>
+                    <div>
+                      <p className="text-green-600 font-bold text-center py-4 mb-6">✅ No hay links pendientes</p>
+                      
+                      {/* Mostrar Links Aprobados aquí */}
+                      <div className="border-t-2 border-green-200 pt-6">
+                        <h3 className="text-lg font-bold text-green-800 mb-4">📋 Gestionar Links Aprobados ({adminData.approved || 0})</h3>
+                        
+                        {adminData.links.filter(link => link.status === 'approved').length > 0 ? (
+                          <div className="space-y-3">
+                            {adminData.links.filter(link => link.status === 'approved').map(link => (
+                              <div key={link.id} className="border border-green-200 bg-green-50 rounded-lg p-4">
+                                <div className="flex justify-between items-center">
+                                  <div className="flex items-center gap-3">
+                                    <div className="flex-shrink-0">
+                                      {link.custom_logo ? (
+                                        <img
+                                          src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
+                                          alt="Logo"
+                                          className="w-10 h-10 rounded object-cover border-2 border-green-300"
+                                        />
+                                      ) : link.favicon_url ? (
+                                        <img
+                                          src={link.favicon_url}
+                                          alt="Favicon"
+                                          className="w-10 h-10 rounded object-cover border-2 border-green-300"
+                                        />
+                                      ) : (
+                                        <div className="w-10 h-10 rounded bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm border-2 border-green-300">
+                                          {link.owner_name?.charAt(0).toUpperCase() || '?'}
+                                        </div>
+                                      )}
+                                    </div>
+                                    
+                                    <div>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-green-600 font-bold">✅</span>
+                                        <span className="font-semibold text-lg">{link.owner_name}</span>
+                                      </div>
+                                      <p className="text-sm text-blue-600 hover:underline cursor-pointer" 
+                                         onClick={() => window.open(link.website_url, '_blank')}>
+                                        {link.website_url}
+                                      </p>
+                                      <p className="text-xs text-gray-500">
+                                        📞 {link.phone} | 📍 {link.location}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      onClick={() => openLogoEditModal(link)}
+                                      size="sm"
+                                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-2"
+                                    >
+                                      🖼️ EDITAR LOGO
+                                    </Button>
+                                    <Button
+                                      onClick={() => rejectLink(link.id)}
+                                      variant="destructive"
+                                      size="sm"
+                                      className="px-3 py-2"
+                                    >
+                                      ❌ RECHAZAR
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-center py-8 text-gray-600">No hay links aprobados para gestionar</p>
+                        )}
+                      </div>
+                    </div>
                   ) : (
                     <div className="space-y-4">
                       {adminData.links.filter(link => link.status === 'pending').map(link => (
