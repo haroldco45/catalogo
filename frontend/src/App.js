@@ -623,12 +623,47 @@ const EmergencyAdminPanel = ({ notify }) => {
               {links.filter(link => link.status === 'approved').map((link) => (
                 <div key={link.id} className="border border-green-200 bg-green-50 rounded-lg p-3">
                   <div className="flex justify-between items-center">
-                    <div>
-                      <span className="text-green-600 font-bold">✅</span>
-                      <span className="ml-2 font-semibold">{link.owner_name}</span>
-                      <span className="ml-2 text-sm text-blue-600">{link.website_url}</span>
+                    <div className="flex items-center gap-3">
+                      {/* Logo Preview */}
+                      <div className="flex-shrink-0">
+                        {link.custom_logo ? (
+                          <img
+                            src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
+                            alt="Logo"
+                            className="w-8 h-8 rounded object-cover border"
+                          />
+                        ) : link.favicon_url ? (
+                          <img
+                            src={link.favicon_url}
+                            alt="Favicon"
+                            className="w-8 h-8 rounded object-cover border"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                            {link.owner_name?.charAt(0) || '?'}
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div>
+                        <span className="text-green-600 font-bold">✅</span>
+                        <span className="ml-2 font-semibold">{link.owner_name}</span>
+                        <span className="ml-2 text-sm text-blue-600">{link.website_url}</span>
+                      </div>
                     </div>
-                    <Badge className="bg-green-100 text-green-800">APROBADO</Badge>
+                    
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-green-100 text-green-800">APROBADO</Badge>
+                      
+                      {/* Logo Edit Button */}
+                      <Button
+                        onClick={() => openLogoEditModal(link)}
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        🖼️ EDITAR LOGO
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
