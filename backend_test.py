@@ -370,6 +370,174 @@ class LinkDirectoryAPITester:
             self.log_test("Update Non-existent Link", False, str(e))
             return False
 
+    def test_admin_status_data_structure(self):
+        """Test /api/admin/status endpoint data structure for frontend compatibility"""
+        try:
+            print("🔍 TESTING /api/admin/status ENDPOINT DATA STRUCTURE")
+            print("=" * 60)
+            
+            response = requests.get(f"{self.api_url}/admin/status", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if not success:
+                self.log_test("Admin Status Data Structure", False, details)
+                return False, {}
+            
+            data = response.json()
+            
+            # Print the exact JSON structure
+            print("📋 EXACT JSON RESPONSE STRUCTURE:")
+            print("-" * 40)
+            print(json.dumps(data, indent=2, default=str))
+            print()
+            
+            # Verify required fields
+            required_fields = ['success', 'total_links', 'approved', 'pending', 'rejected', 'revenue', 'links']
+            missing_fields = []
+            
+            for field in required_fields:
+                if field not in data:
+                    missing_fields.append(field)
+            
+            if missing_fields:
+                details += f", Missing fields: {missing_fields}"
+                self.log_test("Admin Status Data Structure", False, details)
+                return False, data
+            
+            # Verify links array structure
+            links = data.get('links', [])
+            total_links = data.get('total_links', 0)
+            approved = data.get('approved', 0)
+            pending = data.get('pending', 0)
+            rejected = data.get('rejected', 0)
+            revenue = data.get('revenue', 0)
+            
+            print(f"📊 SUMMARY STATISTICS:")
+            print(f"   Total links: {total_links}")
+            print(f"   Approved: {approved}")
+            print(f"   Pending: {pending}")
+            print(f"   Rejected: {rejected}")
+            print(f"   Revenue: ${revenue}")
+            print(f"   Links array length: {len(links)}")
+            print()
+            
+            # Test frontend compatibility: adminData.links.filter(link => link.status === 'approved')
+            print("🧪 TESTING FRONTEND COMPATIBILITY:")
+            print("-" * 40)
+            
+            if not isinstance(links, list):
+                print("❌ ERROR: 'links' is not an array")
+                self.log_test("Admin Status Data Structure", False, "'links' field is not an array")
+                return False, data
+            
+            print(f"✅ 'links' is an array with {len(links)} items")
+            
+            # Check if we can filter approved links
+            try:
+                approved_links = [link for link in links if link.get('status') == 'approved']
+                print(f"✅ Successfully filtered approved links: {len(approved_links)} found")
+                
+                # Verify this matches the approved count
+                if len(approved_links) == approved:
+                    print(f"✅ Approved links count matches: {len(approved_links)} = {approved}")
+                else:
+                    print(f"⚠️  Approved links count mismatch: filtered={len(approved_links)}, reported={approved}")
+                
+            except Exception as e:
+                print(f"❌ ERROR filtering approved links: {e}")
+                self.log_test("Admin Status Data Structure", False, f"Cannot filter approved links: {e}")
+                return False, data
+            
+            # Check required fields in link objects
+            if links:
+                print(f"\n📋 FIRST LINK OBJECT STRUCTURE:")
+                print("-" * 40)
+                first_link = links[0]
+                print(json.dumps(first_link, indent=2, default=str))
+                print()
+                
+                required_link_fields = ['id', 'owner_name', 'website_url', 'phone', 'location', 'status', 'created_at']
+                optional_link_fields = ['custom_logo', 'favicon_url']
+                
+                print("🔍 CHECKING REQUIRED LINK FIELDS:")
+                missing_link_fields = []
+                for field in required_link_fields:
+                    if field in first_link:
+                        print(f"   ✅ {field}: {first_link.get(field)}")
+                    else:
+                        print(f"   ❌ {field}: MISSING")
+                        missing_link_fields.append(field)
+                
+                print("\n🔍 CHECKING OPTIONAL LINK FIELDS:")
+                for field in optional_link_fields:
+                    if field in first_link:
+                        print(f"   ✅ {field}: {first_link.get(field)}")
+                    else:
+                        print(f"   ⚪ {field}: Not present")
+                
+                if missing_link_fields:
+                    details += f", Missing link fields: {missing_link_fields}"
+                    self.log_test("Admin Status Data Structure", False, details)
+                    return False, data
+            
+            # Test the exact frontend expectation
+            print(f"\n🎯 TESTING EXACT FRONTEND CODE:")
+            print("   adminData.links.filter(link => link.status === 'approved')")
+            print("-" * 40)
+            
+            try:
+                # Simulate the frontend code
+                adminData = data  # This is what frontend receives
+                filtered_approved = [link for link in adminData['links'] if link['status'] == 'approved']
+                
+                print(f"✅ Frontend filter works: {len(filtered_approved)} approved links found")
+                print(f"✅ Statistics show: {adminData['approved']} approved links")
+                
+                if len(filtered_approved) == adminData['approved']:
+                    print("✅ Perfect match: filtered count = statistics count")
+                    frontend_compatible = True
+                else:
+                    print(f"⚠️  Mismatch: filtered={len(filtered_approved)}, stats={adminData['approved']}")
+                    frontend_compatible = False
+                
+                # Show some approved links
+                if filtered_approved:
+                    print(f"\n📋 SAMPLE APPROVED LINKS (first 3):")
+                    for i, link in enumerate(filtered_approved[:3], 1):
+                        print(f"   {i}. {link.get('owner_name')} - {link.get('website_url')} (ID: {link.get('id')[:8]}...)")
+                
+            except Exception as e:
+                print(f"❌ Frontend compatibility test failed: {e}")
+                frontend_compatible = False
+            
+            # Final assessment
+            print(f"\n📊 FINAL ASSESSMENT:")
+            print("=" * 40)
+            
+            if frontend_compatible and not missing_fields:
+                print("✅ /api/admin/status endpoint is FULLY COMPATIBLE with frontend")
+                print("✅ All required fields present")
+                print("✅ Links array structure correct")
+                print("✅ Frontend filtering will work perfectly")
+                
+                details += f", Compatible: YES, Links: {len(links)}, Approved filterable: {len(approved_links)}"
+                self.log_test("Admin Status Data Structure", True, details)
+                return True, data
+            else:
+                print("❌ /api/admin/status endpoint has COMPATIBILITY ISSUES")
+                if missing_fields:
+                    print(f"❌ Missing fields: {missing_fields}")
+                if not frontend_compatible:
+                    print("❌ Frontend filtering may not work correctly")
+                
+                self.log_test("Admin Status Data Structure", False, details)
+                return False, data
+                
+        except Exception as e:
+            self.log_test("Admin Status Data Structure", False, str(e))
+            return False, {}
+
     def test_admin_status_detailed(self):
         """Test admin status endpoint and provide detailed link analysis"""
         try:
