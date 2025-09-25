@@ -1220,7 +1220,6 @@ const AdminView = ({ notify }) => {
                         </div>
                       ))}
                     </div>
-                  )
                 ) : (
                   <p className="text-center py-8">Haz clic en "RECARGAR DATOS" para cargar los links</p>
                 )}
