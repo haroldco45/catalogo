@@ -1111,106 +1111,11 @@ const AdminView = ({ notify }) => {
           </CardContent>
         </Card>
 
-        {/* Approved Links */}
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-xl font-bold mb-4">✅ Links Aprobados</h2>
-            
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
-                <p>Cargando datos...</p>
-              </div>
-            ) : (
-              <div>
-                {adminData.links ? (
-                  adminData.links.filter(link => link.status === 'approved').length === 0 ? (
-                    <p className="text-gray-600 text-center py-8">No hay links aprobados aún</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {adminData.links.filter(link => link.status === 'approved').map(link => (
-                        <div key={link.id} className="border border-green-200 bg-green-50 rounded-lg p-4">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                              {/* Logo Preview */}
-                              <div className="flex-shrink-0">
-                                {link.custom_logo ? (
-                                  <img
-                                    src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
-                                    alt="Logo"
-                                    className="w-10 h-10 rounded object-cover border-2 border-green-300"
-                                    onError={(e) => {
-                                      e.target.style.display = 'none';
-                                      e.target.nextSibling.style.display = 'block';
-                                    }}
-                                  />
-                                ) : null}
-                                {link.favicon_url ? (
-                                  <img
-                                    src={link.favicon_url}
-                                    alt="Favicon"
-                                    className="w-10 h-10 rounded object-cover border-2 border-green-300"
-                                    style={{ display: link.custom_logo ? 'none' : 'block' }}
-                                    onError={(e) => {
-                                      e.target.style.display = 'none';
-                                      e.target.nextSibling.style.display = 'flex';
-                                    }}
-                                  />
-                                ) : null}
-                                <div
-                                  className="w-10 h-10 rounded bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm border-2 border-green-300"
-                                  style={{ display: (link.custom_logo || link.favicon_url) ? 'none' : 'flex' }}
-                                >
-                                  {link.owner_name?.charAt(0).toUpperCase() || '?'}
-                                </div>
-                              </div>
-                              
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-green-600 font-bold">✅</span>
-                                  <span className="font-semibold text-lg">{link.owner_name}</span>
-                                  <Badge className="bg-green-100 text-green-800 text-xs">APROBADO</Badge>
-                                </div>
-                                <p className="text-sm text-blue-600 hover:underline cursor-pointer" 
-                                   onClick={() => window.open(link.website_url, '_blank')}>
-                                  {link.website_url}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  📞 {link.phone} | 📍 {link.location}
-                                </p>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center gap-3">
-                              <Button
-                                onClick={() => openLogoEditModal(link)}
-                                size="sm"
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2"
-                              >
-                                🖼️ EDITAR LOGO
-                              </Button>
-                              
-                              <Button
-                                onClick={() => rejectLink(link.id)}
-                                variant="destructive"
-                                size="sm"
-                                className="px-4 py-2"
-                              >
-                                ❌ RECHAZAR
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )
-                ) : (
-                  <p className="text-center py-8">Haz clic en "RECARGAR DATOS" para cargar los links</p>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Approved Links - Simple Version */}
+        <div className="bg-green-50 p-4 rounded-lg mb-4">
+          <h2 className="text-xl font-bold mb-4 text-green-800">✅ Links Aprobados - PRUEBA</h2>
+          <p className="text-green-600">Esta es una sección de prueba para verificar que se renderiza correctamente.</p>
+        </div>
 
         {/* Logo Edit Modal */}
         {logoEditModal.open && logoEditModal.link && (
