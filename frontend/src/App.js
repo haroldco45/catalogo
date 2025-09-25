@@ -1110,9 +1110,14 @@ const AdminView = ({ notify }) => {
                     <div className="border-t-2 border-green-200 pt-6">
                       <h3 className="text-lg font-bold text-green-800 mb-4">📋 Gestionar Links Aprobados ({adminData.approved || 0})</h3>
                       
-                      {adminData.links.filter(link => link.status === 'approved').length > 0 ? (
+                      <p className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                        Debug: Total links = {adminData.links ? adminData.links.length : 'null'} | 
+                        Approved = {adminData.links ? adminData.links.filter(link => link.status === 'approved').length : 0}
+                      </p>
+                      
+                      {adminData.links && adminData.links.length > 0 ? (
                         <div className="space-y-3">
-                          {adminData.links.filter(link => link.status === 'approved').map(link => (
+                          {adminData.links.filter(link => link.status === 'approved').slice(0, 5).map(link => (
                             <div key={link.id} className="border border-green-200 bg-green-50 rounded-lg p-4">
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-3">
