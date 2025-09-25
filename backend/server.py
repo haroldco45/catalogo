@@ -1,5 +1,4 @@
 from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -15,7 +14,6 @@ import uuid
 from datetime import datetime, timezone
 import re
 from urllib.parse import urlparse
-import base64
 
 
 ROOT_DIR = Path(__file__).parent
