@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - PAGINA DEL LINK</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 20px; 
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .header { 
+            background: linear-gradient(135deg, #ff6b35, #f7931e); 
+            color: white; 
+            padding: 30px; 
+            text-align: center; 
+        }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 1.1rem; }
+        .stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 20px; 
+            padding: 30px; 
+            background: #f8f9fa;
+        }
+        .stat { 
+            background: white;
+            padding: 25px; 
+            border-radius: 15px; 
+            text-align: center; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .stat:hover { transform: translateY(-5px); }
+        .stat-number { 
+            font-size: 3rem; 
+            font-weight: bold; 
+            margin-bottom: 10px;
+        }
+        .total { color: #2196f3; }
+        .approved { color: #4caf50; }
+        .pending { color: #ff9800; }
+        .revenue { color: #28a745; }
+        .content { padding: 30px; }
+        .btn { 
+            background: linear-gradient(135deg, #4caf50, #45a049); 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-danger { 
+            background: linear-gradient(135deg, #f44336, #d32f2f); 
+        }
+        .btn-reload { 
+            background: linear-gradient(135deg, #2196f3, #21cbf3);
+            font-size: 16px;
+            padding: 15px 30px;
+            margin-top: 20px;
+        }
+        .link-card { 
+            background: white;
+            border: 3px solid #ff9800; 
+            border-radius: 10px; 
+            padding: 20px; 
+            margin: 15px 0; 
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            box-shadow: 0 5px 15px rgba(255,152,0,0.2);
+        }
+        .link-info h3 { color: #e65100; margin-bottom: 10px; }
+        .link-info p { margin: 5px 0; color: #424242; }
+        .no-links { 
+            background: linear-gradient(135deg, #e8f5e8, #c8e6c8); 
+            border: 2px solid #4caf50; 
+            padding: 40px; 
+            border-radius: 15px; 
+            text-align: center; 
+            color: #2e7d32;
+        }
+        .footer { 
+            background: #f8f9fa; 
+            padding: 20px; 
+            text-align: center; 
+            color: #666; 
+            border-top: 1px solid #dee2e6;
+        }
+        .alert { 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin: 15px 0; 
+            text-align: center; 
+            font-weight: bold;
+        }
+        .alert-success { 
+            background: #d4edda; 
+            color: #155724; 
+            border: 2px solid #28a745; 
+        }
+        .alert-error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border: 2px solid #dc3545; 
+        }
+        .loading { 
+            text-align: center; 
+            padding: 40px; 
+            color: #666; 
+        }
+        .spinner { 
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚨 PANEL DE ADMINISTRACIÓN</h1>
+            <p>PAGINA DEL LINK - Control Total</p>
+            <button class="btn btn-reload" onclick="loadData()">🔄 CARGAR DATOS</button>
+        </div>
+
+        <div id="alert" style="display: none;"></div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number total" id="totalLinks">-</div>
+                <div><strong>TOTAL LINKS</strong></div>
+            </div>
+            <div class="stat">
+                <div class="stat-number approved" id="approvedLinks">-</div>
+                <div><strong>APROBADOS</strong></div>
+            </div>
+            <div class="stat">
+                <div class="stat-number pending" id="pendingLinks">-</div>
+                <div><strong>PENDIENTES</strong></div>
+            </div>
+            <div class="stat">
+                <div class="stat-number revenue" id="revenue">$-</div>
+                <div><strong>INGRESOS USD</strong></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <h2 style="margin-bottom: 20px; color: #333;">⚠️ LINKS PENDIENTES DE APROBACIÓN</h2>
+            <div id="pendingLinksContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Haz clic en "CARGAR DATOS" para ver los links pendientes</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>🌐 Página principal:</strong> <a href="https://linkverse-2.emergent.host" target="_blank">https://linkverse-2.emergent.host</a></p>
+            <p><strong>🕒 Panel actualizado:</strong> <span id="lastUpdate">Nunca</span></p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://linkverse-2.emergent.host/api';
+        
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alert');
+            alertDiv.style.display = 'block';
+            alertDiv.className = 'alert alert-' + type;
+            alertDiv.innerHTML = message;
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        async function loadData() {
+            console.log('🔄 Cargando datos del admin...');
+            
+            // Update UI to show loading
+            document.getElementById('totalLinks').textContent = '⏳';
+            document.getElementById('approvedLinks').textContent = '⏳';
+            document.getElementById('pendingLinks').textContent = '⏳';
+            document.getElementById('revenue').textContent = '$⏳';
+            
+            try {
+                // Try the admin/status endpoint
+                const response = await fetch(API_BASE + '/admin/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ Datos cargados:', data);
+                    
+                    // Update stats
+                    document.getElementById('totalLinks').textContent = data.total_links || 0;
+                    document.getElementById('approvedLinks').textContent = data.approved || 0;
+                    document.getElementById('pendingLinks').textContent = data.pending || 0;
+                    document.getElementById('revenue').textContent = '$' + (data.revenue || 0);
+                    
+                    // Update pending links
+                    const container = document.getElementById('pendingLinksContainer');
+                    const pendingLinks = (data.links || []).filter(link => link.status === 'pending');
+                    
+                    if (pendingLinks.length === 0) {
+                        container.innerHTML = `
+                            <div class="no-links">
+                                <h2 style="margin-bottom: 15px;">✅ ¡EXCELENTE!</h2>
+                                <p style="font-size: 18px; margin-bottom: 10px;">No hay links pendientes de aprobación</p>
+                                <p>Todos los envíos han sido procesados correctamente</p>
+                            </div>
+                        `;
+                    } else {
+                        let html = '';
+                        pendingLinks.forEach(link => {
+                            html += `
+                                <div class="link-card">
+                                    <div class="link-info">
+                                        <h3>⚠️ ${link.owner_name || 'Sin nombre'}</h3>
+                                        <p><strong>🌐 URL:</strong> <a href="${link.website_url || '#'}" target="_blank">${link.website_url || 'Sin URL'}</a></p>
+                                        <p><strong>📞 Teléfono:</strong> ${link.phone || 'No proporcionado'}</p>
+                                        <p><strong>📍 Ubicación:</strong> ${link.location || 'No proporcionada'}</p>
+                                        <p style="font-size: 12px; color: #666;"><strong>ID:</strong> ${link.id}</p>
+                                    </div>
+                                    <div>
+                                        <button class="btn" onclick="approveLink('${link.id}')">✅ APROBAR</button>
+                                        <button class="btn btn-danger" onclick="rejectLink('${link.id}')">❌ RECHAZAR</button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        container.innerHTML = html;
+                    }
+                    
+                    document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+                    showAlert(`✅ Datos cargados exitosamente: ${data.total_links} links (${pendingLinks.length} pendientes)`, 'success');
+                    
+                } else {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error cargando datos:', error);
+                
+                // Reset stats on error
+                document.getElementById('totalLinks').textContent = 'Error';
+                document.getElementById('approvedLinks').textContent = 'Error';
+                document.getElementById('pendingLinks').textContent = 'Error';
+                document.getElementById('revenue').textContent = '$Error';
+                
+                document.getElementById('pendingLinksContainer').innerHTML = `
+                    <div class="alert alert-error">
+                        <h3>❌ Error al cargar datos</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Por favor, intenta recargar los datos o contacta al soporte técnico.</p>
+                        <button class="btn btn-reload" onclick="loadData()">🔄 REINTENTAR</button>
+                    </div>
+                `;
+                
+                showAlert(`❌ Error al cargar datos: ${error.message}`, 'error');
+            }
+        }
+
+        async function approveLink(linkId) {
+            if (!confirm('¿Estás seguro de que deseas APROBAR este link?\\n\\nEsto lo hará visible en la página principal inmediatamente.')) {
+                return;
+            }
+
+            try {
+                showAlert('⏳ Aprobando link...', 'success');
+                
+                const response = await fetch(API_BASE + '/links/' + linkId, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'approved' })
+                });
+
+                if (response.ok) {
+                    showAlert('✅ ¡Link aprobado exitosamente! Recargando datos...', 'success');
+                    setTimeout(() => {
+                        loadData(); // Reload data to update the display
+                    }, 2000);
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(`Error ${response.status}: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error aprobando link:', error);
+                showAlert(`❌ Error al aprobar el link: ${error.message}`, 'error');
+            }
+        }
+
+        async function rejectLink(linkId) {
+            if (!confirm('¿Estás seguro de que deseas RECHAZAR este link?\\n\\nEsta acción no se puede deshacer fácilmente.')) {
+                return;
+            }
+
+            try {
+                showAlert('⏳ Rechazando link...', 'success');
+                
+                const response = await fetch(API_BASE + '/links/' + linkId, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'rejected' })
+                });
+
+                if (response.ok) {
+                    showAlert('✅ Link rechazado exitosamente. Recargando datos...', 'success');
+                    setTimeout(() => {
+                        loadData(); // Reload data to update the display
+                    }, 2000);
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(`Error ${response.status}: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error rechazando link:', error);
+                showAlert(`❌ Error al rechazar el link: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-load data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📋 Panel de administración cargado - haciendo clic en cargar datos automáticamente');
+            loadData();
+        });
+    </script>
+</body>
+</html>
