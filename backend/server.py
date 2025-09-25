@@ -910,6 +910,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Test endpoint
+@api_router.get("/test-endpoint")
+async def test_endpoint():
+    """Test endpoint"""
+    return {"message": "Test endpoint working!"}
+
 # Admin panel endpoint - test
 @api_router.get("/admin-final")
 async def admin_panel_final_working():
