@@ -892,6 +892,18 @@ async def admin_panel_final():
 <a href="/api/admin-panel">🔄 Reintentar</a>
 </div></body></html>"""
 
+# Test endpoint
+@api_router.get("/test-endpoint")
+async def test_endpoint():
+    """Test endpoint"""
+    return {"message": "Test endpoint working!"}
+
+# Admin panel endpoint - test
+@api_router.get("/admin-final")
+async def admin_panel_final_working():
+    """Panel admin final que funciona"""
+    return {"message": "Admin panel working!"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
