@@ -552,7 +552,41 @@ async def get_admin_dashboard():
             "success": False
         }
 
-@api_router.get("/admin-working", response_class=HTMLResponse)
+@api_router.get("/admin/status")
+async def get_admin_status():
+    """Get admin status and all links"""
+    try:
+        all_links = await db.link_submissions.find().sort("created_at", -1).to_list(None)
+        
+        approved = len([l for l in all_links if l.get("status") == "approved"])
+        pending = len([l for l in all_links if l.get("status") == "pending"])
+        rejected = len([l for l in all_links if l.get("status") == "rejected"])
+        
+        return {
+            "success": True,
+            "total_links": len(all_links),
+            "approved": approved,
+            "pending": pending,
+            "rejected": rejected,
+            "revenue": approved,
+            "links": [
+                {
+                    "id": link.get("id"),
+                    "owner_name": link.get("owner_name"),
+                    "website_url": link.get("website_url"),
+                    "status": link.get("status"),
+                    "phone": link.get("phone"),
+                    "location": link.get("location"),
+                    "created_at": link.get("created_at")
+                }
+                for link in all_links
+            ]
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
 async def admin_working_final():
     """Admin panel que SÍ funciona definitivamente"""
     try:
