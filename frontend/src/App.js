@@ -1016,9 +1016,19 @@ const AdminView = ({ notify }) => {
         <div className="bg-red-600 text-white p-6 rounded-lg mb-6">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">🚨 PANEL FUNCIONAL DE ADMINISTRACIÓN</h1>
-            <Button onClick={loadAdminData} disabled={loading} className="bg-white text-red-600 hover:bg-gray-100">
-              {loading ? '⏳ Cargando...' : '🔄 RECARGAR DATOS'}
-            </Button>
+            <div className="flex gap-4">
+              <Button onClick={loadAdminData} disabled={loading} className="bg-white text-red-600 hover:bg-gray-100">
+                {loading ? '⏳ Cargando...' : '🔄 RECARGAR DATOS'}
+              </Button>
+              
+              <a 
+                href="/admin-links.html"
+                target="_blank"
+                className="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg inline-flex items-center gap-2 text-decoration-none"
+              >
+                🖼️ GESTIONAR LOGOS
+              </a>
+            </div>
           </div>
         </div>
 
