@@ -191,7 +191,7 @@
 
         function getLogo(link) {
             if (link.custom_logo) {
-                return `<img src="/uploads/${link.custom_logo}" alt="Logo" class="w-12 h-12 rounded object-cover border-2 border-green-400">`;
+                return `<img src="https://panel-logo-editor.preview.emergentagent.com/uploads/${link.custom_logo}" alt="Logo" class="w-12 h-12 rounded object-cover border-2 border-green-400">`;
             } else if (link.favicon_url) {
                 return `<img src="${link.favicon_url}" alt="Favicon" class="w-12 h-12 rounded object-cover border-2 border-blue-400">`;
             } else {
