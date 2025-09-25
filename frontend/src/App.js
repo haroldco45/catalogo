@@ -1190,7 +1190,7 @@ const AdminView = ({ notify }) => {
                       </div>
                     )}
                   </div>
-                  ) : (
+                ) : (
                     <div className="space-y-4">
                       {adminData.links.filter(link => link.status === 'pending').map(link => (
                         <div key={link.id} className="border-2 border-yellow-300 bg-yellow-50 rounded-lg p-4">
