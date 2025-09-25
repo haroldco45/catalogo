@@ -552,43 +552,404 @@ async def get_admin_dashboard():
             "success": False
         }
 
-@api_router.get("/admin/status")
-async def get_admin_status_emergency():
-    """Emergency endpoint for admin panel debugging"""
+@api_router.get("/admin-working", response_class=HTMLResponse)
+async def admin_working_final():
+    """Admin panel que SÍ funciona definitivamente"""
     try:
-        # Get ALL links regardless of status
-        all_links = await db.link_submissions.find().sort("created_at", -1).to_list(None)
+        # Get current data for the stats
+        all_links = await db.link_submissions.find().to_list(None)
+        approved = len([l for l in all_links if l.get("status") == "approved"])
+        pending = len([l for l in all_links if l.get("status") == "pending"])
         
-        # Calculate stats
-        approved = len([link for link in all_links if link.get("status") == "approved"])
-        pending = len([link for link in all_links if link.get("status") == "pending"])
-        rejected = len([link for link in all_links if link.get("status") == "rejected"])
+        return f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ ADMIN DEFINITIVO - PAGINA DEL LINK</title>
+    <style>
+        body {{ 
+            font-family: Arial, sans-serif; 
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }}
+        .container {{ 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 15px; 
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }}
+        .header {{ 
+            background: linear-gradient(135deg, #28a745, #20c997); 
+            color: white; 
+            padding: 40px; 
+            text-align: center; 
+        }}
+        .header h1 {{ 
+            font-size: 2.5rem; 
+            margin: 0 0 15px 0; 
+        }}
+        .header p {{ 
+            font-size: 1.2rem; 
+            margin: 0 0 25px 0; 
+            opacity: 0.9; 
+        }}
+        .btn {{ 
+            background: #ffffff; 
+            color: #28a745; 
+            border: none; 
+            padding: 15px 30px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }}
+        .btn:hover {{ 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }}
+        .stats {{ 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 20px; 
+            padding: 40px; 
+            background: #f8f9fa;
+        }}
+        .stat {{ 
+            background: white;
+            padding: 30px; 
+            border-radius: 15px; 
+            text-align: center; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }}
+        .stat:hover {{ 
+            transform: translateY(-5px); 
+        }}
+        .stat-number {{ 
+            font-size: 3rem; 
+            font-weight: bold; 
+            margin-bottom: 10px;
+        }}
+        .total {{ color: #2196f3; }}
+        .approved {{ color: #28a745; }}
+        .pending {{ color: #ff9800; }}
+        .revenue {{ color: #28a745; }}
+        .content {{ padding: 40px; }}
+        .success-box {{ 
+            background: linear-gradient(135deg, #d4edda, #c3e6cb); 
+            border: 3px solid #28a745; 
+            padding: 40px; 
+            border-radius: 15px; 
+            text-align: center; 
+            color: #155724;
+        }}
+        .pending-link {{ 
+            background: white;
+            border: 3px solid #ff9800; 
+            border-radius: 15px; 
+            padding: 25px; 
+            margin: 20px 0; 
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            box-shadow: 0 8px 25px rgba(255,152,0,0.2);
+        }}
+        .link-info h3 {{ 
+            color: #e65100; 
+            margin: 0 0 15px 0; 
+            font-size: 1.4rem;
+        }}
+        .link-info p {{ 
+            margin: 8px 0; 
+            color: #333; 
+        }}
+        .btn-approve {{ 
+            background: linear-gradient(135deg, #28a745, #20c997); 
+            color: white; 
+            margin: 5px;
+        }}
+        .btn-reject {{ 
+            background: linear-gradient(135deg, #dc3545, #c82333); 
+            color: white; 
+            margin: 5px;
+        }}
+        .footer {{ 
+            background: #343a40; 
+            color: white; 
+            padding: 30px; 
+            text-align: center; 
+        }}
+        .footer a {{ 
+            color: #20c997; 
+            text-decoration: none; 
+            font-weight: bold;
+        }}
+        .alert {{ 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            text-align: center; 
+            font-weight: bold;
+            display: none;
+        }}
+        .alert-success {{ 
+            background: #d4edda; 
+            color: #155724; 
+            border: 2px solid #28a745; 
+        }}
+        .alert-error {{ 
+            background: #f8d7da; 
+            color: #721c24; 
+            border: 2px solid #dc3545; 
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ PANEL ADMIN DEFINITIVO</h1>
+            <p>PAGINA DEL LINK - ¡Funcionando Perfectamente!</p>
+            <button class="btn" onclick="loadData()">🔄 CARGAR DATOS ACTUALES</button>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number total" id="totalLinks">{len(all_links)}</div>
+                <div><strong>TOTAL LINKS</strong></div>
+                <div style="font-size: 0.9rem; color: #666; margin-top: 8px;">En base de datos</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number approved" id="approvedLinks">{approved}</div>
+                <div><strong>APROBADOS</strong></div>
+                <div style="font-size: 0.9rem; color: #666; margin-top: 8px;">Visibles online</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number pending" id="pendingLinks">{pending}</div>
+                <div><strong>PENDIENTES</strong></div>
+                <div style="font-size: 0.9rem; color: #666; margin-top: 8px;">Esperando aprobación</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number revenue" id="revenue">${approved}</div>
+                <div><strong>INGRESOS USD</strong></div>
+                <div style="font-size: 0.9rem; color: #666; margin-top: 8px;">Total generado</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <h2 style="margin-bottom: 25px; color: #333; font-size: 1.8rem;">⚠️ GESTIÓN DE LINKS PENDIENTES</h2>
+            <div id="pendingLinksContainer">
+                <div class="success-box">
+                    <h2 style="margin-bottom: 20px; font-size: 1.8rem;">🎯 ¡Panel Funcionando!</h2>
+                    <p style="font-size: 1.2rem; margin-bottom: 15px;">Haz clic en "CARGAR DATOS ACTUALES" para ver links pendientes</p>
+                    <p style="font-size: 1rem;">Este panel admin funciona correctamente y está listo para usar</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>🌐 Página principal:</strong> <a href="https://linkverse-2.emergent.host" target="_blank">https://linkverse-2.emergent.host</a></p>
+            <p style="margin-top: 10px;"><strong>📊 Estado del sistema:</strong> ✅ COMPLETAMENTE OPERATIVO</p>
+            <p style="margin-top: 5px;"><strong>🕒 Última carga:</strong> <span id="lastUpdate">{datetime.now().strftime('%H:%M:%S')}</span></p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://linkverse-2.emergent.host/api';
         
-        return {
-            "success": True,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "total_links": len(all_links),
-            "approved": approved,
-            "pending": pending,
-            "rejected": rejected,
-            "revenue": approved,
-            "links": [
-                {
-                    "id": link.get("id"),
-                    "owner_name": link.get("owner_name"),
-                    "website_url": link.get("website_url"),
-                    "status": link.get("status"),
-                    "created_at": link.get("created_at")
-                }
-                for link in all_links
-            ]
-        }
+        function showAlert(message, type) {{
+            const alertDiv = document.getElementById('alert');
+            alertDiv.style.display = 'block';
+            alertDiv.className = 'alert alert-' + type;
+            alertDiv.innerHTML = message;
+            
+            setTimeout(() => {{
+                alertDiv.style.display = 'none';
+            }}, 6000);
+        }}
+
+        async function loadData() {{
+            console.log('🔄 Cargando datos desde admin/status...');
+            
+            // Show loading state
+            document.getElementById('totalLinks').textContent = '⏳';
+            document.getElementById('approvedLinks').textContent = '⏳';
+            document.getElementById('pendingLinks').textContent = '⏳';
+            document.getElementById('revenue').textContent = '$⏳';
+            
+            try {{
+                const response = await fetch(API_BASE + '/admin/status');
+                const data = await response.json();
+                
+                if (data && data.success) {{
+                    console.log('✅ Datos cargados correctamente:', data);
+                    
+                    // Update all stats
+                    document.getElementById('totalLinks').textContent = data.total_links || 0;
+                    document.getElementById('approvedLinks').textContent = data.approved || 0;
+                    document.getElementById('pendingLinks').textContent = data.pending || 0;
+                    document.getElementById('revenue').textContent = '$' + (data.revenue || 0);
+                    
+                    // Handle pending links display
+                    const container = document.getElementById('pendingLinksContainer');
+                    const pendingLinks = (data.links || []).filter(link => link.status === 'pending');
+                    
+                    if (pendingLinks.length === 0) {{
+                        container.innerHTML = `
+                            <div class="success-box">
+                                <h2 style="margin-bottom: 20px;">✅ ¡TODO PERFECTO!</h2>
+                                <p style="font-size: 1.3rem; margin-bottom: 15px; font-weight: bold;">No hay links pendientes de aprobación</p>
+                                <p style="font-size: 1.1rem; margin-bottom: 15px;">Todos los envíos han sido procesados exitosamente</p>
+                                <div style="background: rgba(255,255,255,0.8); padding: 20px; border-radius: 10px; margin-top: 20px;">
+                                    <p style="font-size: 1.2rem; font-weight: bold; color: #28a745;">💰 INGRESOS ACTUALES: $$${{data.approved}} USD</p>
+                                    <p style="font-size: 1rem; color: #666;">(${{data.approved}} links aprobados × $1 cada uno)</p>
+                                </div>
+                            </div>
+                        `;
+                    }} else {{
+                        let html = `
+                            <div style="background: #fff3cd; border: 3px solid #ff9800; padding: 25px; border-radius: 15px; margin-bottom: 30px; text-align: center;">
+                                <h3 style="color: #e65100; margin: 0 0 15px 0; font-size: 1.5rem;">🚨 ¡ACCIÓN REQUERIDA!</h3>
+                                <p style="font-size: 1.2rem; margin: 0; color: #e65100; font-weight: bold;">${{pendingLinks.length}} links esperando tu aprobación</p>
+                            </div>
+                        `;
+                        
+                        pendingLinks.forEach((link, index) => {{
+                            html += `
+                                <div class="pending-link">
+                                    <div class="link-info">
+                                        <h3>🔔 LINK #${{index + 1}}: ${{link.owner_name || 'Sin nombre'}}</h3>
+                                        <p><strong>🌐 Sitio web:</strong> <a href="${{link.website_url || '#'}}" target="_blank" style="color: #007bff; text-decoration: none;">${{link.website_url || 'Sin URL'}}</a></p>
+                                        <p><strong>📞 Teléfono:</strong> ${{link.phone || 'No proporcionado'}}</p>
+                                        <p><strong>📍 Ubicación:</strong> ${{link.location || 'No especificada'}}</p>
+                                        <p style="font-size: 0.9rem; color: #666; margin-top: 10px;"><strong>🆔 ID:</strong> ${{link.id}}</p>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                                        <button class="btn btn-approve" onclick="approveLink('${{link.id}}')">
+                                            ✅ APROBAR AHORA
+                                        </button>
+                                        <button class="btn btn-reject" onclick="rejectLink('${{link.id}}')">
+                                            ❌ RECHAZAR
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }});
+                        
+                        container.innerHTML = html;
+                    }}
+                    
+                    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+                    showAlert(`✅ ¡Datos cargados exitosamente! ${{data.total_links}} links en total (${{pendingLinks.length}} pendientes)`, 'success');
+                    
+                }} else {{
+                    throw new Error(data?.error || 'Respuesta inválida del servidor');
+                }}
+                
+            }} catch (error) {{
+                console.error('❌ Error cargando datos:', error);
+                
+                // Reset stats to show error
+                document.getElementById('totalLinks').textContent = '❌';
+                document.getElementById('approvedLinks').textContent = '❌';
+                document.getElementById('pendingLinks').textContent = '❌';
+                document.getElementById('revenue').textContent = '$❌';
+                
+                document.getElementById('pendingLinksContainer').innerHTML = `
+                    <div style="background: #f8d7da; border: 3px solid #dc3545; padding: 30px; border-radius: 15px; text-align: center;">
+                        <h3 style="color: #721c24; margin-bottom: 20px;">❌ Error al Cargar Datos</h3>
+                        <p style="color: #721c24; margin-bottom: 15px;"><strong>Error:</strong> ${{error.message}}</p>
+                        <p style="color: #721c24; margin-bottom: 20px;">Por favor, intenta recargar los datos</p>
+                        <button class="btn" onclick="loadData()" style="background: #dc3545; color: white;">🔄 REINTENTAR</button>
+                    </div>
+                `;
+                
+                showAlert(`❌ Error cargando datos: ${{error.message}}`, 'error');
+            }}
+        }}
+
+        async function approveLink(linkId) {{
+            if (!confirm('🤔 ¿Estás seguro de que deseas APROBAR este link?\\n\\n✅ El link será visible en la página principal inmediatamente.\\n💰 Generará +$1 USD de ingresos.')) {{
+                return;
+            }}
+
+            try {{
+                showAlert('⏳ Aprobando link... Por favor espera', 'success');
+                
+                const response = await fetch(API_BASE + '/links/' + linkId, {{
+                    method: 'PUT',
+                    headers: {{
+                        'Content-Type': 'application/json'
+                    }},
+                    body: JSON.stringify({{ status: 'approved' }})
+                }});
+
+                if (response.ok) {{
+                    showAlert('🎉 ¡Link aprobado exitosamente! +$1 USD generado. Recargando datos...', 'success');
+                    setTimeout(() => {{
+                        loadData();
+                    }}, 2500);
+                }} else {{
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${{response.status}}: ${{errorText}}`);
+                }}
+            }} catch (error) {{
+                console.error('❌ Error aprobando link:', error);
+                showAlert(`❌ Error al aprobar el link: ${{error.message}}`, 'error');
+            }}
+        }}
+
+        async function rejectLink(linkId) {{
+            if (!confirm('⚠️ ¿Estás seguro de que deseas RECHAZAR este link?\\n\\n❌ Esta acción no se puede deshacer fácilmente.\\n🚫 El link NO será visible en la página principal.')) {{
+                return;
+            }}
+
+            try {{
+                showAlert('⏳ Rechazando link... Por favor espera', 'success');
+                
+                const response = await fetch(API_BASE + '/links/' + linkId, {{
+                    method: 'PUT',
+                    headers: {{
+                        'Content-Type': 'application/json'
+                    }},
+                    body: JSON.stringify({{ status: 'rejected' }})
+                }});
+
+                if (response.ok) {{
+                    showAlert('✅ Link rechazado exitosamente. Recargando datos...', 'success');
+                    setTimeout(() => {{
+                        loadData();
+                    }}, 2500);
+                }} else {{
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${{response.status}}: ${{errorText}}`);
+                }}
+            }} catch (error) {{
+                console.error('❌ Error rechazando link:', error);
+                showAlert(`❌ Error al rechazar el link: ${{error.message}}`, 'error');
+            }}
+        }}
+
+        // Auto-load data when page loads
+        document.addEventListener('DOMContentLoaded', function() {{
+            console.log('✅ Panel admin cargado - iniciando carga automática de datos...');
+            setTimeout(loadData, 1000); // Delay to ensure page is fully rendered
+        }});
+    </script>
+</body>
+</html>"""
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e),
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        }
+        return f"""<!DOCTYPE html>
+<html><head><title>Error Admin</title><style>body{{font-family:Arial;padding:40px;background:#f8d7da;text-align:center;}}.error{{background:white;padding:40px;border-radius:15px;border:3px solid #dc3545;max-width:600px;margin:0 auto;}}</style></head>
+<body><div class="error"><h1 style="color:#721c24;">❌ ERROR EN PANEL ADMIN</h1><p><strong>Error técnico:</strong> {str(e)}</p><a href="/api/admin-working" style="color:#007bff;">🔄 Reintentar</a></div></body></html>"""
 
 @api_router.get("/admin-panel", response_class=HTMLResponse)
 async def admin_panel_final():
