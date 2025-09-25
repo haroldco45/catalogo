@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Links - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .modal {
+            display: none;
+        }
+        .modal.active {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-2xl font-bold text-slate-800">🖼️ Gestión de Links y Logos</h1>
+                    <div class="flex gap-4">
+                        <button onclick="loadLinks()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                            🔄 RECARGAR
+                        </button>
+                        <a href="/admin" class="text-blue-600 hover:text-blue-800">← Volver al Admin</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats -->
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white p-4 rounded-lg shadow text-center">
+                    <p class="text-sm text-gray-500">Total Links</p>
+                    <p id="totalLinks" class="text-2xl font-bold text-blue-600">-</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow text-center">
+                    <p class="text-sm text-gray-500">Aprobados</p>
+                    <p id="approvedLinks" class="text-2xl font-bold text-green-600">-</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow text-center">
+                    <p class="text-sm text-gray-500">Pendientes</p>
+                    <p id="pendingLinks" class="text-2xl font-bold text-yellow-600">-</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow text-center">
+                    <p class="text-sm text-gray-500">Ingresos</p>
+                    <p id="revenue" class="text-2xl font-bold text-green-600">-</p>
+                </div>
+            </div>
+
+            <!-- Links List -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6">
+                    <h2 class="text-xl font-bold mb-6">📋 Todos los Links</h2>
+                    
+                    <div class="mb-4">
+                        <select id="statusFilter" onchange="filterLinks()" class="px-3 py-2 border border-gray-300 rounded-lg">
+                            <option value="all">Todos los Estados</option>
+                            <option value="approved">Solo Aprobados</option>
+                            <option value="pending">Solo Pendientes</option>
+                            <option value="rejected">Solo Rechazados</option>
+                        </select>
+                    </div>
+                    
+                    <div id="linksContainer" class="space-y-4">
+                        <p class="text-center py-8 text-gray-500">Haz clic en "RECARGAR" para cargar los links</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edición de Logo -->
+    <div id="logoModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">🖼️ Editar Logo</h3>
+                <button onclick="closeLogoModal()" class="text-gray-500 hover:text-gray-700 text-xl font-bold">✕</button>
+            </div>
+            
+            <div id="linkInfo" class="mb-4 p-3 bg-blue-50 rounded-lg">
+                <!-- Link info will be populated here -->
+            </div>
+            
+            <div class="mb-6">
+                <p class="text-sm font-semibold mb-3">Logo Actual:</p>
+                <div id="currentLogo" class="flex items-center justify-center w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg mx-auto">
+                    <!-- Current logo will be shown here -->
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <p class="text-sm font-semibold mb-3">Subir Nuevo Logo:</p>
+                <input type="file" id="logoUpload" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-300 rounded-lg p-2">
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <div class="flex gap-3">
+                    <button onclick="refreshFavicon()" class="bg-yellow-600 hover:bg-yellow-700 text-white flex-1 font-semibold py-2 rounded">🔄 Actualizar Favicon</button>
+                    <button onclick="removeLogo()" class="bg-red-600 hover:bg-red-700 text-white flex-1 font-semibold py-2 rounded">🗑️ Eliminar Logo</button>
+                </div>
+                <button onclick="uploadLogo()" class="bg-blue-600 hover:bg-blue-700 text-white w-full font-semibold py-2 rounded">📤 Subir Logo</button>
+                <button onclick="closeLogoModal()" class="bg-gray-500 hover:bg-gray-600 text-white w-full font-semibold py-2 rounded">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allLinks = [];
+        let currentLink = null;
+
+        async function loadLinks() {
+            try {
+                const response = await fetch('/api/admin/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    allLinks = data.links || [];
+                    updateStats(data);
+                    displayLinks(allLinks);
+                    console.log('✅ Links cargados:', allLinks.length);
+                } else {
+                    console.error('❌ Error:', data.error);
+                    alert('Error al cargar los links');
+                }
+            } catch (error) {
+                console.error('❌ Error de red:', error);
+                alert('Error de conexión');
+            }
+        }
+
+        function updateStats(data) {
+            document.getElementById('totalLinks').textContent = data.total_links || 0;
+            document.getElementById('approvedLinks').textContent = data.approved || 0;
+            document.getElementById('pendingLinks').textContent = data.pending || 0;
+            document.getElementById('revenue').textContent = '$' + (data.revenue || 0);
+        }
+
+        function displayLinks(links) {
+            const container = document.getElementById('linksContainer');
+            
+            if (links.length === 0) {
+                container.innerHTML = '<p class="text-center py-8 text-gray-500">No hay links para mostrar</p>';
+                return;
+            }
+
+            container.innerHTML = links.map(link => `
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow ${getStatusBg(link.status)}">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="flex-shrink-0">
+                                ${getLogo(link)}
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="${getStatusIcon(link.status)}">${getStatusText(link.status)}</span>
+                                    <span class="font-semibold text-lg">${link.owner_name}</span>
+                                    <span class="text-xs px-2 py-1 rounded-full ${getStatusBadge(link.status)}">${link.status.toUpperCase()}</span>
+                                </div>
+                                <p class="text-sm text-blue-600 hover:underline cursor-pointer" onclick="window.open('${link.website_url}', '_blank')">
+                                    ${link.website_url}
+                                </p>
+                                <p class="text-xs text-gray-500">📞 ${link.phone || 'N/A'} | 📍 ${link.location || 'N/A'}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-2">
+                            ${link.status === 'approved' ? `
+                                <button onclick="openLogoModal('${link.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold text-sm">
+                                    🖼️ EDITAR LOGO
+                                </button>
+                            ` : ''}
+                            
+                            ${link.status === 'pending' ? `
+                                <button onclick="approveLink('${link.id}')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm">✅ APROBAR</button>
+                                <button onclick="rejectLink('${link.id}')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm">❌ RECHAZAR</button>
+                            ` : ''}
+                            
+                            ${link.status === 'approved' ? `
+                                <button onclick="rejectLink('${link.id}')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm">❌ RECHAZAR</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getLogo(link) {
+            if (link.custom_logo) {
+                return `<img src="/uploads/${link.custom_logo}" alt="Logo" class="w-12 h-12 rounded object-cover border-2 border-green-400">`;
+            } else if (link.favicon_url) {
+                return `<img src="${link.favicon_url}" alt="Favicon" class="w-12 h-12 rounded object-cover border-2 border-blue-400">`;
+            } else {
+                return `<div class="w-12 h-12 rounded bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold border-2 border-gray-400">
+                    ${link.owner_name ? link.owner_name.charAt(0).toUpperCase() : '?'}
+                </div>`;
+            }
+        }
+
+        function getStatusBg(status) {
+            switch(status) {
+                case 'approved': return 'bg-green-50';
+                case 'pending': return 'bg-yellow-50';
+                case 'rejected': return 'bg-red-50';
+                default: return 'bg-gray-50';
+            }
+        }
+
+        function getStatusIcon(status) {
+            switch(status) {
+                case 'approved': return 'text-green-600 font-bold';
+                case 'pending': return 'text-yellow-600 font-bold';
+                case 'rejected': return 'text-red-600 font-bold';
+                default: return 'text-gray-600 font-bold';
+            }
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'approved': return '✅';
+                case 'pending': return '⚠️';
+                case 'rejected': return '❌';
+                default: return '❓';
+            }
+        }
+
+        function getStatusBadge(status) {
+            switch(status) {
+                case 'approved': return 'bg-green-100 text-green-800';
+                case 'pending': return 'bg-yellow-100 text-yellow-800';
+                case 'rejected': return 'bg-red-100 text-red-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function filterLinks() {
+            const filter = document.getElementById('statusFilter').value;
+            const filtered = filter === 'all' ? allLinks : allLinks.filter(link => link.status === filter);
+            displayLinks(filtered);
+        }
+
+        function openLogoModal(linkId) {
+            currentLink = allLinks.find(link => link.id === linkId);
+            if (!currentLink) return;
+
+            // Populate modal
+            document.getElementById('linkInfo').innerHTML = `
+                <p class="font-semibold text-blue-800">${currentLink.owner_name}</p>
+                <p class="text-sm text-blue-600">${currentLink.website_url}</p>
+            `;
+
+            document.getElementById('currentLogo').innerHTML = getLogo(currentLink);
+            
+            document.getElementById('logoModal').classList.add('active');
+        }
+
+        function closeLogoModal() {
+            document.getElementById('logoModal').classList.remove('active');
+            currentLink = null;
+            document.getElementById('logoUpload').value = '';
+        }
+
+        async function uploadLogo() {
+            if (!currentLink) return;
+            
+            const fileInput = document.getElementById('logoUpload');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Por favor selecciona un archivo');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('custom_logo', file);
+
+            try {
+                const response = await fetch(`/api/links/${currentLink.id}/logo`, {
+                    method: 'PUT',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('✅ Logo actualizado correctamente');
+                    closeLogoModal();
+                    loadLinks();
+                } else {
+                    alert('❌ Error al subir el logo');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ Error de conexión');
+            }
+        }
+
+        async function removeLogo() {
+            if (!currentLink) return;
+            
+            if (!confirm('¿Estás seguro de eliminar el logo personalizado?')) return;
+
+            try {
+                const response = await fetch(`/api/links/${currentLink.id}/logo`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ remove_logo: true })
+                });
+
+                if (response.ok) {
+                    alert('✅ Logo eliminado correctamente');
+                    closeLogoModal();
+                    loadLinks();
+                } else {
+                    alert('❌ Error al eliminar el logo');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ Error de conexión');
+            }
+        }
+
+        async function refreshFavicon() {
+            if (!currentLink) return;
+
+            try {
+                const response = await fetch(`/api/links/${currentLink.id}/refresh-logo`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    alert('✅ Favicon actualizado correctamente');
+                    closeLogoModal();
+                    loadLinks();
+                } else {
+                    alert('❌ Error al actualizar favicon');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ Error de conexión');
+            }
+        }
+
+        async function approveLink(linkId) {
+            try {
+                const response = await fetch(`/api/links/${linkId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'approved' })
+                });
+
+                if (response.ok) {
+                    alert('✅ Link aprobado');
+                    loadLinks();
+                } else {
+                    alert('❌ Error al aprobar');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ Error de conexión');
+            }
+        }
+
+        async function rejectLink(linkId) {
+            if (!confirm('¿Estás seguro de rechazar este link?')) return;
+            
+            try {
+                const response = await fetch(`/api/links/${linkId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'rejected' })
+                });
+
+                if (response.ok) {
+                    alert('✅ Link rechazado');
+                    loadLinks();
+                } else {
+                    alert('❌ Error al rechazar');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ Error de conexión');
+            }
+        }
+
+        // Cargar automáticamente al iniciar
+        window.onload = function() {
+            loadLinks();
+        };
+    </script>
+</body>
+</html>
