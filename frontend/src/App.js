@@ -1114,7 +1114,7 @@ const AdminView = ({ notify }) => {
         {/* Approved Links */}
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-xl font-bold mb-4">✅ Links Aprobados ({adminData.links ? adminData.links.filter(link => link.status === 'approved').length : 0})</h2>
+            <h2 className="text-xl font-bold mb-4">✅ Links Aprobados</h2>
             
             {loading ? (
               <div className="text-center py-8">
