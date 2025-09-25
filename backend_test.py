@@ -851,6 +851,187 @@ class LinkDirectoryAPITester:
             self.log_test("Manual Approval Workflow", False, str(e))
             return False
 
+    def test_complete_manual_approval_process(self):
+        """Test the complete manual approval process as requested in the review - approve ALL pending links"""
+        print("🎯 COMPLETE MANUAL APPROVAL PROCESS - APPROVE ALL PENDING LINKS")
+        print("=" * 80)
+        
+        try:
+            # Step 1: Get all pending links using GET /api/links?status=pending
+            print("📊 Step 1: Getting ALL pending links using GET /api/links?status=pending...")
+            response = requests.get(f"{self.api_url}/links?status=pending", timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test("Complete Manual Approval - Get Pending Links", False, f"GET /api/links?status=pending failed: {response.status_code}")
+                return False
+            
+            pending_links = response.json()
+            pending_count = len(pending_links)
+            
+            print(f"   📊 Found {pending_count} pending links to approve")
+            
+            if pending_count == 0:
+                print("   ✅ No pending links found - all links are already approved!")
+                self.log_test("Complete Manual Approval - No Pending Links", True, "All links already approved")
+                
+                # Still verify final state
+                return self._verify_final_approval_state()
+            
+            # Display all pending links
+            print(f"\n📋 PENDING LINKS TO APPROVE:")
+            print("-" * 60)
+            for i, link in enumerate(pending_links, 1):
+                print(f"{i:2d}. ID: {link.get('id')}")
+                print(f"    Owner: {link.get('owner_name')}")
+                print(f"    URL: {link.get('website_url')}")
+                print(f"    Phone: {link.get('phone')}")
+                print(f"    Location: {link.get('location')}")
+                print(f"    Created: {link.get('created_at')}")
+                print()
+            
+            # Step 2: Approve EACH pending link using PUT /api/links/{id} with {"status": "approved"}
+            print(f"📝 Step 2: Approving ALL {pending_count} pending links...")
+            print("-" * 60)
+            
+            approved_count = 0
+            failed_approvals = []
+            
+            for i, link in enumerate(pending_links, 1):
+                link_id = link.get('id')
+                owner_name = link.get('owner_name', 'Unknown')
+                
+                print(f"Approving {i}/{pending_count}: {owner_name} (ID: {link_id[:8]}...)")
+                
+                update_data = {"status": "approved"}
+                response = requests.put(
+                    f"{self.api_url}/links/{link_id}",
+                    json=update_data,
+                    timeout=10
+                )
+                
+                if response.status_code == 200:
+                    approval_result = response.json()
+                    print(f"   ✅ {approval_result.get('message', 'Approved successfully')}")
+                    approved_count += 1
+                else:
+                    try:
+                        error_data = response.json()
+                        error_msg = error_data.get('detail', 'Unknown error')
+                    except:
+                        error_msg = response.text[:100]
+                    print(f"   ❌ Failed: {error_msg}")
+                    failed_approvals.append({
+                        'id': link_id,
+                        'owner': owner_name,
+                        'error': error_msg
+                    })
+            
+            print(f"\n📊 APPROVAL RESULTS:")
+            print(f"   Successfully approved: {approved_count}/{pending_count}")
+            print(f"   Failed approvals: {len(failed_approvals)}")
+            
+            if failed_approvals:
+                print(f"\n❌ FAILED APPROVALS:")
+                for failure in failed_approvals:
+                    print(f"   - {failure['owner']} ({failure['id'][:8]}...): {failure['error']}")
+            
+            # Step 3: Verify that all are now approved (0 pending links)
+            print(f"\n🔍 Step 3: Verifying all links are now approved...")
+            response = requests.get(f"{self.api_url}/links?status=pending", timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test("Complete Manual Approval - Verify No Pending", False, "Could not verify pending links")
+                return False
+            
+            remaining_pending = response.json()
+            remaining_count = len(remaining_pending)
+            
+            print(f"   📊 Remaining pending links: {remaining_count}")
+            
+            if remaining_count > 0:
+                print(f"   ⚠️  WARNING: {remaining_count} links still pending:")
+                for link in remaining_pending:
+                    print(f"      - {link.get('owner_name')} ({link.get('id')[:8]}...)")
+            else:
+                print(f"   ✅ SUCCESS: 0 pending links remaining - all approved!")
+            
+            # Step 4: Confirm total final links and revenue
+            return self._verify_final_approval_state()
+                
+        except Exception as e:
+            self.log_test("Complete Manual Approval Process", False, str(e))
+            return False
+
+    def _verify_final_approval_state(self):
+        """Verify the final state after approval process"""
+        try:
+            print(f"\n🔍 Step 4: Confirming final state and revenue...")
+            
+            # Get final admin status
+            response = requests.get(f"{self.api_url}/admin/status", timeout=10)
+            if response.status_code != 200:
+                print("   ❌ Could not get final admin status")
+                return False
+            
+            admin_data = response.json()
+            total_links = admin_data.get('total_links', 0)
+            approved_final = admin_data.get('approved', 0)
+            pending_final = admin_data.get('pending', 0)
+            rejected_final = admin_data.get('rejected', 0)
+            
+            # Get approved links for main page
+            response = requests.get(f"{self.api_url}/links?status=approved", timeout=10)
+            if response.status_code != 200:
+                print("   ❌ Could not get approved links")
+                return False
+            
+            approved_links = response.json()
+            main_page_count = len(approved_links)
+            revenue = main_page_count * 1  # $1 per approved link
+            
+            print(f"\n📊 FINAL PLATFORM STATE:")
+            print("=" * 50)
+            print(f"📊 Total links in database: {total_links}")
+            print(f"📊 Approved links: {approved_final}")
+            print(f"📊 Pending links: {pending_final}")
+            print(f"📊 Rejected links: {rejected_final}")
+            print(f"📊 Main page active links: {main_page_count}")
+            print(f"💰 Total revenue: ${revenue} USD")
+            print()
+            
+            # Success criteria
+            success = (pending_final == 0 and approved_final > 0)
+            
+            if success:
+                print("✅ MANUAL APPROVAL PROCESS COMPLETED SUCCESSFULLY!")
+                print(f"   - 0 pending links remaining")
+                print(f"   - {approved_final} links approved and active")
+                print(f"   - Platform 100% functional")
+                print(f"   - Revenue: ${revenue} USD")
+                
+                print(f"\n📋 PROCESS FOR FUTURE LINKS:")
+                print("   For new link submissions, use:")
+                print("   1. GET /api/links?status=pending (to find pending)")
+                print("   2. PUT /api/links/{id} with {\"status\": \"approved\"} (to approve)")
+                print("   3. Verify with GET /api/admin/status")
+                
+                self.log_test("Complete Manual Approval Process", True, 
+                            f"All pending links approved. Final state: {approved_final} approved, {pending_final} pending, Revenue: ${revenue}")
+                return True
+            else:
+                print("❌ MANUAL APPROVAL PROCESS INCOMPLETE!")
+                print(f"   - {pending_final} pending links still remain")
+                print(f"   - Platform not 100% functional")
+                
+                self.log_test("Complete Manual Approval Process", False, 
+                            f"Process incomplete: {pending_final} pending links remain")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error verifying final state: {e}")
+            self.log_test("Complete Manual Approval Process", False, f"Final verification failed: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting PAGINA DEL LINK API Tests - ADMIN PANEL FOCUS")
