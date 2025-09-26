@@ -1076,10 +1076,80 @@ const AdminView = ({ notify }) => {
                 <button
                   onClick={() => {
                     const approvedLinks = adminData.links.filter(link => link.status === 'approved');
-                    const linksText = approvedLinks.slice(0, 5).map((link, i) => 
-                      `${i+1}. ${link.owner_name} - ${link.website_url}`
-                    ).join('\n');
-                    alert(`✅ LINKS APROBADOS (${approvedLinks.length} total):\n\n${linksText}\n\n🖼️ Para editar logos, use el botón "GESTIONAR LOGOS" arriba.`);
+                    
+                    // Crear modal HTML completo para gestión de logos
+                    const modalHTML = `
+                        <div id="logoManagementModal" style="
+                            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                            background: rgba(0,0,0,0.5); z-index: 10000; 
+                            display: flex; align-items: center; justify-content: center;
+                        ">
+                            <div style="
+                                background: white; border-radius: 10px; padding: 30px; 
+                                max-width: 900px; width: 90%; max-height: 80vh; overflow-y: auto;
+                                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                            ">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                    <h2 style="margin: 0; color: #2d5a27; font-size: 24px;">🖼️ Gestión de Logos</h2>
+                                    <button onclick="document.getElementById('logoManagementModal').remove()" 
+                                        style="background: #dc3545; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 18px; cursor: pointer;">✕</button>
+                                </div>
+                                
+                                <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                    <p style="margin: 0; font-size: 14px;"><strong>📋 ${approvedLinks.length} links aprobados</strong> | Haz clic en "SUBIR LOGO" para cambiar el logo de cualquier link</p>
+                                </div>
+                                
+                                <div style="max-height: 400px; overflow-y: auto;">
+                                    ${approvedLinks.map(link => `
+                                        <div style="
+                                            border: 1px solid #28a745; background: #f8fff8; border-radius: 8px; 
+                                            padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+                                        ">
+                                            <div>
+                                                <p style="margin: 0; font-weight: bold; color: #2d5a27; font-size: 16px;">✅ ${link.owner_name}</p>
+                                                <p style="margin: 5px 0 0 0; color: #0066cc; font-size: 14px;">${link.website_url}</p>
+                                                <p style="margin: 5px 0 0 0; color: #666; font-size: 12px;">📞 ${link.phone || 'N/A'} | 📍 ${link.location || 'N/A'}</p>
+                                            </div>
+                                            <div>
+                                                <input type="file" id="logoFile_${link.id}" accept="image/*" style="display: none;">
+                                                <button onclick="document.getElementById('logoFile_${link.id}').click()" 
+                                                    style="background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-right: 5px; font-size: 12px;">
+                                                    🖼️ SUBIR LOGO
+                                                </button>
+                                                <button onclick="removeLogo('${link.id}', '${link.owner_name}')" 
+                                                    style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                                                    🗑️ QUITAR
+                                                </button>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                
+                                <div style="text-align: center; margin-top: 20px;">
+                                    <button onclick="document.getElementById('logoManagementModal').remove()" 
+                                        style="background: #6c757d; color: white; border: none; padding: 10px 30px; border-radius: 5px; cursor: pointer;">
+                                        Cerrar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Insertar modal en el DOM
+                    document.body.insertAdjacentHTML('beforeend', modalHTML);
+                    
+                    // Agregar event listeners para subir archivos
+                    approvedLinks.forEach(link => {
+                        const fileInput = document.getElementById(`logoFile_${link.id}`);
+                        if (fileInput) {
+                            fileInput.onchange = async function(event) {
+                                const file = event.target.files[0];
+                                if (file) {
+                                    await window.uploadLogo(link.id, link.owner_name, file);
+                                }
+                            };
+                        }
+                    });
                   }}
                   className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold text-sm"
                 >
