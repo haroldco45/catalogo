@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+
+# Permitir indexación de la página principal
+Allow: /
+
+# Sitemap
+Sitemap: https://linkhub-28.emergent.host/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
