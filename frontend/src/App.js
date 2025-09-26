@@ -415,7 +415,7 @@ const ClientView = ({ notify }) => {
                       </span>
                     </div>
                     <p className="text-xs text-center font-medium text-slate-700 group-hover:text-blue-600 transition-colors line-clamp-2">
-                      {new URL(link.website_url).hostname.replace('www.', '')}
+                      {link.display_name || new URL(link.website_url).hostname.replace('www.', '')}
                     </p>
                   </CardContent>
                 </Card>
