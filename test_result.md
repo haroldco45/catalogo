@@ -282,15 +282,16 @@ metadata:
 
 test_plan:
   current_focus:
-    - "CRITICAL: Logo upload file size bug - files saved as 78-94 bytes instead of MB"
+    - "CRITICAL: Static file serving for uploaded logos - /uploads/ path returns HTML instead of images"
   stuck_tasks:
-    - "API endpoint PUT /api/links/{link_id}/logo functionality"
+    - "Static file serving for uploaded logos - /uploads/ path configuration"
   test_all: false
   test_priority: "high_first"
   completed_tasks:
     - "Manual approval workflow for pending links"
     - "Admin panel component rendering and functionality"
     - "Instagram logo display issue - custom_logo field missing from admin/status endpoint"
+    - "API endpoint PUT /api/links/{link_id}/logo functionality"
 
 agent_communication:
     - agent: "main"  
