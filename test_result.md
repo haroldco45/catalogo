@@ -191,15 +191,21 @@ backend:
 
   - task: "API endpoint PUT /api/links/{link_id}/logo functionality"
     implemented: true
-    working: true  
+    working: false  
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"  
     needs_retesting: false
     status_history:
         - working: true
           agent: "testing"
           comment: "TESTED (2025-09-26): COMPREHENSIVE LOGO UPLOAD TESTING COMPLETED SUCCESSFULLY. ✅ PUT /api/links/{link_id}/logo endpoint working perfectly ✅ Basic logo upload: 200 OK ✅ Logo removal with remove_logo=True: 200 OK ✅ Logo re-upload: 200 OK ✅ Invalid file handling: 200 OK (accepts any file type) ✅ Large file upload (1MB): 200 OK ✅ Non-existent link: 404 Not Found (correct) ✅ Uploads directory permissions: writable ✅ Files saved correctly to /app/backend/uploads/ ✅ INSTAGRAM LINKS SPECIFICALLY TESTED: Created 2 Instagram test links, all logo operations successful ✅ Instagram logo upload: 200 OK ✅ Instagram logo removal: 200 OK ✅ Instagram logo re-upload: 200 OK. SUCCESS RATE: 100% (11/11 tests passed). NO ISSUES FOUND with Instagram links - logo upload functionality works identically for all link types including Instagram."
+        - working: false
+          agent: "user"
+          comment: "CRITICAL ISSUE REPORTED: Instagram screenshot uploads return 200 OK but files are saved as 78-94 bytes instead of actual image sizes (should be MB). User reports files uploading successfully but being too small."
+        - working: false
+          agent: "testing"
+          comment: "CRITICAL ISSUE CONFIRMED (2025-01-27): ❌ LOGO UPLOAD FILE SIZE BUG VERIFIED. INVESTIGATION RESULTS: ✅ API returns 200 OK (endpoint works) ❌ Files saved with wrong sizes: 78-94 bytes instead of MB ❌ 8 out of 20 existing files are < 1KB (suspicious) ❌ Intermittent issue: some uploads work (1MB, 2MB, 5MB saved correctly), others fail ❌ Backend logs show 'File size: 0.00 MB' for failed uploads. ROOT CAUSE: File content not being written correctly in aiofiles.open() operations. EVIDENCE: instagram_screenshot files found with 78-94 bytes instead of expected MB sizes. SUCCESS RATE: 75% (3/4 test uploads worked). REQUIRES IMMEDIATE FIX in file upload handling code."
 
   - task: "Instagram logo display issue - custom_logo field missing from admin/status endpoint"
     implemented: true
