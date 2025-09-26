@@ -427,15 +427,27 @@ async def update_logo(
             print(f"   📁 Original filename: {custom_logo.filename}")
             print(f"   📊 Content type: {custom_logo.content_type}")
             
-            # Read file content first to check size
+            # CORREGIDO: Manejo apropiado de archivos para capturas de Instagram
+            print(f"   📤 Processing upload: {custom_logo.filename}")
+            print(f"   📊 Content type: {custom_logo.content_type}")
+            
+            # Read file content CORRECTLY for aiofiles
             content = await custom_logo.read()
-            file_size_mb = len(content) / (1024 * 1024)
-            print(f"   📏 File size: {file_size_mb:.2f} MB")
+            file_size_bytes = len(content)
+            file_size_mb = file_size_bytes / (1024 * 1024)
+            print(f"   📏 File size: {file_size_mb:.2f} MB ({file_size_bytes} bytes)")
+            
+            # Validate we actually have content
+            if file_size_bytes == 0:
+                print(f"   ❌ Empty file detected")
+                raise HTTPException(status_code=400, detail="Archivo vacío - intenta con otra captura")
+            
+            if file_size_bytes < 1000:  # Less than 1KB is suspicious
+                print(f"   ⚠️ Very small file ({file_size_bytes} bytes) - may be corrupted")
             
             # OPTIMIZADO PARA CAPTURAS DE PANTALLA DE INSTAGRAM
-            # Accept any image format, including large screenshots
             if file_size_mb > 10:
-                print(f"   ⚠️ Large file detected ({file_size_mb:.2f} MB) - probably Instagram screenshot")
+                print(f"   📱 Large Instagram screenshot detected ({file_size_mb:.2f} MB)")
             
             # Very flexible file handling - accept ANY image type
             file_extension = 'png'  # Default for screenshots
@@ -452,13 +464,30 @@ async def update_logo(
             logo_path = UPLOAD_DIR / logo_filename
             print(f"   💾 Saving Instagram screenshot as: {logo_filename}")
             
-            # Save file - handle ANY size (Instagram screenshots can be very large)
+            # CORREGIDO: Save file with proper async/await pattern
             try:
-                async with aiofiles.open(logo_path, 'wb') as f:
-                    await f.write(content)
-                print(f"   ✅ Instagram screenshot saved successfully")
+                # Ensure content is properly written using correct aiofiles pattern
+                async with aiofiles.open(logo_path, 'wb') as out_file:
+                    await out_file.write(content)  # Write the content we already read
+                
+                # Verify the file was saved correctly
+                if logo_path.exists():
+                    saved_size = logo_path.stat().st_size
+                    print(f"   ✅ File saved successfully: {saved_size} bytes")
+                    
+                    if saved_size != file_size_bytes:
+                        print(f"   ⚠️ Size mismatch! Expected: {file_size_bytes}, Got: {saved_size}")
+                        raise HTTPException(status_code=500, detail="Error en guardado - tamaños no coinciden")
+                    
+                    print(f"   🎉 Instagram screenshot saved perfectly!")
+                else:
+                    raise HTTPException(status_code=500, detail="Archivo no se creó correctamente")
+                    
             except Exception as save_error:
-                print(f"   ❌ Error saving file: {save_error}")
+                print(f"   ❌ Error saving file: {str(save_error)}")
+                # Clean up partial file if it exists
+                if logo_path.exists():
+                    logo_path.unlink()
                 raise HTTPException(status_code=500, detail=f"Error guardando captura: {str(save_error)}")
             
             # Verify file was saved
