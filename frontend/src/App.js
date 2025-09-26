@@ -1394,6 +1394,56 @@ const AdminView = ({ notify }) => {
   );
 };
 
+// Función para subir logo
+window.uploadLogo = async function(linkId, ownerName, file) {
+  try {
+    const formData = new FormData();
+    formData.append('custom_logo', file);
+    
+    const response = await fetch(`${BACKEND_URL}/api/links/${linkId}/logo`, {
+      method: 'PUT',
+      body: formData
+    });
+    
+    if (response.ok) {
+      alert(`✅ Logo actualizado correctamente para ${ownerName}`);
+      // Cerrar modal
+      const modal = document.getElementById('logoManagementModal');
+      if (modal) modal.remove();
+    } else {
+      const errorText = await response.text();
+      alert(`❌ Error al subir logo: ${response.status} - ${errorText}`);
+    }
+  } catch (error) {
+    alert(`❌ Error de conexión: ${error.message}`);
+  }
+};
+
+// Función para eliminar logo
+window.removeLogo = async function(linkId, ownerName) {
+  if (confirm(`¿Eliminar logo personalizado de ${ownerName}?`)) {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/links/${linkId}/logo`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ remove_logo: true })
+      });
+      
+      if (response.ok) {
+        alert(`✅ Logo eliminado correctamente para ${ownerName}`);
+        // Cerrar modal
+        const modal = document.getElementById('logoManagementModal');
+        if (modal) modal.remove();
+      } else {
+        const errorText = await response.text();
+        alert(`❌ Error al eliminar logo: ${response.status} - ${errorText}`);
+      }
+    } catch (error) {
+      alert(`❌ Error de conexión: ${error.message}`);
+    }
+  }
+};
+
 function App() {
   const notification = useNotification();
 
