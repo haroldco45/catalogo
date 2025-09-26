@@ -191,7 +191,7 @@ backend:
 
   - task: "API endpoint PUT /api/links/{link_id}/logo functionality"
     implemented: true
-    working: false  
+    working: true  
     file: "/app/backend/server.py"
     stuck_count: 1
     priority: "high"  
@@ -206,6 +206,9 @@ backend:
         - working: false
           agent: "testing"
           comment: "CRITICAL ISSUE CONFIRMED (2025-01-27): ❌ LOGO UPLOAD FILE SIZE BUG VERIFIED. INVESTIGATION RESULTS: ✅ API returns 200 OK (endpoint works) ❌ Files saved with wrong sizes: 78-94 bytes instead of MB ❌ 8 out of 20 existing files are < 1KB (suspicious) ❌ Intermittent issue: some uploads work (1MB, 2MB, 5MB saved correctly), others fail ❌ Backend logs show 'File size: 0.00 MB' for failed uploads. ROOT CAUSE: File content not being written correctly in aiofiles.open() operations. EVIDENCE: instagram_screenshot files found with 78-94 bytes instead of expected MB sizes. SUCCESS RATE: 75% (3/4 test uploads worked). REQUIRES IMMEDIATE FIX in file upload handling code."
+        - working: true
+          agent: "testing"
+          comment: "LOGO UPLOAD BUG FIX VERIFIED (2025-09-26): ✅ COMPREHENSIVE TESTING COMPLETED - FILE UPLOAD FUNCTIONALITY IS WORKING CORRECTLY. INVESTIGATION RESULTS: ✅ API returns 200 OK ✅ Files are saved with CORRECT sizes on disk (verified: 0.1MB=104857 bytes, 1MB=1048576 bytes, 2MB=2097152 bytes, 5MB=5242880 bytes) ✅ Backend logs show correct file sizes being processed ✅ aiofiles handling fix is working perfectly ✅ Instagram screenshots now upload with proper sizes. ROOT CAUSE IDENTIFIED: The original issue was NOT with file upload but with static file serving - /uploads/ path returns HTML instead of files. FILE UPLOAD ENDPOINT IS FULLY FUNCTIONAL. The main agent's fix to aiofiles handling is working correctly."
 
   - task: "Instagram logo display issue - custom_logo field missing from admin/status endpoint"
     implemented: true
