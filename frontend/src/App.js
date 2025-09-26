@@ -366,7 +366,7 @@ const ClientView = ({ notify }) => {
                     {/* OPTIMIZADO PARA CAPTURAS DE PANTALLA DE INSTAGRAM */}
                     {link.custom_logo ? (
                       <img
-                        src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
+                        src={`${BACKEND_URL}/api/uploads/${link.custom_logo}`}
                         alt={`${link.owner_name} logo`}
                         className="w-8 h-8 mb-2 rounded-md object-cover shadow-sm"
                         style={{ 
@@ -702,7 +702,7 @@ const EmergencyAdminPanel = ({ notify }) => {
                       <div className="flex-shrink-0">
                         {link.custom_logo ? (
                           <img
-                            src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
+                            src={`${BACKEND_URL}/api/uploads/${link.custom_logo}`}
                             alt="Logo"
                             className="w-8 h-8 rounded object-cover border"
                           />
@@ -1205,7 +1205,7 @@ const AdminView = ({ notify }) => {
                                       <div className="flex-shrink-0">
                                         {link.custom_logo ? (
                                           <img
-                                            src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
+                                            src={`${BACKEND_URL}/api/uploads/${link.custom_logo}`}
                                             alt="Logo"
                                             className="w-12 h-12 rounded object-cover border-2 border-green-400"
                                           />
