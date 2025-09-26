@@ -403,7 +403,9 @@ async def update_logo(
     custom_logo: UploadFile = File(None),
     remove_logo: bool = False
 ):
-    """Update or remove custom logo for a link (admin only)"""
+    """Update or remove custom logo for a link (admin only) - FLEXIBLE FOR INSTAGRAM IMAGES"""
+    print(f"🖼️ Logo update request for link: {link_id}")
+    
     # Get the current link
     current_link = await db.link_submissions.find_one({"id": link_id})
     if not current_link:
@@ -412,26 +414,59 @@ async def update_logo(
     update_data = {}
     
     if remove_logo:
+        print(f"🗑️ Removing logo for: {current_link.get('owner_name', 'Unknown')}")
         # Remove custom logo and get favicon instead
         update_data["custom_logo"] = None
         favicon_url = await extract_best_logo(current_link["website_url"])
         if favicon_url:
             update_data["favicon_url"] = favicon_url
     elif custom_logo and custom_logo.filename:
-        # Save new custom logo
-        file_extension = custom_logo.filename.split('.')[-1] if '.' in custom_logo.filename else 'png'
-        logo_filename = f"logo_{uuid.uuid4()}.{file_extension}"
-        logo_path = UPLOAD_DIR / logo_filename
-        
-        async with aiofiles.open(logo_path, 'wb') as f:
-            content = await custom_logo.read()
-            await f.write(content)
+        try:
+            print(f"📤 Uploading logo for: {current_link.get('owner_name', 'Unknown')}")
+            print(f"   📁 Original filename: {custom_logo.filename}")
+            print(f"   📊 Content type: {custom_logo.content_type}")
             
-        update_data["custom_logo"] = logo_filename
-        # Remove favicon when custom logo is added
-        update_data["favicon_url"] = None
+            # Read file content first to check size
+            content = await custom_logo.read()
+            file_size_mb = len(content) / (1024 * 1024)
+            print(f"   📏 File size: {file_size_mb:.2f} MB")
+            
+            # Very flexible file handling - accept almost any image
+            file_extension = 'jpg'  # Default safe extension
+            if custom_logo.filename and '.' in custom_logo.filename:
+                original_ext = custom_logo.filename.split('.')[-1].lower()
+                # Accept common image formats
+                if original_ext in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg']:
+                    file_extension = original_ext
+                else:
+                    print(f"   ⚠️ Unknown extension '{original_ext}', using 'jpg'")
+            
+            # Generate unique filename
+            logo_filename = f"instagram_logo_{uuid.uuid4()}.{file_extension}"
+            logo_path = UPLOAD_DIR / logo_filename
+            print(f"   💾 Saving as: {logo_filename}")
+            
+            # Save file - handle any size (Instagram images can be large)
+            async with aiofiles.open(logo_path, 'wb') as f:
+                await f.write(content)
+            
+            # Verify file was saved
+            if logo_path.exists():
+                print(f"   ✅ File saved successfully: {logo_path}")
+                update_data["custom_logo"] = logo_filename
+                # Remove favicon when custom logo is added
+                update_data["favicon_url"] = None
+            else:
+                print(f"   ❌ File save failed: {logo_path}")
+                raise HTTPException(status_code=500, detail="Error guardando archivo")
+                
+        except Exception as e:
+            print(f"   ❌ Error processing logo: {str(e)}")
+            # Don't fail completely, just log the error
+            raise HTTPException(status_code=400, detail=f"Error procesando imagen: {str(e)}")
     
     if update_data:
+        print(f"   🔄 Updating database with: {update_data}")
         result = await db.link_submissions.update_one(
             {"id": link_id}, 
             {"$set": update_data}
@@ -439,8 +474,15 @@ async def update_logo(
         
         if result.matched_count == 0:
             raise HTTPException(status_code=404, detail="Link no encontrado")
+        
+        print(f"   ✅ Database updated successfully")
+        return {
+            "message": "Logo actualizado correctamente",
+            "filename": update_data.get("custom_logo"),
+            "link_owner": current_link.get("owner_name", "Unknown")
+        }
     
-    return {"message": "Logo actualizado correctamente"}
+    return {"message": "No hay cambios para aplicar"}
 
 @api_router.post("/links/refresh-logos")
 async def refresh_all_logos():
