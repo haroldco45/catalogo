@@ -1092,7 +1092,8 @@ const AdminView = ({ notify }) => {
                   onClick={() => {
                     const approvedLinks = adminData.links.filter(link => link.status === 'approved');
                     
-                    // Crear modal HTML completo para gestión de logos
+                    // Crear modal HTML completo para gestión de logos - VERSION ACTUALIZADA CON EDICION DE NOMBRES
+                    const timestamp = Date.now(); // Para evitar caché
                     const modalHTML = `
                         <div id="logoManagementModal" style="
                             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
