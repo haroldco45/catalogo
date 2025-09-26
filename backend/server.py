@@ -405,7 +405,8 @@ async def edit_link(link_id: str, update: LinkEdit):
 async def update_logo(
     link_id: str, 
     custom_logo: UploadFile = File(None),
-    remove_logo: bool = False
+    remove_logo: bool = False,
+    display_name: str = Form(None)
 ):
     """Update or remove custom logo for a link (admin only) - FLEXIBLE FOR INSTAGRAM IMAGES"""
     print(f"🖼️ Logo update request for link: {link_id}")
