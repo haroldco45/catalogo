@@ -261,7 +261,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Logo upload endpoint investigation completed"
+    - "Instagram logo issue investigation and fix completed"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -269,6 +269,7 @@ test_plan:
     - "Manual approval workflow for pending links"
     - "Admin panel component rendering and functionality"
     - "Logo upload endpoint comprehensive testing"
+    - "Instagram logo display issue - custom_logo field missing from admin/status endpoint"
 
 agent_communication:
     - agent: "main"  
