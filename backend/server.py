@@ -33,8 +33,11 @@ db = client[os.environ['DB_NAME']]
 # Create the main app
 app = FastAPI()
 
-# Mount static files
+# Mount static files - NOTE: Kubernetes ingress routes /uploads to frontend, so we use /api/uploads
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+
+# WORKAROUND: Serve uploads via API path for Kubernetes ingress compatibility  
+app.mount("/api/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="api_uploads")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
