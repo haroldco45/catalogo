@@ -1335,7 +1335,7 @@ const AdminView = ({ notify }) => {
                 <div className="flex items-center justify-center w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg mx-auto">
                   {logoEditModal.link.custom_logo ? (
                     <img
-                      src={`${BACKEND_URL}/uploads/${logoEditModal.link.custom_logo}`}
+                      src={`${BACKEND_URL}/api/uploads/${logoEditModal.link.custom_logo}`}
                       alt="Logo actual"
                       className="w-full h-full object-cover rounded-lg"
                     />
