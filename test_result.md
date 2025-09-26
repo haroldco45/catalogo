@@ -225,6 +225,18 @@ backend:
           agent: "testing"
           comment: "CRITICAL BUG IDENTIFIED AND FIXED (2025-09-26): ROOT CAUSE: /api/admin/status endpoint was missing custom_logo and favicon_url fields in response, causing data inconsistency. INVESTIGATION RESULTS: ✅ Logo upload working (PUT /api/links/{id}/logo returns 200 OK) ✅ Files saved correctly to /app/backend/uploads/ ✅ Images accessible via GET /uploads/{filename} ✅ /api/links endpoint returned custom_logo correctly ❌ /api/admin/status endpoint missing custom_logo field. FIX APPLIED: Added custom_logo and favicon_url fields to /api/admin/status response. VERIFICATION: ✅ Both endpoints now return consistent data ✅ Instagram links show custom_logo field populated ✅ 2/2 Instagram links tested successfully. ISSUE COMPLETELY RESOLVED."
 
+  - task: "Static file serving for uploaded logos - /uploads/ path configuration"
+    implemented: true
+    working: false  
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"  
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "CRITICAL STATIC FILE SERVING ISSUE IDENTIFIED (2025-09-26): ❌ /uploads/ path returns HTML content instead of actual image files ❌ Content-Type: text/html instead of image/* ❌ Files return 7762 bytes (HTML error page) instead of actual file sizes ❌ This prevents uploaded logos from being displayed correctly. ROOT CAUSE: FastAPI static files mount for /uploads/ is not working correctly in production environment. EVIDENCE: Files exist on disk with correct sizes, but HTTP requests to /uploads/{filename} return HTML error pages. REQUIRES SERVER CONFIGURATION FIX."
+
 frontend:
   - task: "Admin panel routing and authentication"
     implemented: true
