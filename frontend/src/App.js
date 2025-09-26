@@ -1406,22 +1406,22 @@ window.uploadLogo = async function(linkId, ownerName, file) {
     });
     
     if (response.ok) {
-      alert(`✅ Logo actualizado correctamente para ${ownerName}`);
+      window.alert(`✅ Logo actualizado correctamente para ${ownerName}`);
       // Cerrar modal
       const modal = document.getElementById('logoManagementModal');
       if (modal) modal.remove();
     } else {
       const errorText = await response.text();
-      alert(`❌ Error al subir logo: ${response.status} - ${errorText}`);
+      window.alert(`❌ Error al subir logo: ${response.status} - ${errorText}`);
     }
   } catch (error) {
-    alert(`❌ Error de conexión: ${error.message}`);
+    window.alert(`❌ Error de conexión: ${error.message}`);
   }
 };
 
 // Función para eliminar logo
 window.removeLogo = async function(linkId, ownerName) {
-  if (confirm(`¿Eliminar logo personalizado de ${ownerName}?`)) {
+  if (window.confirm(`¿Eliminar logo personalizado de ${ownerName}?`)) {
     try {
       const response = await fetch(`${BACKEND_URL}/api/links/${linkId}/logo`, {
         method: 'PUT',
@@ -1430,16 +1430,16 @@ window.removeLogo = async function(linkId, ownerName) {
       });
       
       if (response.ok) {
-        alert(`✅ Logo eliminado correctamente para ${ownerName}`);
+        window.alert(`✅ Logo eliminado correctamente para ${ownerName}`);
         // Cerrar modal
         const modal = document.getElementById('logoManagementModal');
         if (modal) modal.remove();
       } else {
         const errorText = await response.text();
-        alert(`❌ Error al eliminar logo: ${response.status} - ${errorText}`);
+        window.alert(`❌ Error al eliminar logo: ${response.status} - ${errorText}`);
       }
     } catch (error) {
-      alert(`❌ Error de conexión: ${error.message}`);
+      window.alert(`❌ Error de conexión: ${error.message}`);
     }
   }
 };
