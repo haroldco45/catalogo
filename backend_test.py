@@ -1200,6 +1200,405 @@ class LinkDirectoryAPITester:
             self.log_test("Complete Manual Approval Process", False, f"Final verification failed: {str(e)}")
             return False
 
+    def create_test_logo_image(self, filename="test_logo.png"):
+        """Create a test logo image for upload testing"""
+        try:
+            # Create a simple PNG image data (minimal valid PNG)
+            png_data = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00d\x00\x00\x00d\x08\x02\x00\x00\x00\xff\x80\x02\x03\x19tEXtSoftwareAdobe ImageReadyq\xc9e<\x00\x00\x00\x0eIDATx\xdac\xf8\x0f\x01\x01\x00\x18\xdd\x8d\xb4IEND\xaeB`\x82'
+            return BytesIO(png_data)
+        except:
+            # Fallback: create a text file as image
+            return BytesIO(b"fake logo image data for testing")
+
+    def test_logo_upload_endpoint(self, link_id, test_name="Logo Upload"):
+        """Test the PUT /api/links/{link_id}/logo endpoint"""
+        try:
+            print(f"🖼️  TESTING LOGO UPLOAD FOR LINK: {link_id[:8]}...")
+            
+            # Create test logo
+            test_logo = self.create_test_logo_image()
+            files = {'custom_logo': ('test_logo.png', test_logo, 'image/png')}
+            
+            response = requests.put(
+                f"{self.api_url}/links/{link_id}/logo",
+                files=files,
+                timeout=15
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                details += f", Message: {data.get('message', '')}"
+                print(f"   ✅ Logo upload successful: {data.get('message', '')}")
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                    print(f"   ❌ Logo upload failed: {error_data.get('detail', 'Unknown error')}")
+                except:
+                    details += f", Response: {response.text[:100]}"
+                    print(f"   ❌ Logo upload failed: {response.text[:100]}")
+            
+            self.log_test(f"{test_name} (ID: {link_id[:8]}...)", success, details)
+            return success, response.json() if success else {}
+            
+        except Exception as e:
+            print(f"   ❌ Exception during logo upload: {e}")
+            self.log_test(f"{test_name} (ID: {link_id[:8]}...)", False, str(e))
+            return False, {}
+
+    def test_logo_removal_endpoint(self, link_id, test_name="Logo Removal"):
+        """Test the PUT /api/links/{link_id}/logo endpoint with remove_logo=True"""
+        try:
+            print(f"🗑️  TESTING LOGO REMOVAL FOR LINK: {link_id[:8]}...")
+            
+            # Send request to remove logo
+            data = {'remove_logo': True}
+            response = requests.put(
+                f"{self.api_url}/links/{link_id}/logo",
+                data=data,
+                timeout=15
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                result = response.json()
+                details += f", Message: {result.get('message', '')}"
+                print(f"   ✅ Logo removal successful: {result.get('message', '')}")
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                    print(f"   ❌ Logo removal failed: {error_data.get('detail', 'Unknown error')}")
+                except:
+                    details += f", Response: {response.text[:100]}"
+                    print(f"   ❌ Logo removal failed: {response.text[:100]}")
+            
+            self.log_test(f"{test_name} (ID: {link_id[:8]}...)", success, details)
+            return success, response.json() if success else {}
+            
+        except Exception as e:
+            print(f"   ❌ Exception during logo removal: {e}")
+            self.log_test(f"{test_name} (ID: {link_id[:8]}...)", False, str(e))
+            return False, {}
+
+    def test_logo_upload_nonexistent_link(self):
+        """Test logo upload for non-existent link"""
+        try:
+            fake_id = "nonexistent-link-id-12345"
+            test_logo = self.create_test_logo_image()
+            files = {'custom_logo': ('test_logo.png', test_logo, 'image/png')}
+            
+            response = requests.put(
+                f"{self.api_url}/links/{fake_id}/logo",
+                files=files,
+                timeout=15
+            )
+            
+            # Should return 404
+            success = response.status_code == 404
+            details = f"Status: {response.status_code}"
+            
+            if response.status_code == 404:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Response: {response.text[:100]}"
+            
+            self.log_test("Logo Upload Non-existent Link", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Logo Upload Non-existent Link", False, str(e))
+            return False
+
+    def test_logo_upload_invalid_file(self, link_id):
+        """Test logo upload with invalid file"""
+        try:
+            print(f"📄 TESTING INVALID FILE UPLOAD FOR LINK: {link_id[:8]}...")
+            
+            # Create invalid file (text file instead of image)
+            invalid_file = BytesIO(b"This is not an image file")
+            files = {'custom_logo': ('not_an_image.txt', invalid_file, 'text/plain')}
+            
+            response = requests.put(
+                f"{self.api_url}/links/{link_id}/logo",
+                files=files,
+                timeout=15
+            )
+            
+            # The endpoint should still accept it (backend doesn't validate file type strictly)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                details += f", Message: {data.get('message', '')}"
+                print(f"   ✅ Invalid file upload handled: {data.get('message', '')}")
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                    print(f"   ❌ Invalid file upload failed: {error_data.get('detail', 'Unknown error')}")
+                except:
+                    details += f", Response: {response.text[:100]}"
+                    print(f"   ❌ Invalid file upload failed: {response.text[:100]}")
+            
+            self.log_test(f"Logo Upload Invalid File (ID: {link_id[:8]}...)", success, details)
+            return success
+            
+        except Exception as e:
+            print(f"   ❌ Exception during invalid file upload: {e}")
+            self.log_test(f"Logo Upload Invalid File (ID: {link_id[:8]}...)", False, str(e))
+            return False
+
+    def test_logo_upload_large_file(self, link_id):
+        """Test logo upload with large file"""
+        try:
+            print(f"📦 TESTING LARGE FILE UPLOAD FOR LINK: {link_id[:8]}...")
+            
+            # Create a large file (1MB of data)
+            large_data = b"X" * (1024 * 1024)  # 1MB
+            large_file = BytesIO(large_data)
+            files = {'custom_logo': ('large_logo.png', large_file, 'image/png')}
+            
+            response = requests.put(
+                f"{self.api_url}/links/{link_id}/logo",
+                files=files,
+                timeout=30  # Longer timeout for large file
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}, File size: 1MB"
+            
+            if success:
+                data = response.json()
+                details += f", Message: {data.get('message', '')}"
+                print(f"   ✅ Large file upload successful: {data.get('message', '')}")
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                    print(f"   ❌ Large file upload failed: {error_data.get('detail', 'Unknown error')}")
+                except:
+                    details += f", Response: {response.text[:100]}"
+                    print(f"   ❌ Large file upload failed: {response.text[:100]}")
+            
+            self.log_test(f"Logo Upload Large File (ID: {link_id[:8]}...)", success, details)
+            return success
+            
+        except Exception as e:
+            print(f"   ❌ Exception during large file upload: {e}")
+            self.log_test(f"Logo Upload Large File (ID: {link_id[:8]}...)", False, str(e))
+            return False
+
+    def submit_instagram_test_link(self):
+        """Submit a test link with Instagram URL for logo testing"""
+        try:
+            print("📱 CREATING INSTAGRAM TEST LINK FOR LOGO TESTING...")
+            
+            form_data = {
+                'owner_name': 'Instagram Test User',
+                'phone': '3001234567',
+                'location': 'Bogotá, Colombia',
+                'website_url': 'https://www.instagram.com/testuser'
+            }
+            
+            test_image = self.create_test_image()
+            files = {'payment_screenshot': ('test_payment.png', test_image, 'image/png')}
+            
+            response = requests.post(
+                f"{self.api_url}/links/submit",
+                data=form_data,
+                files=files,
+                timeout=15
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                link_id = data.get('id')
+                if link_id:
+                    self.created_links.append(link_id)
+                details += f", Message: {data.get('message', '')}, ID: {link_id}"
+                print(f"   ✅ Instagram test link created: {link_id}")
+                return True, link_id
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Response: {response.text[:100]}"
+                print(f"   ❌ Instagram test link creation failed: {details}")
+            
+            self.log_test("Submit Instagram Test Link", success, details)
+            return success, None
+            
+        except Exception as e:
+            print(f"   ❌ Exception creating Instagram test link: {e}")
+            self.log_test("Submit Instagram Test Link", False, str(e))
+            return False, None
+
+    def test_uploads_directory_permissions(self):
+        """Test if uploads directory exists and has proper permissions"""
+        try:
+            print("📁 TESTING UPLOADS DIRECTORY PERMISSIONS...")
+            
+            # Test by trying to upload a logo to an existing link
+            response = requests.get(f"{self.api_url}/admin/status", timeout=10)
+            if response.status_code != 200:
+                self.log_test("Uploads Directory Test", False, "Cannot get links to test with")
+                return False
+            
+            data = response.json()
+            links = data.get('links', [])
+            approved_links = [link for link in links if link.get('status') == 'approved']
+            
+            if not approved_links:
+                self.log_test("Uploads Directory Test", False, "No approved links to test with")
+                return False
+            
+            # Use first approved link for testing
+            test_link = approved_links[0]
+            link_id = test_link.get('id')
+            
+            print(f"   Testing with link: {test_link.get('owner_name')} (ID: {link_id[:8]}...)")
+            
+            # Try to upload a logo
+            test_logo = self.create_test_logo_image()
+            files = {'custom_logo': ('permission_test.png', test_logo, 'image/png')}
+            
+            response = requests.put(
+                f"{self.api_url}/links/{link_id}/logo",
+                files=files,
+                timeout=15
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                details += f", Message: {data.get('message', '')}"
+                print(f"   ✅ Uploads directory accessible and writable")
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                    print(f"   ❌ Uploads directory issue: {error_data.get('detail', 'Unknown error')}")
+                except:
+                    details += f", Response: {response.text[:100]}"
+                    print(f"   ❌ Uploads directory issue: {response.text[:100]}")
+            
+            self.log_test("Uploads Directory Permissions", success, details)
+            return success
+            
+        except Exception as e:
+            print(f"   ❌ Exception testing uploads directory: {e}")
+            self.log_test("Uploads Directory Permissions", False, str(e))
+            return False
+
+    def run_comprehensive_logo_upload_tests(self):
+        """Run comprehensive logo upload endpoint tests"""
+        print("🖼️  COMPREHENSIVE LOGO UPLOAD ENDPOINT TESTING")
+        print("=" * 60)
+        
+        # Basic connectivity test
+        if not self.test_api_root():
+            print("❌ API is not accessible. Stopping logo tests.")
+            return False
+        
+        # Test uploads directory permissions first
+        self.test_uploads_directory_permissions()
+        
+        # Get existing links for testing
+        response = requests.get(f"{self.api_url}/admin/status", timeout=10)
+        if response.status_code != 200:
+            print("❌ Cannot get links for logo testing")
+            return False
+        
+        data = response.json()
+        links = data.get('links', [])
+        approved_links = [link for link in links if link.get('status') == 'approved']
+        
+        print(f"📊 Found {len(approved_links)} approved links for logo testing")
+        
+        # Test with existing approved links
+        if approved_links:
+            # Test basic logo upload
+            test_link = approved_links[0]
+            link_id = test_link.get('id')
+            owner_name = test_link.get('owner_name')
+            website_url = test_link.get('website_url')
+            
+            print(f"\n🎯 TESTING WITH EXISTING LINK:")
+            print(f"   Owner: {owner_name}")
+            print(f"   URL: {website_url}")
+            print(f"   ID: {link_id}")
+            print()
+            
+            # Test 1: Basic logo upload
+            self.test_logo_upload_endpoint(link_id, "Basic Logo Upload")
+            
+            # Test 2: Logo removal
+            self.test_logo_removal_endpoint(link_id, "Logo Removal")
+            
+            # Test 3: Logo upload again (after removal)
+            self.test_logo_upload_endpoint(link_id, "Logo Re-upload")
+            
+            # Test 4: Invalid file upload
+            self.test_logo_upload_invalid_file(link_id)
+            
+            # Test 5: Large file upload
+            self.test_logo_upload_large_file(link_id)
+        
+        # Test 6: Non-existent link
+        self.test_logo_upload_nonexistent_link()
+        
+        # Test 7: Create and test Instagram link
+        print(f"\n📱 INSTAGRAM LINK TESTING:")
+        print("-" * 40)
+        
+        instagram_success, instagram_link_id = self.submit_instagram_test_link()
+        
+        if instagram_success and instagram_link_id:
+            # Approve the Instagram link first
+            print("📝 Approving Instagram test link...")
+            update_data = {"status": "approved"}
+            response = requests.put(
+                f"{self.api_url}/links/{instagram_link_id}",
+                json=update_data,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                print("   ✅ Instagram link approved")
+                
+                # Now test logo upload with Instagram link
+                print("\n🖼️  TESTING LOGO UPLOAD WITH INSTAGRAM LINK:")
+                self.test_logo_upload_endpoint(instagram_link_id, "Instagram Logo Upload")
+                self.test_logo_removal_endpoint(instagram_link_id, "Instagram Logo Removal")
+                self.test_logo_upload_endpoint(instagram_link_id, "Instagram Logo Re-upload")
+            else:
+                print("   ❌ Failed to approve Instagram link")
+        
+        # Print summary
+        print(f"\n📊 LOGO UPLOAD TESTS SUMMARY:")
+        print("=" * 40)
+        print(f"   Tests Run: {self.tests_run}")
+        print(f"   Tests Passed: {self.tests_passed}")
+        print(f"   Tests Failed: {self.tests_run - self.tests_passed}")
+        print(f"   Success Rate: {(self.tests_passed/self.tests_run)*100:.1f}%")
+        
+        return self.tests_passed > 0
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting PAGINA DEL LINK API Tests - ADMIN PANEL FOCUS")
