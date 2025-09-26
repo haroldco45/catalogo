@@ -577,7 +577,9 @@ async def get_admin_status():
                     "status": link.get("status"),
                     "phone": link.get("phone"),
                     "location": link.get("location"),
-                    "created_at": link.get("created_at")
+                    "created_at": link.get("created_at"),
+                    "custom_logo": link.get("custom_logo"),
+                    "favicon_url": link.get("favicon_url")
                 }
                 for link in all_links
             ]
