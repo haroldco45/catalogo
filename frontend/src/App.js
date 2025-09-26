@@ -1394,28 +1394,71 @@ const AdminView = ({ notify }) => {
   );
 };
 
-// Función para subir logo
+// Función para subir logo - OPTIMIZADA PARA INSTAGRAM
 window.uploadLogo = async function(linkId, ownerName, file) {
+  console.log('🖼️ Iniciando subida de logo:', { linkId, ownerName, fileName: file.name, fileSize: file.size });
+  
   try {
+    // Verificación básica del archivo
+    if (!file) {
+      window.alert('❌ No se seleccionó ningún archivo');
+      return;
+    }
+    
+    // Mostrar información del archivo
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+    console.log(`📁 Archivo: ${file.name} (${fileSizeMB} MB)`);
+    
+    // Preparar datos
     const formData = new FormData();
     formData.append('custom_logo', file);
     
+    // Mostrar progreso al usuario
+    const progressMsg = `⏳ Subiendo logo para ${ownerName}...\\n📁 ${file.name} (${fileSizeMB} MB)`;
+    console.log(progressMsg);
+    
+    // Realizar upload
     const response = await fetch(`${BACKEND_URL}/api/links/${linkId}/logo`, {
       method: 'PUT',
       body: formData
     });
     
+    console.log('📡 Respuesta del servidor:', response.status, response.statusText);
+    
     if (response.ok) {
-      window.alert(`✅ Logo actualizado correctamente para ${ownerName}`);
-      // Cerrar modal
+      const result = await response.json();
+      console.log('✅ Respuesta exitosa:', result);
+      
+      window.alert(`🎉 ¡Logo actualizado exitosamente!\\n👤 ${ownerName}\\n📁 ${file.name}\\n💾 Guardado como: ${result.filename || 'archivo procesado'}`);
+      
+      // Cerrar modal y recargar página para ver cambios
       const modal = document.getElementById('logoManagementModal');
       if (modal) modal.remove();
+      
+      // Recargar la página principal para mostrar el nuevo logo
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
     } else {
       const errorText = await response.text();
-      window.alert(`❌ Error al subir logo: ${response.status} - ${errorText}`);
+      console.error('❌ Error del servidor:', response.status, errorText);
+      
+      let userMessage = `❌ Error al subir logo (${response.status}):\\n`;
+      
+      try {
+        const errorJson = JSON.parse(errorText);
+        userMessage += errorJson.detail || errorText;
+      } catch {
+        userMessage += errorText;
+      }
+      
+      window.alert(userMessage);
     }
+    
   } catch (error) {
-    window.alert(`❌ Error de conexión: ${error.message}`);
+    console.error('❌ Error de conexión:', error);
+    window.alert(`❌ Error de conexión:\\n${error.message}\\n\\nVerifica tu conexión a internet y vuelve a intentar.`);
   }
 };
 
