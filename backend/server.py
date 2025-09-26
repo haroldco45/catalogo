@@ -418,6 +418,11 @@ async def update_logo(
     
     update_data = {}
     
+    # Update display name if provided
+    if display_name:
+        print(f"   ✏️ Updating display name to: '{display_name}'")
+        update_data["display_name"] = display_name.strip()
+    
     if remove_logo:
         print(f"🗑️ Removing logo for: {current_link.get('owner_name', 'Unknown')}")
         # Remove custom logo and get favicon instead
