@@ -1125,15 +1125,21 @@ const AdminView = ({ notify }) => {
                                                 <p style="margin: 5px 0 0 0; color: #0066cc; font-size: 14px;">${link.website_url}</p>
                                                 <p style="margin: 5px 0 0 0; color: #666; font-size: 12px;">📞 ${link.phone || 'N/A'} | 📍 ${link.location || 'N/A'}</p>
                                             </div>
-                                            <div>
-                                                <input type="file" id="logoFile_${link.id}" accept="image/*" style="display: none;">
-                                                <button onclick="document.getElementById('logoFile_${link.id}').click()" 
-                                                    style="background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-right: 5px; font-size: 12px;">
-                                                    🖼️ SUBIR LOGO
-                                                </button>
-                                                <button onclick="removeLogo('${link.id}', '${link.owner_name}')" 
-                                                    style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;">
-                                                    🗑️ QUITAR
+                                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                                <div style="display: flex; gap: 5px;">
+                                                    <input type="file" id="logoFile_${link.id}" accept="image/*" style="display: none;">
+                                                    <button onclick="document.getElementById('logoFile_${link.id}').click()" 
+                                                        style="background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                                                        🖼️ SUBIR LOGO
+                                                    </button>
+                                                    <button onclick="removeLogo('${link.id}', '${link.owner_name}')" 
+                                                        style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                                                        🗑️ QUITAR
+                                                    </button>
+                                                </div>
+                                                <button onclick="editDisplayName('${link.id}', '${link.owner_name}', '${link.display_name || ''}')" 
+                                                    style="background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 11px; width: 100%;">
+                                                    ✏️ CAMBIAR NOMBRE: "${link.display_name || 'instagram.com'}"
                                                 </button>
                                             </div>
                                         </div>
