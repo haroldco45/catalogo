@@ -291,9 +291,14 @@ const ClientView = ({ notify }) => {
               <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
                 <Globe className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                PAGINA DEL LINK
-              </h1>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  PAGINA DEL LINK
+                </h1>
+                <h2 className="text-sm text-slate-600 font-medium">
+                  Directorio Público de Enlaces - Promociona tu Negocio por $1
+                </h2>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="secondary" className="text-sm">
