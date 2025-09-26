@@ -1495,12 +1495,54 @@ window.removeLogo = async function(linkId, ownerName) {
       
       if (response.ok) {
         window.alert(`✅ Logo eliminado correctamente para ${ownerName}`);
-        // Cerrar modal
+        // Cerrar modal y recargar
         const modal = document.getElementById('logoManagementModal');
         if (modal) modal.remove();
+        setTimeout(() => window.location.reload(), 500);
       } else {
         const errorText = await response.text();
         window.alert(`❌ Error al eliminar logo: ${response.status} - ${errorText}`);
+      }
+    } catch (error) {
+      window.alert(`❌ Error de conexión: ${error.message}`);
+    }
+  }
+};
+
+// Función para editar nombre personalizado
+window.editDisplayName = async function(linkId, ownerName, currentDisplayName) {
+  const newDisplayName = window.prompt(
+    `🏷️ Cambiar nombre que aparece en la página principal:\\n\\n` +
+    `Cliente: ${ownerName}\\n` +
+    `Nombre actual: "${currentDisplayName || 'instagram.com'}"\\n\\n` +
+    `Ingrese el nuevo nombre (ej: "Tienda María", "Restaurante El Sol"):`,
+    currentDisplayName || ''
+  );
+  
+  if (newDisplayName !== null) { // User didn't cancel
+    try {
+      const formData = new FormData();
+      formData.append('display_name', newDisplayName.trim());
+      
+      const response = await fetch(`${BACKEND_URL}/api/links/${linkId}/logo`, {
+        method: 'PUT',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        window.alert(`✅ Nombre actualizado correctamente\\n\\n` +
+                    `Cliente: ${ownerName}\\n` +
+                    `Nuevo nombre: "${newDisplayName.trim() || 'instagram.com'}"`);
+        
+        // Cerrar modal y recargar para ver cambios
+        const modal = document.getElementById('logoManagementModal');
+        if (modal) modal.remove();
+        setTimeout(() => window.location.reload(), 1000);
+        
+      } else {
+        const errorText = await response.text();
+        window.alert(`❌ Error al cambiar nombre: ${response.status} - ${errorText}`);
       }
     } catch (error) {
       window.alert(`❌ Error de conexión: ${error.message}`);
