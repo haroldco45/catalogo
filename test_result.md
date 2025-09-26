@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "URGENT: React AdminView component rendering issue - need debugging help. PROBLEM: The AdminView component in /app/frontend/src/App.js stops rendering content after line ~1112 (after the 'Links Pendientes de Aprobación' Card closes). Any content added after this point (currently a 'Links Aprobados' Card starting at line 1114) does not appear in the DOM."
+user_problem_statement: "Necesito probar el endpoint de subida de logos para identificar por qué no funciona con links de Instagram. PROBLEMA REPORTADO: El usuario puede ver el botón 'GESTIONAR LOGOS' pero cuando intenta subir logos para clientes que manejan cuentas de Instagram, no puede cambiar/subir los logos. ENDPOINT A PROBAR: PUT /api/links/{link_id}/logo"
 
 backend:
   - task: "API endpoint /api/links functionality" 
