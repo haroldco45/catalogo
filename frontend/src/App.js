@@ -363,19 +363,33 @@ const ClientView = ({ notify }) => {
                   data-testid={`link-card-${link.id}`}
                 >
                   <CardContent className="p-3 flex flex-col items-center justify-center aspect-square">
-                    {/* Custom logo has priority, then favicon, then fallback */}
+                    {/* OPTIMIZADO PARA CAPTURAS DE PANTALLA DE INSTAGRAM */}
                     {link.custom_logo ? (
                       <img
                         src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
                         alt={`${link.owner_name} logo`}
-                        className="w-8 h-8 mb-2 rounded-md object-contain"
+                        className="w-8 h-8 mb-2 rounded-md object-cover shadow-sm"
+                        style={{ 
+                          objectFit: 'cover',
+                          objectPosition: 'center center'
+                        }}
                         onError={(e) => {
+                          console.log(`❌ Error cargando logo personalizado para ${link.owner_name}:`, e.target.src);
                           // If custom logo fails, try favicon
                           e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = link.favicon_url ? 'block' : 'none';
-                          if (!link.favicon_url) {
-                            e.target.nextSibling.nextSibling.style.display = 'flex';
+                          const faviconImg = e.target.nextSibling;
+                          if (faviconImg && link.favicon_url) {
+                            faviconImg.style.display = 'block';
+                          } else {
+                            // Show fallback
+                            const fallback = link.favicon_url ? 
+                              e.target.nextSibling?.nextSibling : 
+                              e.target.nextSibling;
+                            if (fallback) fallback.style.display = 'flex';
                           }
+                        }}
+                        onLoad={(e) => {
+                          console.log(`✅ Logo personalizado cargado para ${link.owner_name}:`, e.target.src);
                         }}
                       />
                     ) : link.favicon_url ? (
@@ -385,6 +399,7 @@ const ClientView = ({ notify }) => {
                         className="w-8 h-8 mb-2 rounded-md object-contain"
                         style={{ display: link.custom_logo ? 'none' : 'block' }}
                         onError={(e) => {
+                          console.log(`❌ Error cargando favicon para ${link.owner_name}:`, e.target.src);
                           e.target.style.display = 'none';
                           e.target.nextSibling.style.display = 'flex';
                         }}
