@@ -1411,6 +1411,100 @@ const AdminView = ({ notify }) => {
             </div>
           </div>
         )}
+
+        {/* Botón para editar nombres de Instagram - SOLUCIÓN TEMPORAL */}
+        {adminData.links && adminData.links.filter(link => link.status === 'approved').length > 0 && (
+          <Card className="mt-6">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-bold text-purple-800 mb-4">✏️ Gestión Adicional</h3>
+              <div className="flex gap-4">
+                <Button
+                  onClick={async () => {
+                    const approvedLinks = adminData.links.filter(link => link.status === 'approved');
+                    
+                    // Crear lista de links para seleccionar
+                    const linkOptions = approvedLinks.map((link, i) => 
+                      `${i+1}. ${link.owner_name} - Nombre actual: "${link.display_name || new URL(link.website_url).hostname}"`
+                    ).join('\n');
+                    
+                    const selection = prompt(`🏷️ CAMBIAR NOMBRES QUE APARECEN EN LA PÁGINA\n\nSeleccione el número del link:\n\n${linkOptions}\n\nIngrese el número (1-${approvedLinks.length}):`);
+                    
+                    if (selection && !isNaN(selection)) {
+                      const linkIndex = parseInt(selection) - 1;
+                      if (linkIndex >= 0 && linkIndex < approvedLinks.length) {
+                        const selectedLink = approvedLinks[linkIndex];
+                        const currentName = selectedLink.display_name || new URL(selectedLink.website_url).hostname;
+                        
+                        const newName = prompt(`✏️ Cambiar nombre para: ${selectedLink.owner_name}\n\nURL: ${selectedLink.website_url}\nNombre actual: "${currentName}"\n\nIngrese el nuevo nombre (ej: "Tienda María", "Restaurante El Sol"):`);
+                        
+                        if (newName !== null && newName.trim()) {
+                          try {
+                            const formData = new FormData();
+                            formData.append('display_name', newName.trim());
+                            
+                            const response = await fetch(`${BACKEND_URL}/api/links/${selectedLink.id}/logo`, {
+                              method: 'PUT',
+                              body: formData
+                            });
+                            
+                            if (response.ok) {
+                              alert(`✅ ¡Nombre actualizado exitosamente!\n\nCliente: ${selectedLink.owner_name}\nNombre anterior: "${currentName}"\nNombre nuevo: "${newName.trim()}"\n\n🔄 Recargando para ver cambios...`);
+                              window.location.reload();
+                            } else {
+                              const errorText = await response.text();
+                              alert(`❌ Error al actualizar: ${response.status}\n${errorText}`);
+                            }
+                          } catch (error) {
+                            alert(`❌ Error de conexión: ${error.message}`);
+                          }
+                        } else if (newName !== null) {
+                          alert('⚠️ El nombre no puede estar vacío');
+                        }
+                      } else {
+                        alert('⚠️ Número de link inválido');
+                      }
+                    }
+                  }}
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 py-3"
+                >
+                  ✏️ CAMBIAR NOMBRES DE INSTAGRAM
+                </Button>
+                
+                <Button
+                  onClick={() => {
+                    const approvedLinks = adminData.links.filter(link => link.status === 'approved');
+                    const instagramLinks = approvedLinks.filter(link => 
+                      link.website_url.includes('instagram.com') || 
+                      link.display_name === null || 
+                      link.display_name === ''
+                    );
+                    
+                    if (instagramLinks.length === 0) {
+                      alert('✅ ¡Perfecto!\n\nTodos los links de Instagram ya tienen nombres personalizados.');
+                      return;
+                    }
+                    
+                    const linksText = instagramLinks.map((link, i) => 
+                      `${i+1}. ${link.owner_name} - "${link.display_name || 'instagram.com'}"`
+                    ).join('\n');
+                    
+                    alert(`📋 LINKS DE INSTAGRAM (${instagramLinks.length} total):\n\n${linksText}\n\n💡 Use el botón "CAMBIAR NOMBRES" para personalizar cada uno.`);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2"
+                >
+                  📋 VER LINKS DE INSTAGRAM
+                </Button>
+              </div>
+              
+              <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                <p className="text-sm text-purple-700">
+                  <strong>💡 Cómo usar:</strong> Los links de Instagram aparecen como "instagram.com" en la página principal. 
+                  Use "CAMBIAR NOMBRES" para personalizarlos (ej: "Tienda María", "Restaurante El Sol").
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
