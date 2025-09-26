@@ -60,6 +60,7 @@ class LinkSubmission(BaseModel):
     payment_screenshot: Optional[str] = None
     custom_logo: Optional[str] = None
     favicon_url: Optional[str] = None
+    display_name: Optional[str] = None  # Nombre personalizado que se muestra en lugar del hostname
     status: str = Field(default="pending")  # pending, approved, rejected
     rejection_reason: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
