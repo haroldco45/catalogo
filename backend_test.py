@@ -1598,6 +1598,283 @@ class LinkDirectoryAPITester:
         print(f"   Success Rate: {(self.tests_passed/self.tests_run)*100:.1f}%")
         
         return self.tests_passed > 0
+    def create_test_screenshot_file(self, size_mb=1.0, filename="test_screenshot.png"):
+        """Create a test screenshot file of specified size for logo upload testing"""
+        try:
+            # Create simple data of the specified size
+            size_bytes = int(size_mb * 1024 * 1024)
+            
+            # Create a simple PNG-like structure
+            png_header = b'\x89PNG\r\n\x1a\n'
+            
+            # Fill the rest with test data to reach desired size
+            remaining_bytes = size_bytes - len(png_header)
+            test_data = b'TEST_SCREENSHOT_DATA' * (remaining_bytes // 20 + 1)
+            full_data = png_header + test_data[:remaining_bytes]
+            
+            print(f"   📏 Created test file: {filename} ({len(full_data)} bytes = {len(full_data)/(1024*1024):.2f} MB)")
+            
+            return BytesIO(full_data)
+            
+        except Exception as e:
+            print(f"   ❌ Error creating test file: {e}")
+            # Fallback: create simple data
+            size_bytes = int(size_mb * 1024 * 1024)
+            fallback_data = b'TEST_SCREENSHOT_DATA' * (size_bytes // 20 + 1)
+            return BytesIO(fallback_data[:size_bytes])
+
+    def test_corrected_logo_upload_comprehensive(self):
+        """Test the corrected logo upload endpoint with comprehensive file size verification"""
+        print("🚨 TESTING CORRECTED LOGO UPLOAD ENDPOINT - COMPREHENSIVE FILE SIZE VERIFICATION")
+        print("=" * 80)
+        
+        try:
+            # Step 1: Get a real link ID to test with
+            print("📊 Step 1: Getting a real link ID for testing...")
+            response = requests.get(f"{self.api_url}/admin/status", timeout=10)
+            
+            if response.status_code != 200:
+                self.log_test("Corrected Logo Upload - Get Link ID", False, "Could not get link data")
+                return False
+            
+            data = response.json()
+            links = data.get('links', [])
+            
+            if not links:
+                self.log_test("Corrected Logo Upload - Get Link ID", False, "No links available for testing")
+                return False
+            
+            # Use the first available link
+            test_link = links[0]
+            link_id = test_link.get('id')
+            owner_name = test_link.get('owner_name', 'Unknown')
+            
+            print(f"   ✅ Using link: {owner_name} (ID: {link_id[:8]}...)")
+            
+            # Step 2: Test different file sizes to verify the fix
+            test_cases = [
+                {"size_mb": 0.1, "name": "Small Screenshot (0.1MB)"},
+                {"size_mb": 1.0, "name": "Medium Screenshot (1MB)"},
+                {"size_mb": 2.0, "name": "Large Screenshot (2MB)"},
+                {"size_mb": 5.0, "name": "Very Large Screenshot (5MB)"}
+            ]
+            
+            print(f"\n📤 Step 2: Testing {len(test_cases)} different file sizes...")
+            print("-" * 60)
+            
+            successful_uploads = 0
+            failed_uploads = []
+            size_verification_results = []
+            
+            for i, test_case in enumerate(test_cases, 1):
+                size_mb = test_case["size_mb"]
+                test_name = test_case["name"]
+                
+                print(f"\n{i}. Testing {test_name}...")
+                
+                # Create test file
+                filename = f"test_screenshot_{size_mb}mb.png"
+                test_file = self.create_test_screenshot_file(size_mb, filename)
+                original_size = len(test_file.getvalue())
+                
+                print(f"   📏 Original file size: {original_size} bytes ({original_size/(1024*1024):.2f} MB)")
+                
+                # Reset file pointer
+                test_file.seek(0)
+                
+                # Upload the file
+                files = {'custom_logo': (filename, test_file, 'image/png')}
+                
+                try:
+                    response = requests.put(
+                        f"{self.api_url}/links/{link_id}/logo",
+                        files=files,
+                        timeout=30
+                    )
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        saved_filename = result.get('filename')
+                        
+                        print(f"   ✅ Upload successful: {result.get('message', '')}")
+                        print(f"   📁 Saved as: {saved_filename}")
+                        
+                        # Step 3: Verify the saved file size
+                        if saved_filename:
+                            # Try to access the file via GET request to verify it exists and has correct size
+                            file_url = f"{self.base_url}/uploads/{saved_filename}"
+                            
+                            try:
+                                file_response = requests.head(file_url, timeout=10)
+                                if file_response.status_code == 200:
+                                    content_length = file_response.headers.get('content-length')
+                                    if content_length:
+                                        saved_size = int(content_length)
+                                        saved_size_mb = saved_size / (1024 * 1024)
+                                        
+                                        print(f"   📏 Saved file size: {saved_size} bytes ({saved_size_mb:.2f} MB)")
+                                        
+                                        # Check if sizes match (allow small variance)
+                                        size_difference = abs(saved_size - original_size)
+                                        size_match = size_difference < 1000  # Allow 1KB variance
+                                        
+                                        if size_match:
+                                            print(f"   ✅ File size verification: PASSED (difference: {size_difference} bytes)")
+                                            successful_uploads += 1
+                                        else:
+                                            print(f"   ❌ File size verification: FAILED")
+                                            print(f"      Expected: {original_size} bytes")
+                                            print(f"      Got: {saved_size} bytes")
+                                            print(f"      Difference: {size_difference} bytes")
+                                            failed_uploads.append({
+                                                'test': test_name,
+                                                'expected_size': original_size,
+                                                'actual_size': saved_size,
+                                                'difference': size_difference
+                                            })
+                                        
+                                        size_verification_results.append({
+                                            'test': test_name,
+                                            'original_size': original_size,
+                                            'saved_size': saved_size,
+                                            'size_match': size_match,
+                                            'filename': saved_filename
+                                        })
+                                    else:
+                                        print(f"   ⚠️  Could not get file size from headers")
+                                        failed_uploads.append({
+                                            'test': test_name,
+                                            'error': 'No content-length header'
+                                        })
+                                else:
+                                    print(f"   ❌ File not accessible: HTTP {file_response.status_code}")
+                                    failed_uploads.append({
+                                        'test': test_name,
+                                        'error': f'File not accessible: HTTP {file_response.status_code}'
+                                    })
+                            except Exception as e:
+                                print(f"   ❌ Error verifying file: {e}")
+                                failed_uploads.append({
+                                    'test': test_name,
+                                    'error': f'File verification error: {str(e)}'
+                                })
+                        else:
+                            print(f"   ⚠️  No filename returned in response")
+                            failed_uploads.append({
+                                'test': test_name,
+                                'error': 'No filename in response'
+                            })
+                    else:
+                        try:
+                            error_data = response.json()
+                            error_msg = error_data.get('detail', 'Unknown error')
+                        except:
+                            error_msg = response.text[:200]
+                        
+                        print(f"   ❌ Upload failed: HTTP {response.status_code} - {error_msg}")
+                        failed_uploads.append({
+                            'test': test_name,
+                            'error': f'HTTP {response.status_code}: {error_msg}'
+                        })
+                        
+                except Exception as e:
+                    print(f"   ❌ Exception during upload: {e}")
+                    failed_uploads.append({
+                        'test': test_name,
+                        'error': f'Exception: {str(e)}'
+                    })
+            
+            # Step 4: Summary and assessment
+            print(f"\n📊 COMPREHENSIVE TEST RESULTS:")
+            print("=" * 60)
+            print(f"Total tests: {len(test_cases)}")
+            print(f"Successful uploads with correct file sizes: {successful_uploads}")
+            print(f"Failed uploads or incorrect file sizes: {len(failed_uploads)}")
+            print(f"Success rate: {(successful_uploads/len(test_cases))*100:.1f}%")
+            
+            if size_verification_results:
+                print(f"\n📋 DETAILED SIZE VERIFICATION RESULTS:")
+                print("-" * 60)
+                for result in size_verification_results:
+                    status = "✅ PASS" if result['size_match'] else "❌ FAIL"
+                    print(f"{status} {result['test']}")
+                    print(f"   Original: {result['original_size']} bytes ({result['original_size']/(1024*1024):.2f} MB)")
+                    print(f"   Saved: {result['saved_size']} bytes ({result['saved_size']/(1024*1024):.2f} MB)")
+                    print(f"   File: {result['filename']}")
+                    print()
+            
+            if failed_uploads:
+                print(f"\n❌ FAILED UPLOADS:")
+                print("-" * 40)
+                for failure in failed_uploads:
+                    print(f"❌ {failure['test']}")
+                    print(f"   Error: {failure.get('error', 'Unknown error')}")
+                    if 'expected_size' in failure:
+                        print(f"   Expected size: {failure['expected_size']} bytes")
+                        print(f"   Actual size: {failure['actual_size']} bytes")
+                    print()
+            
+            # Step 5: Check backend logs for detailed diagnostics
+            print(f"\n🔍 CHECKING BACKEND LOGS FOR DIAGNOSTICS...")
+            try:
+                import subprocess
+                log_result = subprocess.run(["tail", "-n", "20", "/var/log/supervisor/backend.out.log"], 
+                                          capture_output=True, text=True, timeout=5)
+                if log_result.stdout:
+                    print("📋 Recent backend logs:")
+                    print("-" * 40)
+                    print(log_result.stdout)
+                else:
+                    print("⚠️  No recent backend logs found")
+            except Exception as e:
+                print(f"⚠️  Could not read backend logs: {e}")
+            
+            # Final assessment
+            bug_fixed = successful_uploads == len(test_cases)
+            
+            if bug_fixed:
+                print(f"\n🎉 LOGO UPLOAD BUG FIX VERIFICATION: SUCCESS!")
+                print("✅ All file sizes are now saved correctly")
+                print("✅ Instagram screenshots will upload with proper sizes")
+                print("✅ The aiofiles handling fix is working perfectly")
+                
+                self.log_test("Corrected Logo Upload Comprehensive Test", True, 
+                            f"All {len(test_cases)} file size tests passed. Bug is fixed.")
+                return True
+            else:
+                print(f"\n❌ LOGO UPLOAD BUG FIX VERIFICATION: FAILED!")
+                print(f"❌ {len(failed_uploads)} out of {len(test_cases)} tests failed")
+                print("❌ File size bug is still present")
+                print("❌ Instagram screenshots may still be saved incorrectly")
+                
+                self.log_test("Corrected Logo Upload Comprehensive Test", False, 
+                            f"{len(failed_uploads)} out of {len(test_cases)} tests failed. Bug still present.")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error during comprehensive logo upload test: {e}")
+            self.log_test("Corrected Logo Upload Comprehensive Test", False, str(e))
+            return False
+
+    def run_corrected_logo_upload_test(self):
+        """Run the corrected logo upload test specifically"""
+        print("🚨 CORRECTED LOGO UPLOAD ENDPOINT TEST")
+        print("=" * 60)
+        
+        # Basic connectivity test
+        if not self.test_api_root():
+            print("❌ API is not accessible. Stopping test.")
+            return False
+        
+        # Run the comprehensive logo upload test
+        success = self.test_corrected_logo_upload_comprehensive()
+        
+        if success:
+            print("\n✅ CORRECTED LOGO UPLOAD TEST COMPLETED SUCCESSFULLY")
+        else:
+            print("\n❌ CORRECTED LOGO UPLOAD TEST FAILED")
+        
+        return success
 
     def run_all_tests(self):
         """Run all API tests"""
