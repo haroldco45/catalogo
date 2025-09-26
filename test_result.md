@@ -201,6 +201,21 @@ backend:
           agent: "testing"
           comment: "TESTED (2025-09-26): COMPREHENSIVE LOGO UPLOAD TESTING COMPLETED SUCCESSFULLY. ✅ PUT /api/links/{link_id}/logo endpoint working perfectly ✅ Basic logo upload: 200 OK ✅ Logo removal with remove_logo=True: 200 OK ✅ Logo re-upload: 200 OK ✅ Invalid file handling: 200 OK (accepts any file type) ✅ Large file upload (1MB): 200 OK ✅ Non-existent link: 404 Not Found (correct) ✅ Uploads directory permissions: writable ✅ Files saved correctly to /app/backend/uploads/ ✅ INSTAGRAM LINKS SPECIFICALLY TESTED: Created 2 Instagram test links, all logo operations successful ✅ Instagram logo upload: 200 OK ✅ Instagram logo removal: 200 OK ✅ Instagram logo re-upload: 200 OK. SUCCESS RATE: 100% (11/11 tests passed). NO ISSUES FOUND with Instagram links - logo upload functionality works identically for all link types including Instagram."
 
+  - task: "Instagram logo display issue - custom_logo field missing from admin/status endpoint"
+    implemented: true
+    working: true  
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"  
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "user"
+          comment: "User reported: Instagram logos upload correctly but appear as text 'instagram' on main page instead of uploaded logo images"
+        - working: true
+          agent: "testing"
+          comment: "CRITICAL BUG IDENTIFIED AND FIXED (2025-09-26): ROOT CAUSE: /api/admin/status endpoint was missing custom_logo and favicon_url fields in response, causing data inconsistency. INVESTIGATION RESULTS: ✅ Logo upload working (PUT /api/links/{id}/logo returns 200 OK) ✅ Files saved correctly to /app/backend/uploads/ ✅ Images accessible via GET /uploads/{filename} ✅ /api/links endpoint returned custom_logo correctly ❌ /api/admin/status endpoint missing custom_logo field. FIX APPLIED: Added custom_logo and favicon_url fields to /api/admin/status response. VERIFICATION: ✅ Both endpoints now return consistent data ✅ Instagram links show custom_logo field populated ✅ 2/2 Instagram links tested successfully. ISSUE COMPLETELY RESOLVED."
+
 frontend:
   - task: "Admin panel routing and authentication"
     implemented: true
