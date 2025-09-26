@@ -1719,8 +1719,13 @@ def main():
             tester = LinkDirectoryAPITester()
             success, data = tester.test_admin_status_data_structure()
             return 0 if success else 1
+        elif command == "logo":
+            # Run comprehensive logo upload tests
+            tester = LinkDirectoryAPITester()
+            success = tester.run_comprehensive_logo_upload_tests()
+            return 0 if success else 1
         else:
-            print("Usage: python backend_test.py [verify|delete|approve|approve-all|status]")
+            print("Usage: python backend_test.py [verify|delete|approve|approve-all|status|logo]")
             return 1
     else:
         # Run all tests
