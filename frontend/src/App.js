@@ -766,7 +766,7 @@ const EmergencyAdminPanel = ({ notify }) => {
               <div className="flex items-center justify-center w-20 h-20 border-2 border-dashed border-gray-300 rounded">
                 {logoEditModal.link.custom_logo ? (
                   <img
-                    src={`${BACKEND_URL}/uploads/${logoEditModal.link.custom_logo}`}
+                    src={`${BACKEND_URL}/api/uploads/${logoEditModal.link.custom_logo}`}
                     alt="Logo actual"
                     className="w-full h-full object-cover rounded"
                   />
