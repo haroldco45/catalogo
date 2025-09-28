@@ -9,12 +9,23 @@ from pydantic import BaseModel, Field
 from typing import List
 import uuid
 from datetime import datetime
+import sys
 
-# Importar rutas
-from .routes.companies import router as companies_router
-from .routes.contact import router as contact_router
-from .routes.stats import router as stats_router
-from .database import connect_to_mongo, close_mongo_connection
+# Añadir el directorio backend al path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Importar rutas y database
+try:
+    from routes.companies import router as companies_router
+    from routes.contact import router as contact_router
+    from routes.stats import router as stats_router
+    from database import connect_to_mongo, close_mongo_connection
+except ImportError as e:
+    logging.error(f"Error importando módulos: {e}")
+    # Fallback - crear rutas básicas
+    companies_router = APIRouter()
+    contact_router = APIRouter()
+    stats_router = APIRouter()
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
