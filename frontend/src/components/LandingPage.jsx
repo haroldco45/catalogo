@@ -475,14 +475,14 @@ export const LandingPage = () => {
                 <span className="text-lg">Soporte técnico incluido</span>
               </div>
             </div>
-            <Button 
-              onClick={handleRegister}
-              disabled={isRegistering}
-              className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-bold px-12 py-4 text-xl rounded-lg transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
-            >
-              {isRegistering ? 'Procesando...' : 'Registrarme Ahora'}
-              <TrendingUp className="ml-2 h-6 w-6" />
-            </Button>
+            <Dialog open={showRegistrationModal} onOpenChange={setShowRegistrationModal}>
+              <DialogTrigger asChild>
+                <Button className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-bold px-12 py-4 text-xl rounded-lg transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
+                  Registrarme Ahora
+                  <TrendingUp className="ml-2 h-6 w-6" />
+                </Button>
+              </DialogTrigger>
+            </Dialog>
             <p className="text-emerald-200 mt-6">
               Pago por Nequi: 3117700431
             </p>
