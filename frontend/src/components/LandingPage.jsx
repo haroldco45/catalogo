@@ -224,7 +224,7 @@ export const LandingPage = () => {
               <div className="flex items-center space-x-8 text-emerald-200">
                 <div className="flex items-center space-x-2">
                   <Eye className="h-5 w-5" />
-                  <span>Miles de visitantes mensuales</span>
+                  <span>{stats.monthly_visitors.toLocaleString()} visitantes mensuales</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Instagram className="h-5 w-5" />
