@@ -88,6 +88,8 @@ export const LandingPage = () => {
           instagram: '',
           description: ''
         });
+        // Cerrar modal
+        setShowRegistrationModal(false);
         // Actualizar estadísticas
         fetchStats();
       }
