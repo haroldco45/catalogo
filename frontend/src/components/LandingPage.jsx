@@ -293,7 +293,7 @@ export const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="bg-emerald-600 text-white text-lg px-6 py-3 mb-6">
-              60+ Empresas Satisfechas
+              {stats.total_companies}+ Empresas Satisfechas
             </Badge>
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
               Resultados Reales de Empresas Reales
