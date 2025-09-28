@@ -195,7 +195,7 @@ export const LandingPage = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <Badge className="bg-white/20 text-white border-white/30 text-lg px-4 py-2">
-                60+ Empresas Confían en Nosotros
+                {stats.total_companies}+ Empresas Confían en Nosotros
               </Badge>
               <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
                 Tu Empresa Visible
