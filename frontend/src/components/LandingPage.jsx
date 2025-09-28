@@ -212,14 +212,126 @@ export const LandingPage = () => {
                 resultados garantizados.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  onClick={handleRegister}
-                  disabled={isRegistering}
-                  className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-bold px-8 py-4 text-lg rounded-lg transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
-                >
-                  {isRegistering ? 'Procesando...' : 'Registrar Mi Empresa'}
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+                <Dialog open={showRegistrationModal} onOpenChange={setShowRegistrationModal}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-bold px-8 py-4 text-lg rounded-lg transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
+                      Registrar Mi Empresa
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold text-gray-900">
+                        Registra tu Empresa
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="companyName">Nombre de la Empresa *</Label>
+                        <Input
+                          id="companyName"
+                          name="companyName"
+                          value={registrationForm.companyName}
+                          onChange={handleInputChange}
+                          placeholder="Ej: Mi Empresa SAS"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="website">Sitio Web *</Label>
+                        <Input
+                          id="website"
+                          name="website"
+                          value={registrationForm.website}
+                          onChange={handleInputChange}
+                          placeholder="https://miempresa.com"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="email">Email de Contacto *</Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={registrationForm.email}
+                          onChange={handleInputChange}
+                          placeholder="contacto@miempresa.com"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone">Teléfono</Label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          value={registrationForm.phone}
+                          onChange={handleInputChange}
+                          placeholder="300 123 4567"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="category">Categoría</Label>
+                        <Select name="category" value={registrationForm.category} onValueChange={(value) => setRegistrationForm(prev => ({...prev, category: value}))}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Selecciona una categoría" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Retail">Retail</SelectItem>
+                            <SelectItem value="Alimentos">Alimentos</SelectItem>
+                            <SelectItem value="Tecnología">Tecnología</SelectItem>
+                            <SelectItem value="Servicios">Servicios</SelectItem>
+                            <SelectItem value="Salud">Salud</SelectItem>
+                            <SelectItem value="Entretenimiento">Entretenimiento</SelectItem>
+                            <SelectItem value="Otro">Otro</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="instagram">Instagram (opcional)</Label>
+                        <Input
+                          id="instagram"
+                          name="instagram"
+                          value={registrationForm.instagram}
+                          onChange={handleInputChange}
+                          placeholder="@miempresa"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="description">Descripción (opcional)</Label>
+                        <Textarea
+                          id="description"
+                          name="description"
+                          value={registrationForm.description}
+                          onChange={handleInputChange}
+                          placeholder="Breve descripción de tu empresa..."
+                          className="mt-1"
+                          rows={3}
+                        />
+                      </div>
+                      <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+                        <h4 className="font-semibold text-emerald-800 mb-2">Información de Pago</h4>
+                        <p className="text-sm text-emerald-700">
+                          <strong>Método:</strong> Nequi<br />
+                          <strong>Número:</strong> 3117700431<br />
+                          <strong>Valor:</strong> $1 USD (equivalente en COP)
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={handleRegister}
+                        disabled={isRegistering}
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3"
+                      >
+                        {isRegistering ? 'Enviando...' : 'Enviar Solicitud'}
+                      </Button>
+                      <p className="text-xs text-gray-600 text-center">
+                        * Campos obligatorios. Te contactaremos para confirmar el pago.
+                      </p>
+                    </div>
+                  </DialogContent>
+                </Dialog>
                 <Button 
                   variant="outline" 
                   className="border-2 border-white text-white hover:bg-white hover:text-emerald-600 px-8 py-4 text-lg font-semibold rounded-lg transition-all duration-300"
