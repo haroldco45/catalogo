@@ -525,14 +525,14 @@ export const LandingPage = () => {
           <p className="text-xl mb-8 text-emerald-100">
             Únete a las 60+ empresas que ya están generando más tráfico y ventas con LinkHub
           </p>
-          <Button 
-            onClick={handleRegister}
-            disabled={isRegistering}
-            className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-bold px-12 py-4 text-xl rounded-lg transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
-          >
-            {isRegistering ? 'Procesando...' : 'Empezar Ahora - Solo $1 USD'}
-            <Zap className="ml-2 h-6 w-6" />
-          </Button>
+          <Dialog open={showRegistrationModal} onOpenChange={setShowRegistrationModal}>
+            <DialogTrigger asChild>
+              <Button className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-bold px-12 py-4 text-xl rounded-lg transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
+                Empezar Ahora - Solo $1 USD
+                <Zap className="ml-2 h-6 w-6" />
+              </Button>
+            </DialogTrigger>
+          </Dialog>
           <p className="text-emerald-200 mt-6 text-lg">
             Proceso completamente en línea • Resultados en 24 horas
           </p>
