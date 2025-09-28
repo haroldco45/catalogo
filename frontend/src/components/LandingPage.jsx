@@ -16,6 +16,7 @@ const API = `${BACKEND_URL}/api`;
 
 export const LandingPage = () => {
   const [isRegistering, setIsRegistering] = useState(false);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [stats, setStats] = useState({
     total_companies: 60,
     monthly_visitors: 25000,
