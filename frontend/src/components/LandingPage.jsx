@@ -1,20 +1,104 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Star, Users, DollarSign, Zap, Instagram, Globe, TrendingUp, CheckCircle, ArrowRight, Eye, Clock, Smartphone } from 'lucide-react';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
 export const LandingPage = () => {
   const [isRegistering, setIsRegistering] = useState(false);
+  const [stats, setStats] = useState({
+    total_companies: 60,
+    monthly_visitors: 25000,
+    avg_traffic_increase: 340,
+    customer_satisfaction: 4.9
+  });
+  const [registrationForm, setRegistrationForm] = useState({
+    companyName: '',
+    website: '',
+    email: '',
+    phone: '',
+    category: '',
+    instagram: '',
+    description: ''
+  });
 
-  const handleRegister = () => {
+  // Cargar estadísticas al montar el componente
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const response = await axios.get(`${API}/stats`);
+      setStats(response.data);
+    } catch (error) {
+      console.error('Error loading stats:', error);
+      // Mantener stats por defecto si hay error
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setRegistrationForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleRegister = async () => {
+    // Validaciones básicas
+    if (!registrationForm.companyName || !registrationForm.website || !registrationForm.email) {
+      alert('Por favor completa los campos obligatorios: Nombre de empresa, sitio web y email.');
+      return;
+    }
+
     setIsRegistering(true);
-    // Mock registration process
-    setTimeout(() => {
-      alert('¡Solicitud enviada! Te contactaremos pronto para completar el proceso.');
+    
+    try {
+      const response = await axios.post(`${API}/companies/register`, {
+        name: registrationForm.companyName,
+        website: registrationForm.website,
+        email: registrationForm.email,
+        phone: registrationForm.phone,
+        category: registrationForm.category || 'General',
+        instagram: registrationForm.instagram,
+        description: registrationForm.description
+      });
+      
+      if (response.data.success) {
+        alert(response.data.message);
+        // Limpiar formulario
+        setRegistrationForm({
+          companyName: '',
+          website: '',
+          email: '',
+          phone: '',
+          category: '',
+          instagram: '',
+          description: ''
+        });
+        // Actualizar estadísticas
+        fetchStats();
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      let errorMessage = 'Error al procesar el registro. ';
+      
+      if (error.response?.data?.detail) {
+        errorMessage += error.response.data.detail;
+      } else {
+        errorMessage += 'Por favor intenta nuevamente.';
+      }
+      
+      alert(errorMessage);
+    } finally {
       setIsRegistering(false);
-    }, 2000);
+    }
   };
 
   const testimonials = [
@@ -54,8 +138,8 @@ export const LandingPage = () => {
     },
     {
       icon: <Users className="h-12 w-12" />,
-      title: "Miles de Visitantes",
-      description: "Únete a las 60+ empresas que ya están generando tráfico desde nuestra plataforma."
+      title: `${stats.total_companies}+ Empresas`,
+      description: `Únete a las ${stats.total_companies}+ empresas que ya están generando tráfico desde nuestra plataforma.`
     },
     {
       icon: <Smartphone className="h-12 w-12" />,
