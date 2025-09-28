@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from ..models.contact import Contact, ContactCreate, ContactResponse
-from ..database import get_database
+from models.contact import Contact, ContactCreate, ContactResponse
+from database import get_database
 import logging
 
 logger = logging.getLogger(__name__)
