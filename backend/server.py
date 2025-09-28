@@ -73,6 +73,7 @@ async def startup_db_client():
         logger.info("✅ Conexión a MongoDB establecida")
     except Exception as e:
         logger.error(f"❌ Error conectando a MongoDB: {e}")
+        # Continuar sin base de datos para pruebas
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
