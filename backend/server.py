@@ -1633,10 +1633,9 @@ async def get_recovery_suggestions():
         return {"success": False, "error": str(e)}
 
 @api_router.post("/admin/assign-logo")
-async def assign_logo_to_link():
+async def assign_logo_to_link(request: Request):
     """Asignar un archivo específico a un link específico"""
     try:
-        from fastapi import Request
         import json
         
         # This will be called from frontend with link_id and filename
