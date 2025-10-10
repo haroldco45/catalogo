@@ -1495,6 +1495,78 @@ async def simple_admin():
     except Exception as e:
         return {"error": str(e), "working": False}
 
+@api_router.get("/admin/analyze-logos")
+async def analyze_logos():
+    """Analizar estado actual de logos para recuperación"""
+    try:
+        import glob
+        from datetime import datetime
+        
+        # Get all physical files
+        uploads_dir = "/app/backend/uploads"
+        all_files = glob.glob(f"{uploads_dir}/*")
+        file_info = []
+        
+        for file_path in all_files:
+            if os.path.isfile(file_path):
+                filename = os.path.basename(file_path)
+                file_size = os.path.getsize(file_path)
+                file_mtime = os.path.getmtime(file_path)
+                file_info.append({
+                    "filename": filename,
+                    "size": file_size,
+                    "size_mb": round(file_size / (1024*1024), 2),
+                    "mtime_str": datetime.fromtimestamp(file_mtime).strftime("%Y-%m-%d %H:%M:%S")
+                })
+        
+        # Get all links from database
+        links = await db.link_submissions.find().to_list(None)
+        
+        # Categorize links
+        links_with_custom_logo = [l for l in links if l.get("custom_logo")]
+        links_with_favicon = [l for l in links if l.get("favicon_url") and not l.get("custom_logo")]
+        links_without_logos = [l for l in links if not l.get("custom_logo") and not l.get("favicon_url")]
+        
+        # Find referenced files
+        referenced_files = set()
+        for link in links:
+            if link.get("custom_logo"):
+                referenced_files.add(link["custom_logo"])
+        
+        orphaned_files = [f for f in file_info if f["filename"] not in referenced_files]
+        
+        return {
+            "analysis": {
+                "total_links": len(links),
+                "links_with_custom_logo": len(links_with_custom_logo),
+                "links_with_favicon_only": len(links_with_favicon),
+                "links_without_logos": len(links_without_logos),
+                "total_files_on_disk": len(file_info),
+                "orphaned_files": len(orphaned_files),
+                "files_over_1kb": len([f for f in file_info if f["size"] > 1000])
+            },
+            "links_without_logos": [
+                {
+                    "id": l["id"],
+                    "owner_name": l.get("owner_name"),
+                    "website_url": l.get("website_url")
+                }
+                for l in links_without_logos[:10]  # Show first 10
+            ],
+            "orphaned_files": [
+                {
+                    "filename": f["filename"],
+                    "size_mb": f["size_mb"],
+                    "date": f["mtime_str"]
+                }
+                for f in sorted(orphaned_files, key=lambda x: x["size"], reverse=True)[:15]  # Show largest 15
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error analyzing logos: {e}")
+        return {"success": False, "error": str(e)}
+
 @api_router.post("/admin/recover-logos")
 async def recover_logos():
     """Recuperación automática de logos perdidos"""
