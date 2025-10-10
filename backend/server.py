@@ -364,7 +364,10 @@ async def create_or_update_profile(profile_data: UserProfileUpdate, current_user
     else:
         await db.profiles.insert_one(profile_dict)
     
-    return {"message": "Perfil actualizado correctamente", "profile": profile_dict}
+    # Remove any potential ObjectId fields before returning
+    clean_profile = {k: v for k, v in profile_dict.items() if k != "_id"}
+    
+    return {"message": "Perfil actualizado correctamente", "profile": clean_profile}
 
 # Meal generation endpoints
 @api_router.post("/generate-meal")
