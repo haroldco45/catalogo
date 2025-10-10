@@ -1567,9 +1567,112 @@ async def analyze_logos():
         logger.error(f"Error analyzing logos: {e}")
         return {"success": False, "error": str(e)}
 
+@api_router.get("/admin/recovery-suggestions")
+async def get_recovery_suggestions():
+    """Obtener sugerencias inteligentes para emparejar archivos con links"""
+    try:
+        import glob
+        from datetime import datetime
+        
+        # Get all physical files
+        uploads_dir = "/app/backend/uploads"
+        all_files = glob.glob(f"{uploads_dir}/*")
+        file_info = []
+        
+        for file_path in all_files:
+            if os.path.isfile(file_path):
+                filename = os.path.basename(file_path)
+                file_size = os.path.getsize(file_path)
+                file_mtime = os.path.getmtime(file_path)
+                file_info.append({
+                    "filename": filename,
+                    "size": file_size,
+                    "size_mb": round(file_size / (1024*1024), 2),
+                    "mtime": file_mtime,
+                    "date": datetime.fromtimestamp(file_mtime).strftime("%Y-%m-%d %H:%M")
+                })
+        
+        # Get all links
+        links = await db.link_submissions.find().to_list(None)
+        
+        # Find links that need logos (no custom_logo, only basic favicon or none)
+        links_needing_logos = []
+        for link in links:
+            if not link.get("custom_logo"):
+                links_needing_logos.append({
+                    "id": link["id"],
+                    "owner_name": link.get("owner_name", ""),
+                    "website_url": link.get("website_url", ""),
+                    "status": link.get("status", ""),
+                    "created_at": link.get("created_at", "")
+                })
+        
+        # Find orphaned files (good size, not referenced)
+        referenced_files = set()
+        for link in links:
+            if link.get("custom_logo"):
+                referenced_files.add(link["custom_logo"])
+        
+        good_orphaned_files = [
+            f for f in file_info 
+            if f["filename"] not in referenced_files and f["size"] > 5000  # At least 5KB
+        ]
+        good_orphaned_files.sort(key=lambda x: x["size"], reverse=True)  # Largest first
+        
+        return {
+            "links_needing_logos": links_needing_logos,
+            "available_files": good_orphaned_files[:20],  # Top 20 largest files
+            "summary": {
+                "links_without_custom_logos": len(links_needing_logos),
+                "good_orphaned_files": len(good_orphaned_files)
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting recovery suggestions: {e}")
+        return {"success": False, "error": str(e)}
+
+@api_router.post("/admin/assign-logo")
+async def assign_logo_to_link():
+    """Asignar un archivo específico a un link específico"""
+    try:
+        from fastapi import Request
+        import json
+        
+        # This will be called from frontend with link_id and filename
+        body = await request.json()
+        link_id = body.get("link_id")
+        filename = body.get("filename")
+        
+        if not link_id or not filename:
+            return {"success": False, "error": "Missing link_id or filename"}
+        
+        # Check if file exists
+        file_path = f"/app/backend/uploads/{filename}"
+        if not os.path.exists(file_path):
+            return {"success": False, "error": "File does not exist"}
+        
+        # Update the link
+        result = await db.link_submissions.update_one(
+            {"id": link_id},
+            {"$set": {"custom_logo": filename}}
+        )
+        
+        if result.modified_count > 0:
+            return {
+                "success": True,
+                "message": f"Logo {filename} assigned to link {link_id}"
+            }
+        else:
+            return {"success": False, "error": "Link not found or not updated"}
+        
+    except Exception as e:
+        logger.error(f"Error assigning logo: {e}")
+        return {"success": False, "error": str(e)}
+
 @api_router.post("/admin/recover-logos")
 async def recover_logos():
-    """Recuperación automática de logos perdidos"""
+    """Recuperación automática básica de logos perdidos"""
     try:
         import glob
         from datetime import datetime
@@ -1612,24 +1715,21 @@ async def recover_logos():
         
         orphaned_files = [f for f in file_info if f["filename"] not in referenced_files]
         
-        # Smart pairing algorithm
+        # Smart pairing algorithm - only good quality files
         recovered_count = 0
         recovery_log = []
         
-        # Sort orphaned files by date (newest first)
-        orphaned_files.sort(key=lambda x: x["mtime"], reverse=True)
+        # Sort orphaned files by size (largest first)
+        good_files = [f for f in orphaned_files if f["size"] > 10000]  # At least 10KB
+        good_files.sort(key=lambda x: x["size"], reverse=True)
         
         # Sort orphaned links by creation date
         orphaned_links.sort(key=lambda x: x.get("created_at", ""), reverse=True)
         
         # Attempt to pair files with links based on size and date proximity
-        for i, link in enumerate(orphaned_links[:min(len(orphaned_links), len(orphaned_files))]):
-            if i < len(orphaned_files):
-                file_to_assign = orphaned_files[i]
-                
-                # Skip tiny files (likely corrupted)
-                if file_to_assign["size"] < 1000:
-                    continue
+        for i, link in enumerate(orphaned_links[:min(len(orphaned_links), len(good_files))]):
+            if i < len(good_files):
+                file_to_assign = good_files[i]
                 
                 # Update link with recovered logo
                 await db.link_submissions.update_one(
