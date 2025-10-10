@@ -343,6 +343,9 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
     profile = await db.profiles.find_one({"user_id": current_user["id"]})
     if not profile:
         return {"user_id": current_user["id"], "configured": False}
+    # Remove MongoDB _id field to avoid serialization issues
+    if "_id" in profile:
+        del profile["_id"]
     return profile
 
 @api_router.post("/profile")
