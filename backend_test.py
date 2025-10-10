@@ -2282,8 +2282,13 @@ def main():
             tester = LinkDirectoryAPITester()
             success = tester.run_comprehensive_logo_upload_tests()
             return 0 if success else 1
+        elif command == "investigate":
+            # Run urgent logo disappearance investigation
+            tester = LinkDirectoryAPITester()
+            results = tester.investigate_logo_disappearance()
+            return 0 if sum(results.values()) >= 3 else 1
         else:
-            print("Usage: python backend_test.py [verify|delete|approve|approve-all|status|logo]")
+            print("Usage: python backend_test.py [verify|delete|approve|approve-all|status|logo|investigate]")
             return 1
     else:
         # Run all tests
