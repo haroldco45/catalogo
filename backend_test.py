@@ -13,6 +13,8 @@ class LinkDirectoryAPITester:
         self.tests_run = 0
         self.tests_passed = 0
         self.created_links = []
+        self.logo_issues = []
+        self.critical_failures = []
 
     def log_test(self, name, success, details=""):
         """Log test results"""
