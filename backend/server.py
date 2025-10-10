@@ -436,6 +436,11 @@ async def get_meal_history(limit: int = 20, current_user: dict = Depends(get_cur
         {"user_id": current_user["id"]}
     ).sort("fecha_creacion", -1).limit(limit).to_list(limit)
     
+    # Remove MongoDB _id fields to avoid serialization issues
+    for meal in meals:
+        if "_id" in meal:
+            del meal["_id"]
+    
     return meals
 
 @api_router.get("/stats")
