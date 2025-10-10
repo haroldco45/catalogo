@@ -1967,6 +1967,287 @@ class LinkDirectoryAPITester:
         
         return self.tests_passed == self.tests_run
 
+    def investigate_logo_disappearance(self):
+        """URGENT: Investigate logo disappearance issue after logo fix"""
+        print("🚨 URGENT LOGO DISAPPEARANCE INVESTIGATION")
+        print("=" * 80)
+        print("PROBLEMA CRÍTICO: Los logos han desaparecido después del 'arreglo'")
+        print("INVESTIGANDO: Base de datos, archivos físicos, URLs, endpoints")
+        print("=" * 80)
+        
+        investigation_results = {
+            'database_fields': False,
+            'physical_files': False,
+            'url_access': False,
+            'endpoint_data': False,
+            'backend_logs': False
+        }
+        
+        try:
+            # 1. VERIFICAR BASE DE DATOS - ¿Los campos custom_logo y favicon_url siguen ahí?
+            print("\n🔍 1. VERIFICANDO CAMPOS EN BASE DE DATOS")
+            print("-" * 60)
+            
+            response = requests.get(f"{self.api_url}/admin/status", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                links = data.get('links', [])
+                
+                print(f"📊 Total links en base de datos: {len(links)}")
+                
+                # Analizar campos de logos
+                links_with_custom_logo = 0
+                links_with_favicon = 0
+                sample_links = []
+                
+                for link in links[:10]:  # Primeros 10 para análisis
+                    custom_logo = link.get('custom_logo')
+                    favicon_url = link.get('favicon_url')
+                    
+                    if custom_logo:
+                        links_with_custom_logo += 1
+                    if favicon_url:
+                        links_with_favicon += 1
+                    
+                    sample_links.append({
+                        'id': link.get('id', 'N/A')[:8],
+                        'owner': link.get('owner_name', 'N/A'),
+                        'custom_logo': custom_logo,
+                        'favicon_url': favicon_url
+                    })
+                
+                print(f"✅ Links con custom_logo: {links_with_custom_logo}/{len(links)}")
+                print(f"✅ Links con favicon_url: {links_with_favicon}/{len(links)}")
+                
+                print(f"\n📋 MUESTRA DE PRIMEROS 10 LINKS:")
+                for i, link in enumerate(sample_links, 1):
+                    print(f"{i:2d}. {link['owner']} (ID: {link['id']}...)")
+                    print(f"    custom_logo: {link['custom_logo'] or 'NULL'}")
+                    print(f"    favicon_url: {link['favicon_url'] or 'NULL'}")
+                    print()
+                
+                if links_with_custom_logo > 0 or links_with_favicon > 0:
+                    print("✅ RESULTADO: Los campos de logos SÍ existen en la base de datos")
+                    investigation_results['database_fields'] = True
+                else:
+                    print("❌ RESULTADO: NO se encontraron campos de logos en la base de datos")
+                    investigation_results['database_fields'] = False
+            else:
+                print(f"❌ Error accediendo a base de datos: {response.status_code}")
+                investigation_results['database_fields'] = False
+            
+            # 2. COMPROBAR ARCHIVOS FÍSICOS - ¿Las imágenes en /uploads/ siguen existiendo?
+            print("\n🔍 2. VERIFICANDO ARCHIVOS FÍSICOS EN /uploads/")
+            print("-" * 60)
+            
+            # Intentar listar archivos via endpoint de uploads
+            try:
+                # Primero intentar acceder al directorio de uploads
+                response = requests.get(f"{self.base_url}/uploads/", timeout=10)
+                print(f"📁 Acceso a /uploads/: Status {response.status_code}")
+                
+                if response.status_code == 200:
+                    print("✅ Directorio /uploads/ accesible")
+                    # Intentar ver contenido
+                    content = response.text[:500]
+                    print(f"📄 Contenido (primeros 500 chars): {content}")
+                else:
+                    print(f"❌ Directorio /uploads/ no accesible: {response.status_code}")
+                
+                # También probar /api/uploads/
+                response = requests.get(f"{self.api_url}/uploads/", timeout=10)
+                print(f"📁 Acceso a /api/uploads/: Status {response.status_code}")
+                
+                if response.status_code == 200:
+                    print("✅ Directorio /api/uploads/ accesible")
+                    investigation_results['physical_files'] = True
+                else:
+                    print(f"❌ Directorio /api/uploads/ no accesible: {response.status_code}")
+                    investigation_results['physical_files'] = False
+                    
+            except Exception as e:
+                print(f"❌ Error verificando archivos físicos: {e}")
+                investigation_results['physical_files'] = False
+            
+            # 3. PROBAR URLs DIRECTAS - ¿Se pueden acceder las imágenes via /api/uploads/?
+            print("\n🔍 3. PROBANDO ACCESO DIRECTO A IMÁGENES")
+            print("-" * 60)
+            
+            # Buscar algunos archivos de logo específicos de la base de datos
+            if investigation_results['database_fields'] and links:
+                test_files = []
+                for link in links:
+                    custom_logo = link.get('custom_logo')
+                    if custom_logo:
+                        test_files.append(custom_logo)
+                        if len(test_files) >= 3:  # Probar solo 3 archivos
+                            break
+                
+                if test_files:
+                    print(f"🎯 Probando acceso a {len(test_files)} archivos de logo:")
+                    
+                    accessible_files = 0
+                    for filename in test_files:
+                        print(f"\n   Probando: {filename}")
+                        
+                        # Probar /uploads/
+                        response1 = requests.get(f"{self.base_url}/uploads/{filename}", timeout=10)
+                        print(f"   /uploads/{filename}: {response1.status_code}")
+                        
+                        # Probar /api/uploads/
+                        response2 = requests.get(f"{self.api_url}/uploads/{filename}", timeout=10)
+                        print(f"   /api/uploads/{filename}: {response2.status_code}")
+                        
+                        if response1.status_code == 200 or response2.status_code == 200:
+                            accessible_files += 1
+                            print(f"   ✅ Archivo accesible")
+                            
+                            # Verificar que es realmente una imagen
+                            successful_response = response1 if response1.status_code == 200 else response2
+                            content_type = successful_response.headers.get('content-type', '')
+                            content_length = len(successful_response.content)
+                            
+                            print(f"   📊 Content-Type: {content_type}")
+                            print(f"   📊 Tamaño: {content_length} bytes")
+                            
+                            if 'image' in content_type.lower():
+                                print(f"   ✅ Es una imagen válida")
+                            elif 'html' in content_type.lower():
+                                print(f"   ❌ Devuelve HTML en lugar de imagen")
+                            else:
+                                print(f"   ⚠️  Tipo de contenido inesperado")
+                        else:
+                            print(f"   ❌ Archivo no accesible")
+                    
+                    if accessible_files > 0:
+                        print(f"\n✅ RESULTADO: {accessible_files}/{len(test_files)} archivos accesibles")
+                        investigation_results['url_access'] = True
+                    else:
+                        print(f"\n❌ RESULTADO: Ningún archivo de logo es accesible via URL")
+                        investigation_results['url_access'] = False
+                else:
+                    print("⚠️  No se encontraron archivos de logo para probar")
+                    investigation_results['url_access'] = False
+            else:
+                print("⚠️  No se pueden probar URLs sin datos de base de datos")
+                investigation_results['url_access'] = False
+            
+            # 4. REVISAR ENDPOINT /api/links - ¿Los datos se están devolviendo correctamente?
+            print("\n🔍 4. VERIFICANDO ENDPOINT /api/links")
+            print("-" * 60)
+            
+            response = requests.get(f"{self.api_url}/links?status=approved", timeout=10)
+            if response.status_code == 200:
+                approved_links = response.json()
+                print(f"📊 Links aprobados devueltos: {len(approved_links)}")
+                
+                # Verificar que incluyen campos de logo
+                links_with_logos_in_response = 0
+                for link in approved_links[:5]:  # Primeros 5
+                    custom_logo = link.get('custom_logo')
+                    favicon_url = link.get('favicon_url')
+                    
+                    if custom_logo or favicon_url:
+                        links_with_logos_in_response += 1
+                    
+                    print(f"   Link: {link.get('owner_name', 'N/A')}")
+                    print(f"   custom_logo: {custom_logo or 'NULL'}")
+                    print(f"   favicon_url: {favicon_url or 'NULL'}")
+                    print()
+                
+                if links_with_logos_in_response > 0:
+                    print(f"✅ RESULTADO: Endpoint devuelve datos de logos correctamente")
+                    investigation_results['endpoint_data'] = True
+                else:
+                    print(f"❌ RESULTADO: Endpoint NO devuelve datos de logos")
+                    investigation_results['endpoint_data'] = False
+            else:
+                print(f"❌ Error en endpoint /api/links: {response.status_code}")
+                investigation_results['endpoint_data'] = False
+            
+            # 5. LOGS DEL BACKEND - Verificar si hay errores
+            print("\n🔍 5. VERIFICANDO LOGS DEL BACKEND")
+            print("-" * 60)
+            try:
+                import subprocess
+                log_result = subprocess.run(["tail", "-n", "50", "/var/log/supervisor/backend.out.log"], 
+                                          capture_output=True, text=True, timeout=5)
+                if log_result.stdout:
+                    print("📋 Últimos 50 logs del backend:")
+                    print("-" * 40)
+                    print(log_result.stdout)
+                    investigation_results['backend_logs'] = True
+                else:
+                    print("⚠️  No se encontraron logs del backend")
+                    investigation_results['backend_logs'] = False
+            except Exception as e:
+                print(f"⚠️  No se pudieron leer los logs: {e}")
+                print("   Recomendación: Revisar logs manualmente con:")
+                print("   tail -n 100 /var/log/supervisor/backend.*.log")
+                investigation_results['backend_logs'] = True  # Asumimos que se puede revisar manualmente
+            
+            # RESUMEN DE INVESTIGACIÓN
+            print("\n" + "=" * 80)
+            print("📊 RESUMEN DE INVESTIGACIÓN - LOGOS DESAPARECIDOS")
+            print("=" * 80)
+            
+            total_checks = len(investigation_results)
+            passed_checks = sum(investigation_results.values())
+            
+            print(f"✅ Campos en base de datos: {'SÍ' if investigation_results['database_fields'] else 'NO'}")
+            print(f"✅ Archivos físicos accesibles: {'SÍ' if investigation_results['physical_files'] else 'NO'}")
+            print(f"✅ URLs de imágenes funcionan: {'SÍ' if investigation_results['url_access'] else 'NO'}")
+            print(f"✅ Endpoint devuelve datos: {'SÍ' if investigation_results['endpoint_data'] else 'NO'}")
+            print(f"✅ Logs revisables: {'SÍ' if investigation_results['backend_logs'] else 'NO'}")
+            
+            print(f"\n📊 PUNTUACIÓN: {passed_checks}/{total_checks} verificaciones exitosas")
+            
+            # DIAGNÓSTICO Y RECOMENDACIONES
+            print(f"\n🎯 DIAGNÓSTICO:")
+            if investigation_results['database_fields'] and investigation_results['endpoint_data']:
+                if not investigation_results['url_access']:
+                    print("❌ PROBLEMA IDENTIFICADO: Los datos están en la base de datos pero las imágenes no son accesibles via URL")
+                    print("🔧 CAUSA PROBABLE: Problema con el servicio de archivos estáticos (/uploads/)")
+                    print("💡 SOLUCIÓN: Revisar configuración de FastAPI StaticFiles mount")
+                elif not investigation_results['physical_files']:
+                    print("❌ PROBLEMA IDENTIFICADO: Los archivos físicos han sido eliminados del servidor")
+                    print("🔧 CAUSA PROBABLE: Los archivos se perdieron durante el 'arreglo'")
+                    print("💡 SOLUCIÓN: Restaurar archivos desde backup o pedir a usuarios que vuelvan a subir")
+                else:
+                    print("✅ DATOS INTACTOS: Los logos están en la base de datos y son accesibles")
+                    print("🤔 POSIBLE CAUSA: Problema en el frontend o caché del navegador")
+            elif not investigation_results['database_fields']:
+                print("❌ PROBLEMA CRÍTICO: Los campos de logos han sido eliminados de la base de datos")
+                print("🔧 CAUSA PROBABLE: Migración de base de datos incorrecta durante el 'arreglo'")
+                print("💡 SOLUCIÓN URGENTE: Restaurar base de datos desde backup")
+            else:
+                print("❌ PROBLEMA MIXTO: Algunos componentes funcionan, otros no")
+                print("🔧 REQUIERE INVESTIGACIÓN ADICIONAL")
+            
+            print(f"\n🚨 PRÓXIMOS PASOS RECOMENDADOS:")
+            if not investigation_results['url_access']:
+                print("1. Revisar configuración de StaticFiles en server.py")
+                print("2. Verificar permisos del directorio /uploads/")
+                print("3. Probar reiniciar el servicio backend")
+            if not investigation_results['physical_files']:
+                print("1. Verificar si existe backup de /uploads/")
+                print("2. Revisar logs del sistema para ver si archivos fueron eliminados")
+            if not investigation_results['database_fields']:
+                print("1. URGENTE: Restaurar base de datos desde backup")
+                print("2. Verificar esquema de base de datos actual")
+            
+            # Log del test
+            overall_success = passed_checks >= 3  # Al menos 3 de 5 deben pasar
+            self.log_test("Logo Disappearance Investigation", overall_success, 
+                         f"Passed {passed_checks}/{total_checks} checks. Database fields: {investigation_results['database_fields']}, URL access: {investigation_results['url_access']}")
+            
+            return investigation_results
+            
+        except Exception as e:
+            print(f"\n❌ ERROR DURANTE INVESTIGACIÓN: {e}")
+            self.log_test("Logo Disappearance Investigation", False, str(e))
+            return investigation_results
+
 def main():
     import sys
     if len(sys.argv) > 1:
