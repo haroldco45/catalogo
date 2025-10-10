@@ -368,10 +368,10 @@ const ClientView = ({ notify }) => {
                   data-testid={`link-card-${link.id}`}
                 >
                   <CardContent className="p-3 flex flex-col items-center justify-center aspect-square">
-                    {/* SISTEMA ROBUSTO DE CARGA DE LOGOS - USANDO /api/uploads/ */}
+                    {/* SISTEMA ROBUSTO DE CARGA DE LOGOS - USANDO /uploads/ */}
                     {link.custom_logo ? (
                       <img
-                        src={`${BACKEND_URL}/api/uploads/${link.custom_logo}`}
+                        src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
                         alt={`${link.owner_name} logo`}
                         className="w-8 h-8 mb-2 rounded-md object-cover shadow-sm"
                         style={{ 
@@ -831,7 +831,7 @@ const EmergencyAdminPanel = ({ notify }) => {
                       <div className="flex-shrink-0">
                         {link.custom_logo ? (
                           <img
-                            src={`${BACKEND_URL}/api/uploads/${link.custom_logo}`}
+                            src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
                             alt="Logo"
                             className="w-8 h-8 rounded object-cover border"
                           />
@@ -895,7 +895,7 @@ const EmergencyAdminPanel = ({ notify }) => {
               <div className="flex items-center justify-center w-20 h-20 border-2 border-dashed border-gray-300 rounded">
                 {logoEditModal.link.custom_logo ? (
                   <img
-                    src={`${BACKEND_URL}/api/uploads/${logoEditModal.link.custom_logo}`}
+                    src={`${BACKEND_URL}/uploads/${logoEditModal.link.custom_logo}`}
                     alt="Logo actual"
                     className="w-full h-full object-cover rounded"
                   />
@@ -1341,7 +1341,7 @@ const AdminView = ({ notify }) => {
                                       <div className="flex-shrink-0">
                                         {link.custom_logo ? (
                                           <img
-                                            src={`${BACKEND_URL}/api/uploads/${link.custom_logo}`}
+                                            src={`${BACKEND_URL}/uploads/${link.custom_logo}`}
                                             alt="Logo"
                                             className="w-12 h-12 rounded object-cover border-2 border-green-400"
                                           />
@@ -1471,7 +1471,7 @@ const AdminView = ({ notify }) => {
                 <div className="flex items-center justify-center w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg mx-auto">
                   {logoEditModal.link.custom_logo ? (
                     <img
-                      src={`${BACKEND_URL}/api/uploads/${logoEditModal.link.custom_logo}`}
+                      src={`${BACKEND_URL}/uploads/${logoEditModal.link.custom_logo}`}
                       alt="Logo actual"
                       className="w-full h-full object-cover rounded-lg"
                     />
