@@ -368,7 +368,7 @@ const ClientView = ({ notify }) => {
                   data-testid={`link-card-${link.id}`}
                 >
                   <CardContent className="p-3 flex flex-col items-center justify-center aspect-square">
-                    {/* OPTIMIZADO PARA CAPTURAS DE PANTALLA DE INSTAGRAM */}
+                    {/* SISTEMA ROBUSTO DE CARGA DE LOGOS */}
                     {link.custom_logo ? (
                       <img
                         src={`${BACKEND_URL}/api/uploads/${link.custom_logo}`}
@@ -379,34 +379,43 @@ const ClientView = ({ notify }) => {
                           objectPosition: 'center center'
                         }}
                         onError={(e) => {
-                          console.log(`❌ Error cargando logo personalizado para ${link.owner_name}:`, e.target.src);
-                          // If custom logo fails, try favicon
+                          // Si el logo personalizado falla, mostrar fallback inmediato
                           e.target.style.display = 'none';
-                          const faviconImg = e.target.nextSibling;
-                          if (faviconImg && link.favicon_url) {
-                            faviconImg.style.display = 'block';
-                          } else {
-                            // Show fallback
-                            const fallback = link.favicon_url ? 
-                              e.target.nextSibling?.nextSibling : 
-                              e.target.nextSibling;
-                            if (fallback) fallback.style.display = 'flex';
+                          const fallback = e.target.nextElementSibling?.nextElementSibling || e.target.nextElementSibling;
+                          if (fallback && fallback.classList.contains('bg-gradient-to-r')) {
+                            fallback.style.display = 'flex';
                           }
                         }}
-                        onLoad={(e) => {
-                          console.log(`✅ Logo personalizado cargado para ${link.owner_name}:`, e.target.src);
-                        }}
                       />
-                    ) : link.favicon_url ? (
+                    ) : null}
+                    
+                    {link.favicon_url && !link.custom_logo ? (
                       <img
                         src={link.favicon_url}
                         alt={`${link.owner_name} favicon`}
                         className="w-8 h-8 mb-2 rounded-md object-contain"
-                        style={{ display: link.custom_logo ? 'none' : 'block' }}
+                        loading="lazy"
                         onError={(e) => {
-                          console.log(`❌ Error cargando favicon para ${link.owner_name}:`, e.target.src);
+                          // Si el favicon falla, mostrar fallback inmediato y reportar
                           e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
+                          const fallback = e.target.nextElementSibling;
+                          if (fallback && fallback.classList.contains('bg-gradient-to-r')) {
+                            fallback.style.display = 'flex';
+                          }
+                          
+                          // Reportar favicon roto para reparación (opcional)
+                          if (window.brokenLogos) {
+                            window.brokenLogos.push({id: '${link.id}', url: e.target.src, name: '${link.owner_name}'});
+                          } else {
+                            window.brokenLogos = [{id: '${link.id}', url: e.target.src, name: '${link.owner_name}'}];
+                          }
+                        }}
+                        onLoad={(e) => {
+                          // Logo cargó exitosamente, ocultar fallback
+                          const fallback = e.target.nextElementSibling;
+                          if (fallback && fallback.classList.contains('bg-gradient-to-r')) {
+                            fallback.style.display = 'none';
+                          }
                         }}
                       />
                     ) : null}
