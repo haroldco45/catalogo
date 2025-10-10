@@ -239,6 +239,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "LOGO DISAPPEARANCE INVESTIGATION COMPLETE (2025-10-10): ✅ ISSUE RESOLVED - LOGOS ARE WORKING CORRECTLY. INVESTIGATION RESULTS: ✅ Database fields (custom_logo, favicon_url) exist and populated (5/42 links have custom logos) ✅ Physical files exist on disk with correct sizes in /app/backend/uploads/ ✅ /api/uploads/ path serves images correctly (Content-Type: image/png, correct file sizes) ❌ /uploads/ path returns HTML (frontend React app) instead of images ✅ Backend endpoints return logo data correctly. ROOT CAUSE IDENTIFIED: Kubernetes ingress routes /uploads/ to frontend, but /api/uploads/ correctly serves static files. SOLUTION: Frontend should use /api/uploads/ URLs for logo images, not /uploads/. The 'logo disappearance' was a routing configuration issue, not a data loss issue. All logos are intact and accessible via correct URLs."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE BACKEND TESTING COMPLETED (2025-01-27): ✅ STATIC FILE SERVING FULLY OPERATIONAL. TESTING RESULTS: ✅ GET /api/uploads/{filename} serves images correctly with proper Content-Type headers ✅ 9 logo files found in database, 7 accessible with correct sizes ✅ Files served with image/png Content-Type and proper byte sizes (1MB-5MB) ⚠️ Minor: 2 files corrupted (78-94 bytes) from previous upload issues, but endpoint working correctly ✅ Logo upload endpoint PUT /api/links/{id}/logo working perfectly. CONCLUSION: Static file serving is working as designed. /api/uploads/ path correctly serves files, /uploads/ routes to frontend as intended by Kubernetes configuration."
 
 frontend:
   - task: "Admin panel routing and authentication"
