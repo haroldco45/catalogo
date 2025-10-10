@@ -346,6 +346,8 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
     # Remove MongoDB _id field to avoid serialization issues
     if "_id" in profile:
         del profile["_id"]
+    # Add configured flag
+    profile["configured"] = True
     return profile
 
 @api_router.post("/profile")
