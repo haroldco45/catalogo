@@ -1623,6 +1623,33 @@ const AdminView = ({ notify }) => {
                 >
                   📋 VER LINKS DE INSTAGRAM
                 </Button>
+                
+                <Button
+                  onClick={async () => {
+                    if (confirm('🛠️ REPARAR LOGOS ROTOS\n\nEsto actualizará automáticamente los favicons de todos los links que no cargan correctamente.\n\n¿Continuar?')) {
+                      try {
+                        const response = await fetch(`${BACKEND_URL}/api/admin/fix-broken-logos`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' }
+                        });
+                        
+                        if (response.ok) {
+                          const result = await response.json();
+                          alert(`✅ REPARACIÓN COMPLETADA\n\n📊 Logos reparados: ${result.repaired_count}\n❌ No se pudieron reparar: ${result.failed_count}\n📋 Total procesados: ${result.total_processed}\n\n🔄 Recargando página para ver cambios...`);
+                          setTimeout(() => window.location.reload(), 2000);
+                        } else {
+                          const errorText = await response.text();
+                          alert(`❌ Error en reparación: ${response.status}\n${errorText}`);
+                        }
+                      } catch (error) {
+                        alert(`❌ Error de conexión: ${error.message}`);
+                      }
+                    }
+                  }}
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2"
+                >
+                  🛠️ REPARAR LOGOS ROTOS
+                </Button>
               </div>
               
               <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
