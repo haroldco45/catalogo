@@ -285,9 +285,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "CRITICAL: Static file serving for uploaded logos - /uploads/ path returns HTML instead of images"
-  stuck_tasks:
-    - "Static file serving for uploaded logos - /uploads/ path configuration"
+    - "Logo disappearance investigation completed - issue resolved"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
   completed_tasks:
@@ -295,6 +294,8 @@ test_plan:
     - "Admin panel component rendering and functionality"
     - "Instagram logo display issue - custom_logo field missing from admin/status endpoint"
     - "API endpoint PUT /api/links/{link_id}/logo functionality"
+    - "Static file serving for uploaded logos - /uploads/ path configuration"
+    - "Logo disappearance investigation - routing issue resolved"
 
 agent_communication:
     - agent: "main"  
