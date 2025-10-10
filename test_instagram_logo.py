@@ -5,7 +5,7 @@ from io import BytesIO
 
 def test_instagram_logo_upload():
     """Test logo upload specifically for Instagram links"""
-    api_url = 'https://panel-logo-editor.preview.emergentagent.com/api'
+    api_url = 'https://logo-fix-hub.preview.emergentagent.com/api'
     
     # Create test image
     png_data = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00d\x00\x00\x00d\x08\x02\x00\x00\x00\xff\x80\x02\x03\x19tEXtSoftwareAdobe ImageReadyq\xc9e<\x00\x00\x00\x0eIDATx\xdac\xf8\x0f\x01\x01\x00\x18\xdd\x8d\xb4IEND\xaeB`\x82'

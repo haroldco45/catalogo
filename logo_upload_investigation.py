@@ -136,7 +136,7 @@ def get_existing_instagram_links(api_url):
         return []
 
 def main():
-    api_url = "https://panel-logo-editor.preview.emergentagent.com/api"
+    api_url = "https://logo-fix-hub.preview.emergentagent.com/api"
     
     print("🔍 LOGO UPLOAD FILE SIZE ISSUE INVESTIGATION")
     print("=" * 80)
