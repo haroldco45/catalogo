@@ -368,6 +368,7 @@ async def create_or_update_profile(profile_data: UserProfileUpdate, current_user
     
     # Remove any potential ObjectId fields before returning
     clean_profile = {k: v for k, v in profile_dict.items() if k != "_id"}
+    clean_profile["configured"] = True
     
     return {"message": "Perfil actualizado correctamente", "profile": clean_profile}
 
