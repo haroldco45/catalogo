@@ -1,38 +1,250 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap');
+
+:root {
+  /* Backgrounds */
+  --bg-page: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-section: rgba(243, 234, 255, 0.3);
+  
+  /* Text */
+  --text-primary: rgb(24, 24, 24);
+  --text-secondary: rgb(112, 112, 112);
+  --text-muted: rgb(143, 143, 143);
+  
+  /* Borders */
+  --border-light: rgba(24, 24, 24, 0.1);
+  --border-medium: rgba(24, 24, 24, 0.2);
+  --border-strong: rgba(24, 24, 24, 0.3);
+  
+  /* Brand Colors */
+  --brand-primary: rgb(0, 128, 255);
+  --brand-hover: rgb(0, 153, 255);
+  --brand-active: rgb(0, 102, 204);
+  
+  /* Gradients */
+  --gradient-button: linear-gradient(168deg, rgb(67, 67, 67) -63%, rgb(0, 0, 0) 100%);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+}
+
 .App {
-    text-align: center;
+  min-height: 100vh;
 }
 
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* Typography */
+.brand-display {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: clamp(60px, 8vw, 168px);
+  line-height: 1.1em;
+  color: var(--text-primary);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.heading-1 {
+  font-family: 'Satoshi';
+  font-weight: 700;
+  font-size: clamp(32px, 5vw, 64px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.heading-2 {
+  font-family: 'Satoshi';
+  font-weight: 600;
+  font-size: clamp(24px, 4vw, 48px);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
 }
 
-.App-link {
-    color: #61dafb;
+.heading-3 {
+  font-family: 'Satoshi';
+  font-weight: 600;
+  font-size: clamp(20px, 3vw, 32px);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.heading-4 {
+  font-family: 'Satoshi';
+  font-weight: 600;
+  font-size: clamp(18px, 2.5vw, 24px);
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+}
+
+.body-large {
+  font-family: 'Satoshi';
+  font-weight: 400;
+  font-size: clamp(16px, 2.5vw, 20px);
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.body-medium {
+  font-family: 'Satoshi';
+  font-weight: 400;
+  font-size: clamp(14px, 2vw, 16px);
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.body-small {
+  font-family: 'Satoshi';
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.caption {
+  font-family: 'Satoshi';
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--text-muted);
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--gradient-button);
+  color: white;
+  border: none;
+  border-radius: 100px;
+  padding: 14px 24px;
+  font-family: 'Satoshi', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.3;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: scale(1.04);
+  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 100px;
+  padding: 14px 24px;
+  font-family: 'Satoshi', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.3;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.02);
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+/* Card Hover Effects */
+.card-hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 809px) {
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    min-height: 52px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .card-hover-lift:hover {
+    transform: translateY(-4px);
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-page);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* Focus States for Accessibility */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
 }
