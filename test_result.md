@@ -305,16 +305,13 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Autenticación JWT (registro/login)"
-    - "Gestión de perfil de usuario con datos de salud"
-    - "Cálculo de calorías objetivo personalizado"
-    - "Generación de recetas con IA (OpenAI GPT-4o)"
-    - "Generación de imágenes de platos con IA (OpenAI gpt-image-1)"
+  current_focus: []
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
     message: "Implementación completa de Menu Maestro finalizada. Backend con FastAPI usando emergentintegrations para LLM (GPT-4o) y generación de imágenes (gpt-image-1). Frontend con React completamente responsive. Utilizando Emergent LLM Key para todas las integraciones de IA. CRÍTICO: La generación de imágenes puede tomar 30-60 segundos, por favor configurar timeouts apropiados. Autenticación: cualquier email/password funciona para testing. El perfil debe configurarse después del registro antes de generar recetas."
+  - agent: "testing"
+    message: "🎉 BACKEND TESTING COMPLETADO EXITOSAMENTE - Todos los endpoints funcionando correctamente. Realizadas correcciones menores de serialización MongoDB ObjectId. Flujo completo validado: registro → login → perfil → generación recetas con IA → historial. Generación de imágenes funciona en ~21 segundos. Todas las integraciones de IA (GPT-4o y gpt-image-1) operativas. Backend listo para producción."
