@@ -285,7 +285,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Logo disappearance investigation completed - issue resolved"
+    - "Logo display status verification - screenshots show logos working correctly"
+    - "Backend/Frontend comprehensive testing needed to confirm functional state"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
