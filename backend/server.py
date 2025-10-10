@@ -576,35 +576,106 @@ async def refresh_all_logos():
         raise HTTPException(status_code=500, detail=f"Error refreshing logos: {str(e)}")
 
 @api_router.post("/links/{link_id}/refresh-logo")
-async def refresh_single_logo(link_id: str):
-    """Refresh logo for a specific link"""
-    try:
-        # Get the link
-        link = await db.link_submissions.find_one({"id": link_id})
-        if not link:
+async def refresh_logo(link_id: str):
+    """Refresh logo/favicon for a specific link"""
+    print(f"🔄 Refreshing logo for link: {link_id}")
+    
+    # Get the current link
+    current_link = await db.link_submissions.find_one({"id": link_id})
+    if not current_link:
+        raise HTTPException(status_code=404, detail="Link no encontrado")
+    
+    # Extract new favicon
+    favicon_url = await extract_best_logo(current_link["website_url"])
+    
+    if favicon_url:
+        print(f"   ✅ New favicon found: {favicon_url}")
+        # Update the favicon_url in database
+        result = await db.link_submissions.update_one(
+            {"id": link_id}, 
+            {"$set": {"favicon_url": favicon_url}}
+        )
+        
+        if result.matched_count == 0:
             raise HTTPException(status_code=404, detail="Link no encontrado")
         
-        # Extract better logo
-        new_logo_url = await extract_best_logo(link["website_url"])
-        
-        if new_logo_url:
-            # Update the database
-            await db.link_submissions.update_one(
-                {"id": link_id}, 
-                {"$set": {"favicon_url": new_logo_url, "custom_logo": None}}
-            )
-            return {
-                "message": "Logo actualizado correctamente",
-                "new_logo_url": new_logo_url
-            }
-        else:
-            return {
-                "message": "No se encontró un logo mejor",
-                "current_logo_url": link.get("favicon_url")
-            }
+        return {"message": "Logo actualizado correctamente", "new_favicon_url": favicon_url}
+    else:
+        print(f"   ❌ Could not extract logo from: {current_link['website_url']}")
+        raise HTTPException(status_code=400, detail="No se pudo extraer el logo del sitio web")
+
+@api_router.post("/admin/fix-broken-logos")
+async def fix_all_broken_logos():
+    """Fix all broken logos by re-extracting favicons - ADMIN ONLY"""
+    print("🛠️ Starting bulk logo repair process...")
+    
+    # Get all approved links
+    approved_links = await db.link_submissions.find({"status": "approved"}).to_list(length=None)
+    
+    if not approved_links:
+        return {"message": "No hay links aprobados para reparar"}
+    
+    repaired_count = 0
+    failed_count = 0
+    results = []
+    
+    for link in approved_links:
+        try:
+            print(f"   🔍 Checking: {link.get('owner_name', 'Unknown')} - {link.get('website_url', 'No URL')}")
             
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error refreshing logo: {str(e)}")
+            # Skip if has custom logo (those work with /api/uploads/)
+            if link.get('custom_logo'):
+                print(f"   ⏭️ Skipping (has custom logo): {link.get('owner_name')}")
+                continue
+            
+            # Try to extract new favicon
+            favicon_url = await extract_best_logo(link["website_url"])
+            
+            if favicon_url and favicon_url != link.get('favicon_url'):
+                # Update the favicon_url in database
+                await db.link_submissions.update_one(
+                    {"id": link["id"]}, 
+                    {"$set": {"favicon_url": favicon_url}}
+                )
+                
+                repaired_count += 1
+                results.append({
+                    "id": link["id"],
+                    "name": link.get("owner_name", "Unknown"),
+                    "old_favicon": link.get("favicon_url", "None"),
+                    "new_favicon": favicon_url,
+                    "status": "repaired"
+                })
+                print(f"   ✅ Repaired: {link.get('owner_name')} -> {favicon_url}")
+            else:
+                failed_count += 1
+                results.append({
+                    "id": link["id"],
+                    "name": link.get("owner_name", "Unknown"),
+                    "website": link.get("website_url", "No URL"),
+                    "status": "failed"
+                })
+                print(f"   ❌ Failed: {link.get('owner_name')} - {link.get('website_url')}")
+                
+        except Exception as e:
+            failed_count += 1
+            print(f"   💥 Error processing {link.get('owner_name', 'Unknown')}: {str(e)}")
+            results.append({
+                "id": link["id"],
+                "name": link.get("owner_name", "Unknown"),
+                "status": "error",
+                "error": str(e)
+            })
+    
+    print(f"🏁 Bulk repair completed: {repaired_count} repaired, {failed_count} failed")
+    
+    return {
+        "message": f"Proceso completado: {repaired_count} logos reparados, {failed_count} fallidos",
+        "repaired_count": repaired_count,
+        "failed_count": failed_count,
+        "total_processed": len(approved_links),
+        "results": results[:10]  # Primeros 10 resultados
+    }
 
 @api_router.get("/admin/dashboard")
 async def get_admin_dashboard():
