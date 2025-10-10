@@ -1495,6 +1495,101 @@ async def simple_admin():
     except Exception as e:
         return {"error": str(e), "working": False}
 
+@api_router.post("/admin/recover-logos")
+async def recover_logos():
+    """Recuperación automática de logos perdidos"""
+    try:
+        import glob
+        from datetime import datetime
+        
+        # Get all physical files
+        uploads_dir = "/app/backend/uploads"
+        all_files = glob.glob(f"{uploads_dir}/*")
+        file_info = []
+        
+        for file_path in all_files:
+            if os.path.isfile(file_path):
+                filename = os.path.basename(file_path)
+                file_size = os.path.getsize(file_path)
+                file_mtime = os.path.getmtime(file_path)
+                file_info.append({
+                    "filename": filename,
+                    "size": file_size,
+                    "mtime": file_mtime,
+                    "mtime_str": datetime.fromtimestamp(file_mtime).isoformat()
+                })
+        
+        # Get all links from database
+        links = await db.link_submissions.find().to_list(None)
+        
+        # Find links without logos (orphaned links)
+        orphaned_links = []
+        links_with_logos = []
+        
+        for link in links:
+            if not link.get("custom_logo") and not link.get("favicon_url"):
+                orphaned_links.append(link)
+            else:
+                links_with_logos.append(link)
+        
+        # Find orphaned files (files not referenced by any link)
+        referenced_files = set()
+        for link in links:
+            if link.get("custom_logo"):
+                referenced_files.add(link["custom_logo"])
+        
+        orphaned_files = [f for f in file_info if f["filename"] not in referenced_files]
+        
+        # Smart pairing algorithm
+        recovered_count = 0
+        recovery_log = []
+        
+        # Sort orphaned files by date (newest first)
+        orphaned_files.sort(key=lambda x: x["mtime"], reverse=True)
+        
+        # Sort orphaned links by creation date
+        orphaned_links.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+        
+        # Attempt to pair files with links based on size and date proximity
+        for i, link in enumerate(orphaned_links[:min(len(orphaned_links), len(orphaned_files))]):
+            if i < len(orphaned_files):
+                file_to_assign = orphaned_files[i]
+                
+                # Skip tiny files (likely corrupted)
+                if file_to_assign["size"] < 1000:
+                    continue
+                
+                # Update link with recovered logo
+                await db.link_submissions.update_one(
+                    {"id": link["id"]},
+                    {"$set": {"custom_logo": file_to_assign["filename"]}}
+                )
+                
+                recovered_count += 1
+                recovery_log.append({
+                    "link_id": link["id"],
+                    "owner_name": link.get("owner_name"),
+                    "recovered_file": file_to_assign["filename"],
+                    "file_size": file_to_assign["size"]
+                })
+        
+        return {
+            "success": True,
+            "recovered_count": recovered_count,
+            "total_orphaned_links": len(orphaned_links),
+            "total_orphaned_files": len(orphaned_files),
+            "recovery_log": recovery_log,
+            "file_statistics": {
+                "total_files": len(file_info),
+                "files_over_1kb": len([f for f in file_info if f["size"] > 1000]),
+                "files_under_1kb": len([f for f in file_info if f["size"] <= 1000])
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error recovering logos: {e}")
+        return {"success": False, "error": str(e)}
+
 # Include the router in the main app
 app.include_router(api_router)
 
