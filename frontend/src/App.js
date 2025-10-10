@@ -368,7 +368,7 @@ const ClientView = ({ notify }) => {
                   data-testid={`link-card-${link.id}`}
                 >
                   <CardContent className="p-3 flex flex-col items-center justify-center aspect-square">
-                    {/* SISTEMA ROBUSTO DE CARGA DE LOGOS */}
+                    {/* SISTEMA ROBUSTO DE CARGA DE LOGOS - USANDO /api/uploads/ */}
                     {link.custom_logo ? (
                       <img
                         src={`${BACKEND_URL}/api/uploads/${link.custom_logo}`}
