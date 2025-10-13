@@ -1,52 +1,103 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import { useState, useEffect } from 'react';
+import '@/App.css';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import axios from 'axios';
+import Login from '@/pages/Login';
+import Dashboard from '@/pages/Dashboard';
+import Clientes from '@/pages/Clientes';
+import Motos from '@/pages/Motos';
+import Ordenes from '@/pages/Ordenes';
+import OrdenDetalle from '@/pages/OrdenDetalle';
+import { Toaster } from '@/components/ui/sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+export const API = `${BACKEND_URL}/api`;
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+// Axios interceptor para incluir el token
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const response = await axios.get(`${API}/auth/me`);
+        setUser(response.data);
+      } catch (error) {
+        localStorage.removeItem('token');
+        setUser(null);
+      }
+    }
+    setLoading(false);
+  };
+
+  const handleLogin = (userData, token) => {
+    localStorage.setItem('token', token);
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+        <div className="text-orange-500 text-2xl font-bold">Cargando...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
+          <Route
+            path="/login"
+            element={user ? <Navigate to="/" /> : <Login onLogin={handleLogin} />}
+          />
+          <Route
+            path="/"
+            element={user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/clientes"
+            element={user ? <Clientes user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/motos"
+            element={user ? <Motos user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/ordenes"
+            element={user ? <Ordenes user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/ordenes/:ordenId"
+            element={user ? <OrdenDetalle user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+          />
         </Routes>
       </BrowserRouter>
+      <Toaster position="top-right" />
     </div>
   );
 }
