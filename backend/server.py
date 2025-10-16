@@ -738,6 +738,233 @@ async def get_orders_stats():
         "total": pending + confirmed + preparing + delivered + cancelled
     }
 
+# ==================== PURCHASES API (COMPRAS) ====================
+
+@api_router.post("/purchases", response_model=Purchase)
+async def create_purchase(purchase_data: PurchaseCreate):
+    """Create a new purchase and update inventory"""
+    purchase = Purchase(**purchase_data.model_dump())
+    
+    # Update product stock and cost
+    for item in purchase.items:
+        product = await db.products.find_one({"id": item.product_id})
+        if product:
+            new_stock = product['stock'] + item.quantity
+            
+            # Update product with new stock and cost
+            await db.products.update_one(
+                {"id": item.product_id},
+                {"$set": {
+                    "stock": new_stock,
+                    "cost": item.cost  # Actualizar costo de compra
+                }}
+            )
+    
+    # Save purchase
+    doc = purchase.model_dump()
+    doc['created_at'] = datetime_to_str(doc['created_at'])
+    await db.purchases.insert_one(doc)
+    
+    logger.info(f"Compra registrada: {purchase.purchase_number} - {purchase.supplier}")
+    
+    return purchase
+
+@api_router.get("/purchases", response_model=List[Purchase])
+async def get_purchases():
+    """Get all purchases"""
+    purchases = await db.purchases.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    for purchase in purchases:
+        purchase['created_at'] = str_to_datetime(purchase['created_at'])
+    
+    return purchases
+
+@api_router.get("/purchases/{purchase_id}", response_model=Purchase)
+async def get_purchase(purchase_id: str):
+    """Get a specific purchase"""
+    purchase = await db.purchases.find_one({"id": purchase_id}, {"_id": 0})
+    
+    if not purchase:
+        raise HTTPException(status_code=404, detail="Compra no encontrada")
+    
+    purchase['created_at'] = str_to_datetime(purchase['created_at'])
+    
+    return purchase
+
+# ==================== INVENTORY REPORTS API ====================
+
+@api_router.get("/reports/inventory")
+async def get_inventory_report():
+    """Get current inventory report with valuation"""
+    products = await db.products.find({}, {"_id": 0}).to_list(10000)
+    
+    total_items = 0
+    total_value = 0
+    low_stock_count = 0
+    by_category = {}
+    
+    inventory_items = []
+    
+    for product in products:
+        cost = product.get('cost', product.get('price', 0))  # Usar costo o precio si no hay costo
+        stock = product['stock']
+        value = stock * cost
+        
+        total_items += stock
+        total_value += value
+        
+        if stock <= product.get('min_stock', 10):
+            low_stock_count += 1
+        
+        # Group by category
+        category = product['category']
+        if category not in by_category:
+            by_category[category] = {
+                'items': 0,
+                'value': 0,
+                'products': 0
+            }
+        by_category[category]['items'] += stock
+        by_category[category]['value'] += value
+        by_category[category]['products'] += 1
+        
+        inventory_items.append({
+            'id': product['id'],
+            'name': product['name'],
+            'category': product['category'],
+            'stock': stock,
+            'cost': cost,
+            'price': product['price'],
+            'value': value,
+            'supplier': product.get('supplier', '')
+        })
+    
+    # Sort by value descending
+    inventory_items.sort(key=lambda x: x['value'], reverse=True)
+    
+    return {
+        "summary": {
+            "total_products": len(products),
+            "total_items": total_items,
+            "total_value": total_value,
+            "low_stock_count": low_stock_count
+        },
+        "by_category": by_category,
+        "items": inventory_items
+    }
+
+@api_router.get("/reports/inventory/export")
+async def export_inventory_to_excel():
+    """Export inventory report to Excel"""
+    # Get inventory data
+    report = await get_inventory_report()
+    
+    # Create Excel workbook
+    wb = Workbook()
+    
+    # Sheet 1: Summary
+    ws_summary = wb.active
+    ws_summary.title = "Resumen"
+    
+    header_fill = PatternFill(start_color="FFB6D7", end_color="FFB6D7", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF")
+    
+    ws_summary['A1'] = "REPORTE DE INVENTARIO VALORIZADO"
+    ws_summary['A1'].font = Font(bold=True, size=14)
+    ws_summary.merge_cells('A1:D1')
+    
+    ws_summary['A3'] = "Fecha:"
+    ws_summary['B3'] = datetime.now(COLOMBIA_TZ).strftime("%d/%m/%Y %H:%M")
+    
+    ws_summary['A5'] = "RESUMEN GENERAL"
+    ws_summary['A5'].font = header_font
+    ws_summary['A5'].fill = header_fill
+    ws_summary.merge_cells('A5:B5')
+    
+    ws_summary['A6'] = "Total Productos:"
+    ws_summary['B6'] = report['summary']['total_products']
+    ws_summary['A7'] = "Total Unidades:"
+    ws_summary['B7'] = report['summary']['total_items']
+    ws_summary['A8'] = "Valor Total Inventario:"
+    ws_summary['B8'] = f"${report['summary']['total_value']:,.0f} COP"
+    ws_summary['A9'] = "Productos con Stock Bajo:"
+    ws_summary['B9'] = report['summary']['low_stock_count']
+    
+    # By Category
+    ws_summary['A11'] = "POR CATEGORÍA"
+    ws_summary['A11'].font = header_font
+    ws_summary['A11'].fill = header_fill
+    ws_summary.merge_cells('A11:D11')
+    
+    headers_cat = ['Categoría', 'Productos', 'Unidades', 'Valor Total']
+    for col, header in enumerate(headers_cat, start=1):
+        cell = ws_summary.cell(row=12, column=col)
+        cell.value = header
+        cell.font = header_font
+        cell.fill = header_fill
+    
+    row = 13
+    for category, data in report['by_category'].items():
+        ws_summary[f'A{row}'] = category
+        ws_summary[f'B{row}'] = data['products']
+        ws_summary[f'C{row}'] = data['items']
+        ws_summary[f'D{row}'] = f"${data['value']:,.0f}"
+        row += 1
+    
+    # Sheet 2: Detailed Inventory
+    ws_detail = wb.create_sheet("Inventario Detallado")
+    
+    ws_detail['A1'] = "INVENTARIO DETALLADO VALORIZADO"
+    ws_detail['A1'].font = Font(bold=True, size=14)
+    ws_detail.merge_cells('A1:H1')
+    
+    headers_detail = ['Producto', 'Categoría', 'Stock', 'Costo Unit.', 'Precio Venta', 'Valor Total', 'Margen %', 'Proveedor']
+    for col, header in enumerate(headers_detail, start=1):
+        cell = ws_detail.cell(row=3, column=col)
+        cell.value = header
+        cell.font = header_font
+        cell.fill = header_fill
+    
+    row = 4
+    for item in report['items']:
+        margin = ((item['price'] - item['cost']) / item['cost'] * 100) if item['cost'] > 0 else 0
+        ws_detail[f'A{row}'] = item['name']
+        ws_detail[f'B{row}'] = item['category']
+        ws_detail[f'C{row}'] = item['stock']
+        ws_detail[f'D{row}'] = f"${item['cost']:,.0f}"
+        ws_detail[f'E{row}'] = f"${item['price']:,.0f}"
+        ws_detail[f'F{row}'] = f"${item['value']:,.0f}"
+        ws_detail[f'G{row}'] = f"{margin:.1f}%"
+        ws_detail[f'H{row}'] = item['supplier']
+        row += 1
+    
+    # Adjust column widths
+    for ws in [ws_summary, ws_detail]:
+        for column in ws.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            ws.column_dimensions[column_letter].width = adjusted_width
+    
+    # Save to BytesIO
+    excel_file = BytesIO()
+    wb.save(excel_file)
+    excel_file.seek(0)
+    
+    filename = f"inventario_valorizado_{datetime.now(COLOMBIA_TZ).strftime('%Y%m%d')}.xlsx"
+    
+    return StreamingResponse(
+        excel_file,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
 # ==================== DASHBOARD & STATS API ====================
 
 @api_router.get("/dashboard/stats")
