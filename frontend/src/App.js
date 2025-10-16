@@ -144,12 +144,16 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg">
+      <div className="bg-white rounded-2xl p-6 shadow-lg mb-8">
         <h3 className="text-xl font-bold text-gray-800 mb-4">Acciones Rápidas</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Link to="/sales" className="p-4 bg-gradient-to-r from-pink-400 to-pink-500 rounded-xl text-white text-center hover:shadow-lg transition-shadow">
             <div className="text-3xl mb-2">🛒</div>
             <div className="font-semibold">Nueva Venta</div>
+          </Link>
+          <Link to="/orders" className="p-4 bg-gradient-to-r from-green-400 to-green-500 rounded-xl text-white text-center hover:shadow-lg transition-shadow">
+            <div className="text-3xl mb-2">📋</div>
+            <div className="font-semibold">Ver Pedidos</div>
           </Link>
           <Link to="/products" className="p-4 bg-gradient-to-r from-purple-400 to-purple-500 rounded-xl text-white text-center hover:shadow-lg transition-shadow">
             <div className="text-3xl mb-2">📦</div>
@@ -159,6 +163,24 @@ const Dashboard = () => {
             <div className="text-3xl mb-2">📈</div>
             <div className="font-semibold">Ver Reportes</div>
           </Link>
+        </div>
+      </div>
+
+      {/* Link to Store */}
+      <div className="bg-gradient-to-r from-orange-400 to-pink-500 rounded-2xl p-6 shadow-lg text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-2xl font-bold mb-2">🛍️ Portal de Clientes</h3>
+            <p className="text-white/90">Comparte este enlace para que tus clientes hagan pedidos</p>
+          </div>
+          <a
+            href="/tienda"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-white text-orange-600 px-6 py-3 rounded-xl font-bold hover:shadow-xl transition-shadow"
+          >
+            Abrir Tienda →
+          </a>
         </div>
       </div>
     </div>
