@@ -4,6 +4,7 @@ import '@/App.css';
 import * as api from './api';
 import Store from './components/Store';
 import Orders from './components/Orders';
+import Purchases from './components/Purchases';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
