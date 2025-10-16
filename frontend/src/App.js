@@ -21,6 +21,7 @@ const Layout = ({ children }) => {
     { id: 'dashboard', label: '📊 Dashboard', path: '/' },
     { id: 'products', label: '📦 Inventario', path: '/products' },
     { id: 'sales', label: '🛒 Ventas', path: '/sales' },
+    { id: 'orders', label: '📋 Pedidos', path: '/orders' },
     { id: 'customers', label: '👥 Clientes', path: '/customers' },
     { id: 'reports', label: '📈 Reportes', path: '/reports' },
     { id: 'profile', label: '⚙️ Perfil', path: '/profile' }
