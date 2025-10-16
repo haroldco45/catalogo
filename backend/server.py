@@ -139,6 +139,43 @@ class SaleCreate(BaseModel):
     payment_method: str = "Efectivo"
     notes: Optional[str] = ""
 
+# ==================== ORDER MODELS ====================
+
+class OrderItem(BaseModel):
+    product_id: str
+    product_name: str
+    quantity: int
+    price: float
+    subtotal: float
+
+class Order(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    order_number: str = Field(default_factory=lambda: f"ORD-{datetime.now(COLOMBIA_TZ).strftime('%Y%m%d')}-{str(uuid.uuid4())[:6].upper()}")
+    customer_name: str
+    customer_phone: str
+    customer_address: Optional[str] = ""
+    customer_email: Optional[str] = ""
+    items: List[OrderItem]
+    total: float
+    notes: Optional[str] = ""
+    status: str = "Pendiente"  # Pendiente, Confirmado, En Preparación, Entregado, Cancelado
+    created_at: datetime = Field(default_factory=lambda: datetime.now(COLOMBIA_TZ))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(COLOMBIA_TZ))
+
+class OrderCreate(BaseModel):
+    customer_name: str
+    customer_phone: str
+    customer_address: Optional[str] = ""
+    customer_email: Optional[str] = ""
+    items: List[OrderItem]
+    total: float
+    notes: Optional[str] = ""
+
+class OrderStatusUpdate(BaseModel):
+    status: str
+
 # ==================== HELPER FUNCTIONS ====================
 
 def datetime_to_str(dt):
