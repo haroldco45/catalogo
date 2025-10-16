@@ -118,13 +118,13 @@ export const Patients = () => {
   }
 
   return (
-    <div className="p-8 animate-fadeIn" data-testid="patients-page">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Pacientes</h1>
-        <p className="text-gray-600">Gestiona la información de tus pacientes</p>
+    <div className="p-4 md:p-6 lg:p-8 animate-fadeIn" data-testid="patients-page">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Pacientes</h1>
+        <p className="text-sm md:text-base text-gray-600">Gestiona la información de tus pacientes</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
