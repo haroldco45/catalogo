@@ -362,6 +362,10 @@ async def update_customer(customer_id: str, customer_data: CustomerUpdate):
     if not update_data:
         raise HTTPException(status_code=400, detail="No hay datos para actualizar")
     
+    # Normalize phone number if provided
+    if 'phone' in update_data and update_data['phone']:
+        update_data['phone'] = normalize_phone_number(update_data['phone'])
+    
     result = await db.customers.update_one(
         {"id": customer_id},
         {"$set": update_data}
