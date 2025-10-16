@@ -625,7 +625,12 @@ const Sales = () => {
             
             {/* Customer Selection */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Cliente</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Cliente 
+                {selectedCustomer && customers.find(c => c.id === selectedCustomer)?.phone && (
+                  <span className="ml-2 text-xs text-green-600">📱 Recibirá comprobante por WhatsApp</span>
+                )}
+              </label>
               <select
                 value={selectedCustomer}
                 onChange={(e) => {
@@ -635,9 +640,11 @@ const Sales = () => {
                 }}
                 className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg mb-2 focus:outline-none focus:border-pink-400"
               >
-                <option value="">Cliente ocasional</option>
+                <option value="">Cliente ocasional (sin comprobante)</option>
                 {customers.map(customer => (
-                  <option key={customer.id} value={customer.id}>{customer.name}</option>
+                  <option key={customer.id} value={customer.id}>
+                    {customer.name} {customer.phone ? `📱 ${customer.phone}` : '(sin teléfono)'}
+                  </option>
                 ))}
               </select>
               <input
@@ -647,6 +654,11 @@ const Sales = () => {
                 onChange={(e) => setCustomerName(e.target.value)}
                 className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
               />
+              {!selectedCustomer && (
+                <p className="text-xs text-gray-500 mt-1">
+                  💡 Selecciona un cliente registrado para enviar comprobante por WhatsApp
+                </p>
+              )}
             </div>
 
             {/* Cart Items */}
