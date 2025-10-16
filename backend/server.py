@@ -67,6 +67,7 @@ class Product(BaseModel):
     price: float
     stock: int
     min_stock: int = 10
+    cost: float = 0  # Costo de compra
     supplier: Optional[str] = ""
     created_at: datetime = Field(default_factory=lambda: datetime.now(COLOMBIA_TZ))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(COLOMBIA_TZ))
@@ -78,6 +79,7 @@ class ProductCreate(BaseModel):
     price: float
     stock: int
     min_stock: int = 10
+    cost: float = 0
     supplier: Optional[str] = ""
 
 class ProductUpdate(BaseModel):
@@ -87,6 +89,7 @@ class ProductUpdate(BaseModel):
     price: Optional[float] = None
     stock: Optional[int] = None
     min_stock: Optional[int] = None
+    cost: Optional[float] = None
     supplier: Optional[str] = None
 
 class Customer(BaseModel):
