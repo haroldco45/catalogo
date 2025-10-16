@@ -176,6 +176,32 @@ class OrderCreate(BaseModel):
 class OrderStatusUpdate(BaseModel):
     status: str
 
+# ==================== PURCHASE MODELS (COMPRAS) ====================
+
+class PurchaseItem(BaseModel):
+    product_id: str
+    product_name: str
+    quantity: int
+    cost: float  # Costo unitario de compra
+    subtotal: float
+
+class Purchase(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    purchase_number: str = Field(default_factory=lambda: f"COMP-{datetime.now(COLOMBIA_TZ).strftime('%Y%m%d')}-{str(uuid.uuid4())[:6].upper()}")
+    supplier: str
+    items: List[PurchaseItem]
+    total: float
+    notes: Optional[str] = ""
+    created_at: datetime = Field(default_factory=lambda: datetime.now(COLOMBIA_TZ))
+
+class PurchaseCreate(BaseModel):
+    supplier: str
+    items: List[PurchaseItem]
+    total: float
+    notes: Optional[str] = ""
+
 # ==================== HELPER FUNCTIONS ====================
 
 def datetime_to_str(dt):
