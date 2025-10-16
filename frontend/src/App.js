@@ -911,14 +911,26 @@ const Customers = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono *</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    required
-                    defaultValue={editingCustomer?.phone}
-                    className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Teléfono * 
+                    <span className="ml-2 text-xs text-green-600">🇨🇴 +57 se agrega automáticamente</span>
+                  </label>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-pink-200 rounded-l-lg">
+                      +57
+                    </span>
+                    <input
+                      type="tel"
+                      name="phone"
+                      required
+                      placeholder="3201234567"
+                      defaultValue={editingCustomer?.phone?.replace('57', '')}
+                      className="w-full px-4 py-2 border-2 border-pink-200 rounded-r-lg focus:outline-none focus:border-pink-400"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Solo ingresa tu número celular sin el 57
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
