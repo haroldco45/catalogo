@@ -101,9 +101,9 @@ export const Dashboard = ({ user }) => {
         })}
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Citas de Hoy</h2>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
+        <div className="flex items-center justify-between mb-4 md:mb-6">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">Citas de Hoy</h2>
           <button
             data-testid="view-all-appointments"
             onClick={() => navigate("/appointments")}
