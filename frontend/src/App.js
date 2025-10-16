@@ -68,9 +68,9 @@ function App() {
             path="/*"
             element={
               <PrivateRoute>
-                <div className="flex h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+                <div className="flex h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 overflow-hidden">
                   <Sidebar user={user} setUser={setUser} />
-                  <div className="flex-1 overflow-auto">
+                  <div className="flex-1 overflow-auto pt-16 lg:pt-0">
                     <Routes>
                       <Route path="/" element={<Dashboard user={user} />} />
                       <Route path="/patients" element={<Patients />} />
