@@ -1007,16 +1007,33 @@ const Customers = () => {
 const Reports = () => {
   const [period, setPeriod] = useState('daily');
   const [reportData, setReportData] = useState(null);
+  const [inventoryData, setInventoryData] = useState(null);
+  const [reportType, setReportType] = useState('ventas'); // 'ventas' o 'inventario'
   const [loading, setLoading] = useState(false);
 
   const loadReport = async () => {
+    if (reportType === 'ventas') {
+      setLoading(true);
+      try {
+        const response = await api.getSalesReport({ period });
+        setReportData(response.data);
+      } catch (error) {
+        console.error('Error loading report:', error);
+        alert('Error al cargar el reporte');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const loadInventoryReport = async () => {
     setLoading(true);
     try {
-      const response = await api.getSalesReport({ period });
-      setReportData(response.data);
+      const response = await api.getInventoryReport();
+      setInventoryData(response.data);
     } catch (error) {
-      console.error('Error loading report:', error);
-      alert('Error al cargar el reporte');
+      console.error('Error loading inventory report:', error);
+      alert('Error al cargar el reporte de inventario');
     } finally {
       setLoading(false);
     }
@@ -1024,14 +1041,25 @@ const Reports = () => {
 
   const handleExport = async () => {
     try {
-      const response = await api.exportReport({ period });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `reporte_${period}_${new Date().toISOString().split('T')[0]}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      if (reportType === 'ventas') {
+        const response = await api.exportReport({ period });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `reporte_ventas_${period}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } else {
+        const response = await api.exportInventoryReport();
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `inventario_valorizado_${new Date().toISOString().split('T')[0]}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
     } catch (error) {
       console.error('Error exporting report:', error);
       alert('Error al exportar el reporte');
@@ -1039,46 +1067,32 @@ const Reports = () => {
   };
 
   useEffect(() => {
-    loadReport();
-  }, [period]);
+    if (reportType === 'ventas') {
+      loadReport();
+    } else {
+      loadInventoryReport();
+    }
+  }, [period, reportType]);
 
   return (
     <div data-testid="reports-page">
-      <h2 className="text-3xl font-bold text-gray-800 mb-8">Reportes</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-8">📈 Reportes</h2>
 
-      {/* Period Selector */}
+      {/* Report Type Selector */}
       <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
         <div className="flex items-center justify-between">
           <div className="flex space-x-4">
             <button
-              onClick={() => setPeriod('daily')}
-              className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                period === 'daily'
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
+              onClick={() => setReportType('ventas')}
+              className={`px-6 py-2 rounded-lg font-semibold ${reportType === 'ventas' ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white' : 'bg-gray-100 text-gray-600'}`}
             >
-              Diario
+              📊 Ventas
             </button>
             <button
-              onClick={() => setPeriod('weekly')}
-              className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                period === 'weekly'
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
+              onClick={() => setReportType('inventario')}
+              className={`px-6 py-2 rounded-lg font-semibold ${reportType === 'inventario' ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white' : 'bg-gray-100 text-gray-600'}`}
             >
-              Semanal
-            </button>
-            <button
-              onClick={() => setPeriod('monthly')}
-              className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                period === 'monthly'
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Mensual
+              📦 Inventario Valorizado
             </button>
           </div>
           <button
@@ -1092,74 +1106,159 @@ const Reports = () => {
         </div>
       </div>
 
-      {loading ? (
-        <div className="text-center py-20">Cargando reporte...</div>
-      ) : reportData ? (
+      {/* Sales Report */}
+      {reportType === 'ventas' && (
         <>
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-pink-200">
-              <h3 className="text-gray-600 text-sm font-medium mb-2">Total Ventas</h3>
-              <p className="text-4xl font-bold text-pink-600">{reportData.total_sales}</p>
-            </div>
-            <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-purple-200">
-              <h3 className="text-gray-600 text-sm font-medium mb-2">Ingresos Totales</h3>
-              <p className="text-4xl font-bold text-purple-600">
-                ${reportData.total_revenue.toLocaleString('es-CO')}
-              </p>
-              <p className="text-sm text-gray-500 mt-1">COP</p>
-            </div>
-            <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-200">
-              <h3 className="text-gray-600 text-sm font-medium mb-2">Venta Promedio</h3>
-              <p className="text-4xl font-bold text-blue-600">
-                ${Math.round(reportData.average_sale).toLocaleString('es-CO')}
-              </p>
-              <p className="text-sm text-gray-500 mt-1">COP</p>
+          <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
+            <div className="flex space-x-4">
+              <button onClick={() => setPeriod('daily')} className={`px-6 py-2 rounded-lg font-semibold ${period === 'daily' ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                Diario
+              </button>
+              <button onClick={() => setPeriod('weekly')} className={`px-6 py-2 rounded-lg font-semibold ${period === 'weekly' ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                Semanal
+              </button>
+              <button onClick={() => setPeriod('monthly')} className={`px-6 py-2 rounded-lg font-semibold ${period === 'monthly' ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                Mensual
+              </button>
             </div>
           </div>
 
-          {/* Top Products */}
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-pink-400 to-purple-400 px-6 py-4">
-              <h3 className="text-xl font-bold text-white">Productos Más Vendidos</h3>
-            </div>
-            <table className="w-full">
-              <thead className="bg-pink-50">
-                <tr>
-                  <th className="px-6 py-4 text-left">#</th>
-                  <th className="px-6 py-4 text-left">Producto</th>
-                  <th className="px-6 py-4 text-right">Cantidad</th>
-                  <th className="px-6 py-4 text-right">Ingresos</th>
-                  <th className="px-6 py-4 text-right">Promedio</th>
-                </tr>
-              </thead>
-              <tbody>
-                {reportData.top_products.map((product, index) => (
-                  <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-pink-50'}>
-                    <td className="px-6 py-4">
-                      <span className="text-2xl">
-                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-gray-800">{product.name}</td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full font-semibold">
-                        {product.quantity}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right font-semibold text-green-600">
-                      ${product.revenue.toLocaleString('es-CO')}
-                    </td>
-                    <td className="px-6 py-4 text-right text-gray-600">
-                      ${Math.round(product.revenue / product.quantity).toLocaleString('es-CO')}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {loading ? (
+            <div className="text-center py-20">Cargando reporte...</div>
+          ) : reportData ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-pink-200">
+                  <h3 className="text-gray-600 text-sm font-medium mb-2">Total Ventas</h3>
+                  <p className="text-4xl font-bold text-pink-600">{reportData.total_sales}</p>
+                </div>
+                <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-purple-200">
+                  <h3 className="text-gray-600 text-sm font-medium mb-2">Ingresos Totales</h3>
+                  <p className="text-4xl font-bold text-purple-600">${reportData.total_revenue.toLocaleString('es-CO')}</p>
+                  <p className="text-sm text-gray-500 mt-1">COP</p>
+                </div>
+                <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-200">
+                  <h3 className="text-gray-600 text-sm font-medium mb-2">Venta Promedio</h3>
+                  <p className="text-4xl font-bold text-blue-600">${Math.round(reportData.average_sale).toLocaleString('es-CO')}</p>
+                  <p className="text-sm text-gray-500 mt-1">COP</p>
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-pink-400 to-purple-400 px-6 py-4">
+                  <h3 className="text-xl font-bold text-white">Productos Más Vendidos</h3>
+                </div>
+                <table className="w-full">
+                  <thead className="bg-pink-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left">#</th>
+                      <th className="px-6 py-4 text-left">Producto</th>
+                      <th className="px-6 py-4 text-right">Cantidad</th>
+                      <th className="px-6 py-4 text-right">Ingresos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reportData.top_products.map((product, index) => (
+                      <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-pink-50'}>
+                        <td className="px-6 py-4">
+                          <span className="text-2xl">{index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`}</span>
+                        </td>
+                        <td className="px-6 py-4 font-semibold text-gray-800">{product.name}</td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full font-semibold">{product.quantity}</span>
+                        </td>
+                        <td className="px-6 py-4 text-right font-semibold text-green-600">${product.revenue.toLocaleString('es-CO')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : null}
         </>
-      ) : null}
+      )}
+
+      {/* Inventory Report */}
+      {reportType === 'inventario' && (
+        <>
+          {loading ? (
+            <div className="text-center py-20">Cargando reporte...</div>
+          ) : inventoryData ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-green-200">
+                  <h3 className="text-gray-600 text-sm font-medium mb-2">Total Productos</h3>
+                  <p className="text-4xl font-bold text-green-600">{inventoryData.summary.total_products}</p>
+                </div>
+                <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-200">
+                  <h3 className="text-gray-600 text-sm font-medium mb-2">Total Unidades</h3>
+                  <p className="text-4xl font-bold text-blue-600">{inventoryData.summary.total_items}</p>
+                </div>
+                <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-purple-200">
+                  <h3 className="text-gray-600 text-sm font-medium mb-2">Valor Total Inventario</h3>
+                  <p className="text-3xl font-bold text-purple-600">${inventoryData.summary.total_value.toLocaleString('es-CO')}</p>
+                  <p className="text-sm text-gray-500 mt-1">COP</p>
+                </div>
+                <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-red-200">
+                  <h3 className="text-gray-600 text-sm font-medium mb-2">Stock Bajo</h3>
+                  <p className="text-4xl font-bold text-red-600">{inventoryData.summary.low_stock_count}</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+                <div className="bg-gradient-to-r from-green-400 to-teal-400 px-6 py-4">
+                  <h3 className="text-xl font-bold text-white">Inventario por Categoría</h3>
+                </div>
+                <table className="w-full">
+                  <thead className="bg-green-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left">Categoría</th>
+                      <th className="px-6 py-4 text-right">Productos</th>
+                      <th className="px-6 py-4 text-right">Unidades</th>
+                      <th className="px-6 py-4 text-right">Valor Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(inventoryData.by_category).map(([category, data], index) => (
+                      <tr key={category} className={index % 2 === 0 ? 'bg-white' : 'bg-green-50'}>
+                        <td className="px-6 py-4 font-semibold text-gray-800">{category}</td>
+                        <td className="px-6 py-4 text-right">{data.products}</td>
+                        <td className="px-6 py-4 text-right">{data.items}</td>
+                        <td className="px-6 py-4 text-right font-semibold text-green-600">${data.value.toLocaleString('es-CO')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-400 to-pink-400 px-6 py-4">
+                  <h3 className="text-xl font-bold text-white">Top 10 Productos por Valor</h3>
+                </div>
+                <table className="w-full">
+                  <thead className="bg-purple-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left">Producto</th>
+                      <th className="px-6 py-4 text-right">Stock</th>
+                      <th className="px-6 py-4 text-right">Costo Unit.</th>
+                      <th className="px-6 py-4 text-right">Valor Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inventoryData.items.slice(0, 10).map((item, index) => (
+                      <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-purple-50'}>
+                        <td className="px-6 py-4 font-semibold text-gray-800">{item.name}</td>
+                        <td className="px-6 py-4 text-right">{item.stock}</td>
+                        <td className="px-6 py-4 text-right">${item.cost.toLocaleString('es-CO')}</td>
+                        <td className="px-6 py-4 text-right font-semibold text-purple-600">${item.value.toLocaleString('es-CO')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : null}
+        </>
+      )}
     </div>
   );
 };
