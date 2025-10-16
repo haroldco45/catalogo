@@ -311,7 +311,13 @@ async def delete_product(product_id: str):
 @api_router.post("/customers", response_model=Customer)
 async def create_customer(customer_data: CustomerCreate):
     """Create a new customer"""
-    customer = Customer(**customer_data.model_dump())
+    customer_dict = customer_data.model_dump()
+    
+    # Normalize phone number to Colombia format (+57)
+    if customer_dict.get('phone'):
+        customer_dict['phone'] = normalize_phone_number(customer_dict['phone'])
+    
+    customer = Customer(**customer_dict)
     doc = customer.model_dump()
     doc['created_at'] = datetime_to_str(doc['created_at'])
     
