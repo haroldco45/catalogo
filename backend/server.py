@@ -35,7 +35,7 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 # WhatsApp Configuration
-WHATSAPP_PHONE = "3217366758"
+WHATSAPP_PHONE = "573217366758"  # Formato internacional: 57 + número
 WHATSAPP_BUSINESS_APIKEY = os.environ.get('WHATSAPP_BUSINESS_APIKEY', '')
 WHATSAPP_CLIENTS_APIKEYS = os.environ.get('WHATSAPP_CLIENTS_APIKEYS', '')
 
