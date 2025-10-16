@@ -87,7 +87,7 @@ export const Dashboard = ({ user }) => {
             <div
               key={index}
               data-testid={`stat-card-${card.title.toLowerCase().replace(/\s+/g, '-')}`}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow"
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6 hover:shadow-md transition-shadow"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className={`p-3 ${card.bgColor} rounded-lg`}>
