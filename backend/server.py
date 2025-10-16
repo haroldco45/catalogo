@@ -173,42 +173,65 @@ def normalize_phone_number(phone: str) -> str:
     return f"57{cleaned}"
 
 async def send_whatsapp_message(phone: str, message: str):
-    """Send WhatsApp message using CallMeBot API (FREE)"""
+    """Send WhatsApp message using Whapi.cloud or CallMeBot API"""
     try:
-        # Get API key for this phone number
-        api_key = None
+        # Use Whapi.cloud if configured
+        if WHATSAPP_API_PROVIDER == 'whapi' and WHAPI_TOKEN:
+            url = "https://gate.whapi.cloud/messages/text"
+            headers = {
+                "Authorization": f"Bearer {WHAPI_TOKEN}",
+                "Content-Type": "application/json"
+            }
+            data = {
+                "to": phone,
+                "body": message
+            }
+            
+            response = requests.post(url, json=data, headers=headers, timeout=10)
+            
+            if response.status_code in [200, 201]:
+                logger.info(f"✅ WhatsApp ENVIADO a {phone} (Whapi.cloud)")
+                return True
+            else:
+                logger.error(f"❌ Error Whapi.cloud a {phone}: {response.status_code} - {response.text}")
+                return False
         
-        # Check if it's the business phone
-        if phone == WHATSAPP_PHONE and WHATSAPP_BUSINESS_APIKEY:
-            api_key = WHATSAPP_BUSINESS_APIKEY
+        # Fallback to CallMeBot
         else:
-            # Check client API keys
-            if WHATSAPP_CLIENTS_APIKEYS:
-                clients_keys = {}
-                for pair in WHATSAPP_CLIENTS_APIKEYS.split(','):
-                    if ':' in pair:
-                        client_phone, client_key = pair.strip().split(':')
-                        clients_keys[client_phone] = client_key
-                api_key = clients_keys.get(phone)
-        
-        # If no API key, just log (for testing without real API)
-        if not api_key:
-            logger.info(f"WhatsApp to {phone} (SIN API KEY - SOLO LOG): {message}")
-            return True
-        
-        # Send via CallMeBot API
-        import urllib.parse
-        encoded_message = urllib.parse.quote(message)
-        url = f"https://api.callmebot.com/whatsapp.php?phone={phone}&text={encoded_message}&apikey={api_key}"
-        
-        response = requests.get(url, timeout=10)
-        
-        if response.status_code == 200:
-            logger.info(f"✅ WhatsApp ENVIADO a {phone}")
-            return True
-        else:
-            logger.error(f"❌ Error enviando WhatsApp a {phone}: {response.status_code} - {response.text}")
-            return False
+            # Get API key for this phone number
+            api_key = None
+            
+            # Check if it's the business phone
+            if phone == WHATSAPP_PHONE and WHATSAPP_BUSINESS_APIKEY:
+                api_key = WHATSAPP_BUSINESS_APIKEY
+            else:
+                # Check client API keys
+                if WHATSAPP_CLIENTS_APIKEYS:
+                    clients_keys = {}
+                    for pair in WHATSAPP_CLIENTS_APIKEYS.split(','):
+                        if ':' in pair:
+                            client_phone, client_key = pair.strip().split(':')
+                            clients_keys[client_phone] = client_key
+                    api_key = clients_keys.get(phone)
+            
+            # If no API key, just log (for testing without real API)
+            if not api_key:
+                logger.info(f"WhatsApp to {phone} (SIN API KEY - SOLO LOG): {message}")
+                return True
+            
+            # Send via CallMeBot API
+            import urllib.parse
+            encoded_message = urllib.parse.quote(message)
+            url = f"https://api.callmebot.com/whatsapp.php?phone={phone}&text={encoded_message}&apikey={api_key}"
+            
+            response = requests.get(url, timeout=10)
+            
+            if response.status_code == 200:
+                logger.info(f"✅ WhatsApp ENVIADO a {phone} (CallMeBot)")
+                return True
+            else:
+                logger.error(f"❌ Error enviando WhatsApp a {phone}: {response.status_code} - {response.text}")
+                return False
             
     except Exception as e:
         logger.error(f"❌ Error enviando WhatsApp a {phone}: {e}")
