@@ -563,6 +563,155 @@ async def get_sale(sale_id: str):
     
     return sale
 
+# ==================== ORDERS API (PEDIDOS) ====================
+
+@api_router.post("/orders", response_model=Order)
+async def create_order(order_data: OrderCreate):
+    """Create a new order from customer (no reduce inventory until confirmed)"""
+    # Normalize phone number
+    order_dict = order_data.model_dump()
+    if order_dict.get('customer_phone'):
+        order_dict['customer_phone'] = normalize_phone_number(order_dict['customer_phone'])
+    
+    order = Order(**order_dict)
+    
+    # Save order
+    doc = order.model_dump()
+    doc['created_at'] = datetime_to_str(doc['created_at'])
+    doc['updated_at'] = datetime_to_str(doc['updated_at'])
+    await db.orders.insert_one(doc)
+    
+    # Send order notification to business
+    items_text = "\n".join([f"- {item.product_name} x{item.quantity}: ${item.subtotal:,.0f}" for item in order.items])
+    business_message = f"🔔 NUEVO PEDIDO #{order.order_number}\n\n👤 Cliente: {order.customer_name}\n📱 Teléfono: {order.customer_phone}\n📍 Dirección: {order.customer_address or 'No especificada'}\n\n📦 Productos:\n{items_text}\n\n💰 Total: ${order.total:,.0f} COP\n\n⚠️ Estado: {order.status}"
+    await send_whatsapp_message(WHATSAPP_PHONE, business_message)
+    
+    # Send confirmation to customer
+    customer_message = f"✅ PEDIDO RECIBIDO - NOVAVENTA\n\nGracias {order.customer_name}!\n\n📋 Número de pedido: #{order.order_number}\n💰 Total: ${order.total:,.0f} COP\n\n📦 Productos:\n{items_text}\n\nTu pedido está pendiente de confirmación.\nTe notificaremos cuando esté listo.\n\n📞 Consultas: {WHATSAPP_PHONE[2:]}"
+    await send_whatsapp_message(order.customer_phone, customer_message)
+    
+    logger.info(f"Pedido creado: {order.order_number} por {order.customer_name}")
+    
+    return order
+
+@api_router.get("/orders", response_model=List[Order])
+async def get_orders(status: Optional[str] = None):
+    """Get all orders with optional status filter"""
+    query = {}
+    if status:
+        query['status'] = status
+    
+    orders = await db.orders.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    for order in orders:
+        order['created_at'] = str_to_datetime(order['created_at'])
+        order['updated_at'] = str_to_datetime(order['updated_at'])
+    
+    return orders
+
+@api_router.get("/orders/{order_id}", response_model=Order)
+async def get_order(order_id: str):
+    """Get a specific order"""
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    
+    if not order:
+        raise HTTPException(status_code=404, detail="Pedido no encontrado")
+    
+    order['created_at'] = str_to_datetime(order['created_at'])
+    order['updated_at'] = str_to_datetime(order['updated_at'])
+    
+    return order
+
+@api_router.put("/orders/{order_id}/status", response_model=Order)
+async def update_order_status(order_id: str, status_data: OrderStatusUpdate):
+    """Update order status and send notifications"""
+    new_status = status_data.status
+    
+    # Validate status
+    valid_statuses = ["Pendiente", "Confirmado", "En Preparación", "Entregado", "Cancelado"]
+    if new_status not in valid_statuses:
+        raise HTTPException(status_code=400, detail="Estado inválido")
+    
+    # Get order
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Pedido no encontrado")
+    
+    old_status = order['status']
+    
+    # Update status
+    update_data = {
+        'status': new_status,
+        'updated_at': datetime_to_str(datetime.now(COLOMBIA_TZ))
+    }
+    
+    # If confirming order, reduce inventory
+    if new_status == "Confirmado" and old_status == "Pendiente":
+        for item in order['items']:
+            product = await db.products.find_one({"id": item['product_id']})
+            if product:
+                new_stock = product['stock'] - item['quantity']
+                await db.products.update_one(
+                    {"id": item['product_id']},
+                    {"$set": {"stock": new_stock}}
+                )
+                
+                # Check low stock
+                if new_stock <= product.get('min_stock', 10):
+                    alert_message = f"⚠️ ALERTA NOVAVENTA: El producto '{item['product_name']}' tiene stock bajo ({new_stock} unidades)"
+                    await send_whatsapp_message(WHATSAPP_PHONE, alert_message)
+    
+    await db.orders.update_one({"id": order_id}, {"$set": update_data})
+    
+    # Send notification to customer
+    status_messages = {
+        "Confirmado": f"✅ PEDIDO CONFIRMADO\n\n📋 Pedido #{order['order_number']}\n\nTu pedido ha sido confirmado y está en preparación.\n\nTe notificaremos cuando esté listo para entrega. 📦",
+        "En Preparación": f"📦 PEDIDO EN PREPARACIÓN\n\n📋 Pedido #{order['order_number']}\n\nEstamos preparando tu pedido.\nPronto estará listo! ⏱️",
+        "Entregado": f"🎉 PEDIDO ENTREGADO\n\n📋 Pedido #{order['order_number']}\n\n¡Gracias por tu compra en NOVAVENTA!\n\nEsperamos que disfrutes tus productos. 😊\n\nVuelve pronto! 🛍️",
+        "Cancelado": f"❌ PEDIDO CANCELADO\n\n📋 Pedido #{order['order_number']}\n\nTu pedido ha sido cancelado.\n\nSi tienes dudas, contáctanos: {WHATSAPP_PHONE[2:]}"
+    }
+    
+    if new_status in status_messages:
+        await send_whatsapp_message(order['customer_phone'], status_messages[new_status])
+    
+    # Get updated order
+    updated_order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    updated_order['created_at'] = str_to_datetime(updated_order['created_at'])
+    updated_order['updated_at'] = str_to_datetime(updated_order['updated_at'])
+    
+    logger.info(f"Pedido {order['order_number']} actualizado: {old_status} → {new_status}")
+    
+    return updated_order
+
+@api_router.get("/orders/stats/summary")
+async def get_orders_stats():
+    """Get orders statistics"""
+    # Count by status
+    pending = await db.orders.count_documents({"status": "Pendiente"})
+    confirmed = await db.orders.count_documents({"status": "Confirmado"})
+    preparing = await db.orders.count_documents({"status": "En Preparación"})
+    delivered = await db.orders.count_documents({"status": "Entregado"})
+    cancelled = await db.orders.count_documents({"status": "Cancelado"})
+    
+    # Today's orders
+    now = datetime.now(COLOMBIA_TZ)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_orders = await db.orders.count_documents({
+        "created_at": {"$gte": datetime_to_str(today_start)}
+    })
+    
+    return {
+        "by_status": {
+            "pendiente": pending,
+            "confirmado": confirmed,
+            "en_preparacion": preparing,
+            "entregado": delivered,
+            "cancelado": cancelled
+        },
+        "today": today_orders,
+        "total": pending + confirmed + preparing + delivered + cancelled
+    }
+
 # ==================== DASHBOARD & STATS API ====================
 
 @api_router.get("/dashboard/stats")
