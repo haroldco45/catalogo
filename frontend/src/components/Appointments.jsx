@@ -127,13 +127,13 @@ export const Appointments = ({ user }) => {
   }
 
   return (
-    <div className="p-8 animate-fadeIn" data-testid="appointments-page">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Citas</h1>
-        <p className="text-gray-600">Administra las citas del consultorio</p>
+    <div className="p-4 md:p-6 lg:p-8 animate-fadeIn" data-testid="appointments-page">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Citas</h1>
+        <p className="text-sm md:text-base text-gray-600">Administra las citas del consultorio</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
             <PopoverTrigger asChild>
