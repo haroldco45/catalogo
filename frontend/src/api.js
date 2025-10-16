@@ -23,6 +23,13 @@ export const getSales = (params) => axios.get(`${API}/sales`, { params });
 export const getSale = (id) => axios.get(`${API}/sales/${id}`);
 export const createSale = (data) => axios.post(`${API}/sales`, data);
 
+// Orders API (Pedidos)
+export const getOrders = (params) => axios.get(`${API}/orders`, { params });
+export const getOrder = (id) => axios.get(`${API}/orders/${id}`);
+export const createOrder = (data) => axios.post(`${API}/orders`, data);
+export const updateOrderStatus = (id, status) => axios.put(`${API}/orders/${id}/status`, { status });
+export const getOrdersStats = () => axios.get(`${API}/orders/stats/summary`);
+
 // Dashboard API
 export const getDashboardStats = () => axios.get(`${API}/dashboard/stats`);
 
