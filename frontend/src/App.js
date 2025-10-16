@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import '@/App.css';
 import * as api from './api';
+import Store from './components/Store';
+import Orders from './components/Orders';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
