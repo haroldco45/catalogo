@@ -356,10 +356,49 @@ async def create_sale(sale_data: SaleCreate):
     doc['created_at'] = datetime_to_str(doc['created_at'])
     await db.sales.insert_one(doc)
     
-    # Send sale confirmation via WhatsApp
+    # Send sale notification to business owner (3217366758)
     items_text = "\n".join([f"- {item.product_name} x{item.quantity}: ${item.subtotal:,.0f}" for item in sale.items])
-    message = f"✅ NUEVA VENTA NOVAVENTA\nCliente: {sale.customer_name}\nTotal: ${sale.total:,.0f} COP\n\nProductos:\n{items_text}"
-    await send_whatsapp_message(WHATSAPP_PHONE, message)
+    business_message = f"✅ NUEVA VENTA NOVAVENTA\nCliente: {sale.customer_name}\nTotal: ${sale.total:,.0f} COP\n\nProductos:\n{items_text}"
+    await send_whatsapp_message(WHATSAPP_PHONE, business_message)
+    
+    # Send receipt/confirmation to customer via WhatsApp
+    customer_phone = None
+    if sale.customer_id:
+        # Get customer phone from database
+        customer = await db.customers.find_one({"id": sale.customer_id})
+        if customer and customer.get('phone'):
+            customer_phone = customer['phone']
+    
+    if customer_phone:
+        # Format receipt for customer
+        sale_date = datetime.now(COLOMBIA_TZ).strftime("%d/%m/%Y %H:%M")
+        receipt_items = "\n".join([
+            f"  {item.product_name}\n  {item.quantity} x ${item.price:,.0f} = ${item.subtotal:,.0f}"
+            for item in sale.items
+        ])
+        
+        customer_message = f"""
+🧾 COMPROBANTE DE COMPRA
+━━━━━━━━━━━━━━━━━━━━━━
+NOVAVENTA
+Fecha: {sale_date}
+
+👤 Cliente: {sale.customer_name}
+
+📦 PRODUCTOS:
+{receipt_items}
+
+━━━━━━━━━━━━━━━━━━━━━━
+💰 TOTAL: ${sale.total:,.0f} COP
+💳 Método de Pago: {sale.payment_method}
+
+¡Gracias por tu compra! 🎉
+Para consultas: {WHATSAPP_PHONE}
+"""
+        await send_whatsapp_message(customer_phone, customer_message.strip())
+        logger.info(f"Comprobante enviado al cliente {sale.customer_name} ({customer_phone})")
+    else:
+        logger.info(f"Cliente sin teléfono registrado, no se envió comprobante")
     
     return sale
 
