@@ -151,6 +151,25 @@ def str_to_datetime(dt_str):
         return datetime.fromisoformat(dt_str)
     return dt_str
 
+def normalize_phone_number(phone: str) -> str:
+    """Normalize phone number to Colombia international format (57XXXXXXXXXX)"""
+    if not phone:
+        return phone
+    
+    # Remove all non-digit characters
+    cleaned = ''.join(filter(str.isdigit, phone))
+    
+    # If starts with 57, return as is
+    if cleaned.startswith('57'):
+        return cleaned
+    
+    # If starts with 0, remove it (Colombian mobile format)
+    if cleaned.startswith('0'):
+        cleaned = cleaned[1:]
+    
+    # Add Colombia code (57)
+    return f"57{cleaned}"
+
 async def send_whatsapp_message(phone: str, message: str):
     """Send WhatsApp message using CallMeBot API (FREE)"""
     try:
