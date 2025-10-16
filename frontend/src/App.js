@@ -23,6 +23,7 @@ const Layout = ({ children }) => {
   const menuItems = [
     { id: 'dashboard', label: '📊 Dashboard', path: '/' },
     { id: 'products', label: '📦 Inventario', path: '/products' },
+    { id: 'purchases', label: '📥 Compras', path: '/purchases' },
     { id: 'sales', label: '🛒 Ventas', path: '/sales' },
     { id: 'orders', label: '📋 Pedidos', path: '/orders' },
     { id: 'customers', label: '👥 Clientes', path: '/customers' },
