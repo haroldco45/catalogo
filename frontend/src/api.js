@@ -30,6 +30,11 @@ export const createOrder = (data) => axios.post(`${API}/orders`, data);
 export const updateOrderStatus = (id, status) => axios.put(`${API}/orders/${id}/status`, { status });
 export const getOrdersStats = () => axios.get(`${API}/orders/stats/summary`);
 
+// Purchases API (Compras)
+export const getPurchases = () => axios.get(`${API}/purchases`);
+export const getPurchase = (id) => axios.get(`${API}/purchases/${id}`);
+export const createPurchase = (data) => axios.post(`${API}/purchases`, data);
+
 // Dashboard API
 export const getDashboardStats = () => axios.get(`${API}/dashboard/stats`);
 
@@ -38,6 +43,12 @@ export const getSalesReport = (params) => axios.get(`${API}/reports/sales`, { pa
 export const exportReport = (params) => {
   return axios.get(`${API}/reports/export`, { 
     params,
+    responseType: 'blob'
+  });
+};
+export const getInventoryReport = () => axios.get(`${API}/reports/inventory`);
+export const exportInventoryReport = () => {
+  return axios.get(`${API}/reports/inventory/export`, { 
     responseType: 'blob'
   });
 };
