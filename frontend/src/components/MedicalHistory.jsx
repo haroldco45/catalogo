@@ -78,8 +78,8 @@ export const MedicalHistory = () => {
   }
 
   return (
-    <div className="p-8 animate-fadeIn" data-testid="medical-history-page">
-      <div className="mb-8">
+    <div className="p-4 md:p-6 lg:p-8 animate-fadeIn" data-testid="medical-history-page">
+      <div className="mb-6 md:mb-8">
         <Button
           data-testid="back-to-patients"
           onClick={() => navigate("/patients")}
@@ -89,13 +89,13 @@ export const MedicalHistory = () => {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Volver a pacientes
         </Button>
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
           Historial Clínico
         </h1>
-        <p className="text-gray-600">Paciente: {patient?.name}</p>
+        <p className="text-sm md:text-base text-gray-600">Paciente: {patient?.name}</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-900">Registros Médicos</h2>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
