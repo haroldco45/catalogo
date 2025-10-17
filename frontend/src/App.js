@@ -141,22 +141,22 @@ const Dashboard = () => {
   }
 
   const StatCard = ({ title, value, subtitle, color, icon }) => (
-    <div className={`bg-white rounded-2xl p-6 shadow-lg border-2 border-${color}-200 hover:shadow-xl transition-shadow`}>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-gray-600 text-sm font-medium">{title}</h3>
-        <span className="text-2xl">{icon}</span>
+    <div className={`bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg border-2 border-${color}-200 hover:shadow-xl transition-shadow`}>
+      <div className="flex items-center justify-between mb-3 md:mb-4">
+        <h3 className="text-gray-600 text-xs md:text-sm font-medium">{title}</h3>
+        <span className="text-xl md:text-2xl">{icon}</span>
       </div>
-      <p className={`text-3xl font-bold text-${color}-600 mb-2`}>{value}</p>
-      <p className="text-gray-500 text-sm">{subtitle}</p>
+      <p className={`text-2xl md:text-3xl font-bold text-${color}-600 mb-1 md:mb-2`}>{value}</p>
+      <p className="text-gray-500 text-xs md:text-sm">{subtitle}</p>
     </div>
   );
 
   return (
     <div data-testid="dashboard">
-      <h2 className="text-3xl font-bold text-gray-800 mb-8">Dashboard</h2>
+      <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-8">Dashboard</h2>
       
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
         <StatCard
           title="Ventas Hoy"
           value={stats?.today?.sales || 0}
@@ -188,40 +188,40 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg mb-8">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">Acciones Rápidas</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Link to="/sales" className="p-4 bg-gradient-to-r from-pink-400 to-pink-500 rounded-xl text-white text-center hover:shadow-lg transition-shadow">
-            <div className="text-3xl mb-2">🛒</div>
-            <div className="font-semibold">Nueva Venta</div>
+      <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg mb-6 md:mb-8">
+        <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4">Acciones Rápidas</h3>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <Link to="/sales" className="p-3 md:p-4 bg-gradient-to-r from-pink-400 to-pink-500 rounded-lg md:rounded-xl text-white text-center hover:shadow-lg active:scale-95 transition-all">
+            <div className="text-2xl md:text-3xl mb-1 md:mb-2">🛒</div>
+            <div className="text-sm md:text-base font-semibold">Nueva Venta</div>
           </Link>
-          <Link to="/orders" className="p-4 bg-gradient-to-r from-green-400 to-green-500 rounded-xl text-white text-center hover:shadow-lg transition-shadow">
-            <div className="text-3xl mb-2">📋</div>
-            <div className="font-semibold">Ver Pedidos</div>
+          <Link to="/orders" className="p-3 md:p-4 bg-gradient-to-r from-green-400 to-green-500 rounded-lg md:rounded-xl text-white text-center hover:shadow-lg active:scale-95 transition-all">
+            <div className="text-2xl md:text-3xl mb-1 md:mb-2">📋</div>
+            <div className="text-sm md:text-base font-semibold">Ver Pedidos</div>
           </Link>
-          <Link to="/products" className="p-4 bg-gradient-to-r from-purple-400 to-purple-500 rounded-xl text-white text-center hover:shadow-lg transition-shadow">
-            <div className="text-3xl mb-2">📦</div>
-            <div className="font-semibold">Agregar Producto</div>
+          <Link to="/products" className="p-3 md:p-4 bg-gradient-to-r from-purple-400 to-purple-500 rounded-lg md:rounded-xl text-white text-center hover:shadow-lg active:scale-95 transition-all">
+            <div className="text-2xl md:text-3xl mb-1 md:mb-2">📦</div>
+            <div className="text-sm md:text-base font-semibold">Agregar Producto</div>
           </Link>
-          <Link to="/reports" className="p-4 bg-gradient-to-r from-blue-400 to-blue-500 rounded-xl text-white text-center hover:shadow-lg transition-shadow">
-            <div className="text-3xl mb-2">📈</div>
-            <div className="font-semibold">Ver Reportes</div>
+          <Link to="/reports" className="p-3 md:p-4 bg-gradient-to-r from-blue-400 to-blue-500 rounded-lg md:rounded-xl text-white text-center hover:shadow-lg active:scale-95 transition-all">
+            <div className="text-2xl md:text-3xl mb-1 md:mb-2">📈</div>
+            <div className="text-sm md:text-base font-semibold">Ver Reportes</div>
           </Link>
         </div>
       </div>
 
       {/* Link to Store */}
-      <div className="bg-gradient-to-r from-orange-400 to-pink-500 rounded-2xl p-6 shadow-lg text-white">
-        <div className="flex items-center justify-between">
+      <div className="bg-gradient-to-r from-orange-400 to-pink-500 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg text-white">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h3 className="text-2xl font-bold mb-2">🛍️ Portal de Clientes</h3>
-            <p className="text-white/90">Comparte este enlace para que tus clientes hagan pedidos</p>
+            <h3 className="text-xl md:text-2xl font-bold mb-2">🛍️ Portal de Clientes</h3>
+            <p className="text-sm md:text-base text-white/90">Comparte este enlace para que tus clientes hagan pedidos</p>
           </div>
           <a
             href="/tienda"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-white text-orange-600 px-6 py-3 rounded-xl font-bold hover:shadow-xl transition-shadow"
+            className="bg-white text-orange-600 px-5 md:px-6 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold hover:shadow-xl active:scale-95 transition-all text-center text-sm md:text-base whitespace-nowrap"
           >
             Abrir Tienda →
           </a>
