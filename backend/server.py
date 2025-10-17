@@ -602,6 +602,31 @@ async def create_order(order_data: OrderCreate):
     if order_dict.get('customer_phone'):
         order_dict['customer_phone'] = normalize_phone_number(order_dict['customer_phone'])
     
+    # Check if customer exists by phone, if not create automatically
+    existing_customer = await db.customers.find_one(
+        {"phone": order_dict['customer_phone']},
+        {"_id": 0}
+    )
+    
+    if existing_customer:
+        # Customer exists, use their ID
+        order_dict['customer_id'] = existing_customer['id']
+        logger.info(f"Cliente existente encontrado: {existing_customer['name']} ({existing_customer['phone']})")
+    else:
+        # Customer doesn't exist, create new one
+        new_customer = Customer(
+            name=order_dict['customer_name'],
+            phone=order_dict['customer_phone'],
+            address=order_dict.get('customer_address', ''),
+            email=order_dict.get('customer_email', '')
+        )
+        customer_doc = new_customer.model_dump()
+        customer_doc['created_at'] = datetime_to_str(customer_doc['created_at'])
+        await db.customers.insert_one(customer_doc)
+        
+        order_dict['customer_id'] = new_customer.id
+        logger.info(f"Nuevo cliente creado automáticamente: {new_customer.name} ({new_customer.phone})")
+    
     order = Order(**order_dict)
     
     # Save order
