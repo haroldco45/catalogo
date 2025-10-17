@@ -1202,6 +1202,41 @@ async def export_report_to_excel(
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
+# ==================== RESET SYSTEM ====================
+
+class ResetConfirmation(BaseModel):
+    confirmation: str
+
+@api_router.post("/reset-system")
+async def reset_system(confirmation: ResetConfirmation):
+    """
+    Reinicia el sistema eliminando todos los datos.
+    Requiere confirmación explícita.
+    """
+    if confirmation.confirmation != "CONFIRMAR":
+        raise HTTPException(
+            status_code=400,
+            detail="Confirmación incorrecta. Debes escribir 'CONFIRMAR' exactamente."
+        )
+    
+    try:
+        # Delete all data from collections
+        await db.products.delete_many({})
+        await db.sales.delete_many({})
+        await db.customers.delete_many({})
+        await db.orders.delete_many({})
+        await db.purchases.delete_many({})
+        
+        logger.info("Sistema reiniciado - Todas las colecciones limpiadas")
+        
+        return {
+            "message": "Sistema reiniciado exitosamente",
+            "collections_cleared": ["products", "sales", "customers", "orders", "purchases"]
+        }
+    except Exception as e:
+        logger.error(f"Error al reiniciar sistema: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error al reiniciar el sistema")
+
 # ==================== ROOT ENDPOINT ====================
 
 @api_router.get("/")
