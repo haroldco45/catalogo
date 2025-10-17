@@ -650,34 +650,34 @@ const Sales = () => {
 
   return (
     <div data-testid="sales-page">
-      <h2 className="text-3xl font-bold text-gray-800 mb-8">Nueva Venta</h2>
+      <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-8">Nueva Venta</h2>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Products List */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Productos</h3>
+          <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg">
+            <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4">Productos</h3>
             <input
               type="text"
               placeholder="Buscar productos..."
               value={searchProduct}
               onChange={(e) => setSearchProduct(e.target.value)}
-              className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg mb-4 focus:outline-none focus:border-pink-400"
+              className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg mb-3 md:mb-4 focus:outline-none focus:border-pink-400 text-sm md:text-base"
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 max-h-[500px] md:max-h-[600px] overflow-y-auto">
               {filteredProducts.map(product => (
                 <div
                   key={product.id}
-                  className="border-2 border-pink-100 rounded-xl p-4 hover:border-pink-300 transition-colors cursor-pointer"
+                  className="border-2 border-pink-100 rounded-lg md:rounded-xl p-3 md:p-4 hover:border-pink-300 active:scale-95 transition-all cursor-pointer"
                   onClick={() => addToCart(product)}
                 >
-                  <h4 className="font-semibold text-gray-800 mb-1">{product.name}</h4>
-                  <p className="text-sm text-gray-500 mb-2">{product.category}</p>
+                  <h4 className="font-semibold text-gray-800 mb-1 text-sm md:text-base line-clamp-2">{product.name}</h4>
+                  <p className="text-xs md:text-sm text-gray-500 mb-2">{product.category}</p>
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold text-pink-600">
+                    <span className="text-base md:text-lg font-bold text-pink-600">
                       ${product.price.toLocaleString('es-CO')}
                     </span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-xs md:text-sm text-gray-600">
                       Stock: {product.stock}
                     </span>
                   </div>
@@ -689,15 +689,15 @@ const Sales = () => {
 
         {/* Cart */}
         <div>
-          <div className="bg-white rounded-2xl p-6 shadow-lg sticky top-24">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Carrito</h3>
+          <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg lg:sticky lg:top-24">
+            <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4">Carrito</h3>
             
             {/* Customer Selection */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="mb-3 md:mb-4">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                 Cliente 
                 {selectedCustomer && customers.find(c => c.id === selectedCustomer)?.phone && (
-                  <span className="ml-2 text-xs text-green-600">📱 Recibirá comprobante por WhatsApp</span>
+                  <span className="ml-2 text-xs text-green-600">📱 WhatsApp</span>
                 )}
               </label>
               <select
