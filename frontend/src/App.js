@@ -707,7 +707,7 @@ const Sales = () => {
                   const customer = customers.find(c => c.id === e.target.value);
                   if (customer) setCustomerName(customer.name);
                 }}
-                className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg mb-2 focus:outline-none focus:border-pink-400"
+                className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg mb-2 focus:outline-none focus:border-pink-400 text-sm md:text-base"
               >
                 <option value="">Cliente ocasional (sin comprobante)</option>
                 {customers.map(customer => (
@@ -721,7 +721,7 @@ const Sales = () => {
                 placeholder="Nombre del cliente *"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
+                className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
               />
               {!selectedCustomer && (
                 <p className="text-xs text-gray-500 mt-1">
@@ -731,38 +731,38 @@ const Sales = () => {
             </div>
 
             {/* Cart Items */}
-            <div className="mb-4 max-h-60 overflow-y-auto">
+            <div className="mb-3 md:mb-4 max-h-48 md:max-h-60 overflow-y-auto">
               {cart.length === 0 ? (
-                <p className="text-gray-400 text-center py-8">Carrito vacío</p>
+                <p className="text-gray-400 text-center py-6 md:py-8 text-sm md:text-base">Carrito vacío</p>
               ) : (
                 cart.map(item => (
-                  <div key={item.product_id} className="border-b border-pink-100 py-3">
+                  <div key={item.product_id} className="border-b border-pink-100 py-2 md:py-3">
                     <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium text-gray-800 text-sm">{item.product_name}</span>
+                      <span className="font-medium text-gray-800 text-xs md:text-sm line-clamp-2">{item.product_name}</span>
                       <button
                         onClick={() => removeFromCart(item.product_id)}
-                        className="text-red-500 hover:text-red-700"
+                        className="text-red-500 hover:text-red-700 active:scale-90 text-xl md:text-2xl ml-2"
                       >
                         ×
                       </button>
                     </div>
                     <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-1 md:space-x-2">
                         <button
                           onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
-                          className="w-6 h-6 bg-pink-100 rounded hover:bg-pink-200"
+                          className="w-6 h-6 md:w-7 md:h-7 bg-pink-100 rounded hover:bg-pink-200 active:scale-90 text-sm md:text-base"
                         >
                           -
                         </button>
-                        <span className="w-8 text-center">{item.quantity}</span>
+                        <span className="w-6 md:w-8 text-center text-xs md:text-sm">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
-                          className="w-6 h-6 bg-pink-100 rounded hover:bg-pink-200"
+                          className="w-6 h-6 md:w-7 md:h-7 bg-pink-100 rounded hover:bg-pink-200 active:scale-90 text-sm md:text-base"
                         >
                           +
                         </button>
                       </div>
-                      <span className="font-semibold text-pink-600">
+                      <span className="font-semibold text-pink-600 text-sm md:text-base">
                         ${item.subtotal.toLocaleString('es-CO')}
                       </span>
                     </div>
@@ -772,12 +772,12 @@ const Sales = () => {
             </div>
 
             {/* Payment Method */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Método de Pago</label>
+            <div className="mb-3 md:mb-4">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Método de Pago</label>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
+                className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
               >
                 <option>Efectivo</option>
                 <option>Tarjeta</option>
@@ -788,29 +788,29 @@ const Sales = () => {
             </div>
 
             {/* Notes */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Notas</label>
+            <div className="mb-3 md:mb-4">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Notas</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows="2"
                 placeholder="Notas opcionales..."
-                className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
+                className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
               />
             </div>
 
             {/* Total */}
-            <div className="border-t-2 border-pink-200 pt-4 mb-4">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-lg font-bold text-gray-800">Total:</span>
-                <span className="text-2xl font-bold text-pink-600">
+            <div className="border-t-2 border-pink-200 pt-3 md:pt-4 mb-3 md:mb-4">
+              <div className="flex justify-between items-center mb-3 md:mb-4">
+                <span className="text-base md:text-lg font-bold text-gray-800">Total:</span>
+                <span className="text-xl md:text-2xl font-bold text-pink-600">
                   ${calculateTotal().toLocaleString('es-CO')} COP
                 </span>
               </div>
               <button
                 onClick={handleSubmitSale}
                 disabled={cart.length === 0}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 rounded-xl font-bold hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm md:text-base"
                 data-testid="complete-sale-btn"
               >
                 Completar Venta
