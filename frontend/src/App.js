@@ -317,14 +317,14 @@ const Products = () => {
 
   return (
     <div data-testid="products-page">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-800">Inventario</h2>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 md:mb-8 gap-3">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Inventario</h2>
         <button
           onClick={() => {
             setEditingProduct(null);
             setShowModal(true);
           }}
-          className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-shadow"
+          className="w-full sm:w-auto bg-gradient-to-r from-pink-500 to-purple-500 text-white px-5 md:px-6 py-2.5 md:py-3 rounded-lg md:rounded-xl font-semibold hover:shadow-lg active:scale-95 transition-all text-sm md:text-base"
           data-testid="add-product-btn"
         >
           + Agregar Producto
@@ -332,14 +332,14 @@ const Products = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg mb-4 md:mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
           <input
             type="text"
             placeholder="Buscar productos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
+            className="px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
           />
           <select
             value={filterCategory}
