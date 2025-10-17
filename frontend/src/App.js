@@ -428,30 +428,30 @@ const Products = () => {
 
       {/* Product Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">
               {editingProduct ? 'Editar Producto' : 'Nuevo Producto'}
             </h3>
             <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Nombre *</label>
                   <input
                     type="text"
                     name="name"
                     required
                     defaultValue={editingProduct?.name}
-                    className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
+                    className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Categoría *</label>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Categoría *</label>
                   <select
                     name="category"
                     required
                     defaultValue={editingProduct?.category}
-                    className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
+                    className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
                   >
                     <option value="">Seleccionar...</option>
                     {categories.map(cat => (
@@ -460,69 +460,69 @@ const Products = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Precio (COP) *</label>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Precio (COP) *</label>
                   <input
                     type="number"
                     name="price"
                     required
                     step="100"
                     defaultValue={editingProduct?.price}
-                    className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
+                    className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Stock *</label>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Stock *</label>
                   <input
                     type="number"
                     name="stock"
                     required
                     defaultValue={editingProduct?.stock}
-                    className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
+                    className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Stock Mínimo *</label>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Stock Mínimo *</label>
                   <input
                     type="number"
                     name="min_stock"
                     required
                     defaultValue={editingProduct?.min_stock || 10}
-                    className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
+                    className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Proveedor</label>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Proveedor</label>
                   <input
                     type="text"
                     name="supplier"
                     defaultValue={editingProduct?.supplier}
-                    className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
+                    className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Descripción</label>
                   <textarea
                     name="description"
                     rows="3"
                     defaultValue={editingProduct?.description}
-                    className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
+                    className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
                   />
                 </div>
               </div>
-              <div className="flex justify-end space-x-4 mt-6">
+              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-4 md:mt-6">
                 <button
                   type="button"
                   onClick={() => {
                     setShowModal(false);
                     setEditingProduct(null);
                   }}
-                  className="px-6 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="w-full sm:w-auto px-5 md:px-6 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-50 active:scale-95 transition-all text-sm md:text-base"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:shadow-lg"
+                  className="w-full sm:w-auto px-5 md:px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:shadow-lg active:scale-95 transition-all text-sm md:text-base"
                   data-testid="save-product-btn"
                 >
                   Guardar
