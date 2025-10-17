@@ -364,37 +364,37 @@ const Products = () => {
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <table className="w-full">
+      <div className="bg-white rounded-xl md:rounded-2xl shadow-lg overflow-x-auto">
+        <table className="w-full min-w-[640px]">
           <thead className="bg-gradient-to-r from-pink-400 to-purple-400 text-white">
             <tr>
-              <th className="px-6 py-4 text-left">Producto</th>
-              <th className="px-6 py-4 text-left">Categoría</th>
-              <th className="px-6 py-4 text-right">Precio</th>
-              <th className="px-6 py-4 text-right">Stock</th>
-              <th className="px-6 py-4 text-right">Stock Mín</th>
-              <th className="px-6 py-4 text-center">Acciones</th>
+              <th className="px-3 md:px-6 py-3 md:py-4 text-left text-sm md:text-base">Producto</th>
+              <th className="px-3 md:px-6 py-3 md:py-4 text-left text-sm md:text-base">Categoría</th>
+              <th className="px-3 md:px-6 py-3 md:py-4 text-right text-sm md:text-base">Precio</th>
+              <th className="px-3 md:px-6 py-3 md:py-4 text-right text-sm md:text-base">Stock</th>
+              <th className="px-3 md:px-6 py-3 md:py-4 text-right text-sm md:text-base">Stock Mín</th>
+              <th className="px-3 md:px-6 py-3 md:py-4 text-center text-sm md:text-base">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {filteredProducts.map((product, index) => (
               <tr key={product.id} className={index % 2 === 0 ? 'bg-pink-50' : 'bg-white'}>
-                <td className="px-6 py-4">
+                <td className="px-3 md:px-6 py-3 md:py-4">
                   <div>
-                    <div className="font-semibold text-gray-800">{product.name}</div>
-                    <div className="text-sm text-gray-500">{product.description}</div>
+                    <div className="font-semibold text-gray-800 text-sm md:text-base">{product.name}</div>
+                    <div className="text-xs md:text-sm text-gray-500 truncate max-w-[150px] md:max-w-none">{product.description}</div>
                   </div>
                 </td>
-                <td className="px-6 py-4">
-                  <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+                <td className="px-3 md:px-6 py-3 md:py-4">
+                  <span className="px-2 md:px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs md:text-sm whitespace-nowrap">
                     {product.category}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-right font-semibold">
+                <td className="px-3 md:px-6 py-3 md:py-4 text-right font-semibold text-sm md:text-base whitespace-nowrap">
                   ${product.price.toLocaleString('es-CO')}
                 </td>
-                <td className="px-6 py-4 text-right">
-                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                <td className="px-3 md:px-6 py-3 md:py-4 text-right">
+                  <span className={`px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap ${
                     product.stock <= product.min_stock
                       ? 'bg-red-100 text-red-700'
                       : 'bg-green-100 text-green-700'
@@ -402,20 +402,20 @@ const Products = () => {
                     {product.stock}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-right text-gray-600">{product.min_stock}</td>
-                <td className="px-6 py-4 text-center">
+                <td className="px-3 md:px-6 py-3 md:py-4 text-right text-gray-600 text-sm md:text-base">{product.min_stock}</td>
+                <td className="px-3 md:px-6 py-3 md:py-4 text-center">
                   <button
                     onClick={() => {
                       setEditingProduct(product);
                       setShowModal(true);
                     }}
-                    className="text-blue-600 hover:text-blue-800 mx-2"
+                    className="text-blue-600 hover:text-blue-800 active:scale-95 mx-1 md:mx-2 p-1 md:p-2 text-lg md:text-xl"
                   >
                     ✏️
                   </button>
                   <button
                     onClick={() => handleDelete(product.id)}
-                    className="text-red-600 hover:text-red-800 mx-2"
+                    className="text-red-600 hover:text-red-800 active:scale-95 mx-1 md:mx-2 p-1 md:p-2 text-lg md:text-xl"
                   >
                     🗑️
                   </button>
