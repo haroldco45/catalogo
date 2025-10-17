@@ -11,6 +11,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 // ==================== LAYOUT ====================
 const Layout = ({ children }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const [logo, setLogo] = useState(null);
@@ -18,6 +19,8 @@ const Layout = ({ children }) => {
   useEffect(() => {
     const path = location.pathname.split('/')[1] || 'dashboard';
     setActiveMenu(path);
+    // Close mobile menu when route changes
+    setIsMobileMenuOpen(false);
   }, [location]);
 
   const menuItems = [
@@ -35,19 +38,21 @@ const Layout = ({ children }) => {
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-pink-200 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+        <div className="container mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-2 md:space-x-3">
             {logo ? (
-              <img src={logo} alt="Logo" className="h-10 w-10 rounded-full" />
+              <img src={logo} alt="Logo" className="h-8 w-8 md:h-10 md:w-10 rounded-full" />
             ) : (
-              <div className="h-10 w-10 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold">
+              <div className="h-8 w-8 md:h-10 md:w-10 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full flex items-center justify-center text-white font-bold text-sm md:text-base">
                 N
               </div>
             )}
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
               NOVAVENTA
             </h1>
           </div>
+          
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-1">
             {menuItems.map(item => (
               <Link
@@ -63,11 +68,48 @@ const Layout = ({ children }) => {
               </Link>
             ))}
           </nav>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-pink-100 active:bg-pink-200 transition-colors"
+            aria-label="Toggle menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {isMobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
+
+        {/* Mobile Navigation Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-white border-t border-pink-200 shadow-lg">
+            <nav className="container mx-auto px-4 py-2">
+              {menuItems.map(item => (
+                <Link
+                  key={item.id}
+                  to={item.path}
+                  className={`block px-4 py-3 rounded-lg mb-1 transition-all ${
+                    activeMenu === item.id
+                      ? 'bg-gradient-to-r from-pink-400 to-purple-400 text-white shadow-md'
+                      : 'text-gray-600 hover:bg-pink-50 active:bg-pink-100'
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-auto px-4 md:px-6 py-4 md:py-8">
         {children}
       </main>
     </div>
