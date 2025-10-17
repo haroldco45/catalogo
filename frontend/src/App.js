@@ -1310,6 +1310,9 @@ const Reports = () => {
 // ==================== PROFILE ====================
 const Profile = () => {
   const [logoPreview, setLogoPreview] = useState(null);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [resetting, setResetting] = useState(false);
 
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
@@ -1323,6 +1326,28 @@ const Profile = () => {
     }
   };
 
+  const handleResetSystem = async () => {
+    if (confirmText !== 'CONFIRMAR') {
+      alert('Debes escribir "CONFIRMAR" exactamente para continuar');
+      return;
+    }
+
+    setResetting(true);
+    try {
+      await api.resetSystem(confirmText);
+      alert('✅ Sistema reiniciado exitosamente. Todos los datos han sido eliminados.');
+      setShowResetModal(false);
+      setConfirmText('');
+      // Recargar la página para reflejar los cambios
+      window.location.reload();
+    } catch (error) {
+      console.error('Error al reiniciar sistema:', error);
+      alert('❌ Error al reiniciar el sistema: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setResetting(false);
+    }
+  };
+
   useEffect(() => {
     const savedLogo = localStorage.getItem('novaventa_logo');
     if (savedLogo) {
@@ -1332,81 +1357,142 @@ const Profile = () => {
 
   return (
     <div data-testid="profile-page">
-      <h2 className="text-3xl font-bold text-gray-800 mb-8">Perfil</h2>
+      <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-8">⚙️ Perfil & Configuración</h2>
 
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl p-8 shadow-lg">
-          {/* Logo Upload */}
-          <div className="mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Logo de la Empresa</h3>
-            <div className="flex items-center space-x-6">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-pink-200">
-                {logoPreview ? (
-                  <img src={logoPreview} alt="Logo" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center text-white font-bold text-3xl">
-                    N
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-2 rounded-lg font-semibold cursor-pointer hover:shadow-lg inline-block">
-                  Subir Logo
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoChange}
-                    className="hidden"
-                  />
-                </label>
-                <p className="text-sm text-gray-500 mt-2">PNG, JPG hasta 2MB</p>
-              </div>
+      <div className="max-w-2xl mx-auto space-y-4 md:space-y-6">
+        {/* Logo Upload */}
+        <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-8 shadow-lg">
+          <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4">Logo de la Empresa</h3>
+          <div className="flex flex-col sm:flex-row items-center sm:space-x-6 space-y-4 sm:space-y-0">
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-pink-200">
+              {logoPreview ? (
+                <img src={logoPreview} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center text-white font-bold text-2xl md:text-3xl">
+                  N
+                </div>
+              )}
             </div>
-          </div>
-
-          {/* Business Info */}
-          <div className="border-t-2 border-pink-100 pt-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Información del Negocio</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+            <div className="text-center sm:text-left">
+              <label className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-5 md:px-6 py-2 rounded-lg font-semibold cursor-pointer hover:shadow-lg active:scale-95 transition-all inline-block text-sm md:text-base">
+                Subir Logo
                 <input
-                  type="text"
-                  defaultValue="NOVAVENTA"
-                  className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  className="hidden"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp</label>
-                <input
-                  type="text"
-                  defaultValue="3217366758"
-                  className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
-                <input
-                  type="text"
-                  placeholder="Dirección del negocio"
-                  className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <input
-                  type="email"
-                  placeholder="correo@novaventa.com"
-                  className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400"
-                />
-              </div>
+              </label>
+              <p className="text-xs md:text-sm text-gray-500 mt-2">PNG, JPG hasta 2MB</p>
             </div>
-            <button className="mt-6 w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 rounded-xl font-bold hover:shadow-lg">
-              Guardar Cambios
-            </button>
           </div>
         </div>
+
+        {/* Business Info */}
+        <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-8 shadow-lg">
+          <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4">Información del Negocio</h3>
+          <div className="space-y-3 md:space-y-4">
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Nombre</label>
+              <input
+                type="text"
+                defaultValue="NOVAVENTA"
+                className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
+              />
+            </div>
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">WhatsApp</label>
+              <input
+                type="text"
+                defaultValue="3217366758"
+                className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
+              />
+            </div>
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Dirección</label>
+              <input
+                type="text"
+                placeholder="Dirección del negocio"
+                className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
+              />
+            </div>
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Email</label>
+              <input
+                type="email"
+                placeholder="correo@novaventa.com"
+                className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg focus:outline-none focus:border-pink-400 text-sm md:text-base"
+              />
+            </div>
+          </div>
+          <button className="mt-4 md:mt-6 w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold hover:shadow-lg active:scale-95 transition-all text-sm md:text-base">
+            Guardar Cambios
+          </button>
+        </div>
+
+        {/* Reset System - Danger Zone */}
+        <div className="bg-red-50 border-2 border-red-200 rounded-xl md:rounded-2xl p-4 md:p-8 shadow-lg">
+          <h3 className="text-lg md:text-xl font-bold text-red-700 mb-2 md:mb-3">⚠️ Zona de Peligro</h3>
+          <p className="text-xs md:text-sm text-red-600 mb-3 md:mb-4">
+            Esta acción eliminará TODOS los datos del sistema permanentemente: productos, ventas, clientes, pedidos y compras.
+          </p>
+          <button
+            onClick={() => setShowResetModal(true)}
+            className="w-full bg-red-600 hover:bg-red-700 text-white py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold active:scale-95 transition-all text-sm md:text-base"
+          >
+            🗑️ Reiniciar Sistema a Cero
+          </button>
+        </div>
       </div>
+
+      {/* Reset Confirmation Modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-8 max-w-md w-full">
+            <h3 className="text-xl md:text-2xl font-bold text-red-600 mb-3 md:mb-4">⚠️ Confirmar Reinicio</h3>
+            <p className="text-sm md:text-base text-gray-700 mb-4 md:mb-6">
+              Esta acción es <strong>IRREVERSIBLE</strong> y eliminará:
+            </p>
+            <ul className="text-xs md:text-sm text-gray-600 mb-4 md:mb-6 space-y-1 list-disc list-inside">
+              <li>Todos los productos</li>
+              <li>Todas las ventas</li>
+              <li>Todos los clientes</li>
+              <li>Todos los pedidos</li>
+              <li>Todas las compras</li>
+            </ul>
+            <p className="text-sm md:text-base text-gray-700 mb-3 md:mb-4">
+              Para confirmar, escribe <strong className="text-red-600">CONFIRMAR</strong> en el campo:
+            </p>
+            <input
+              type="text"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="Escribe CONFIRMAR"
+              className="w-full px-3 md:px-4 py-2 border-2 border-red-300 rounded-lg focus:outline-none focus:border-red-500 mb-4 md:mb-6 text-sm md:text-base"
+              disabled={resetting}
+            />
+            <div className="flex flex-col sm:flex-row gap-2 md:gap-4">
+              <button
+                onClick={() => {
+                  setShowResetModal(false);
+                  setConfirmText('');
+                }}
+                className="flex-1 px-4 md:px-6 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-50 active:scale-95 transition-all text-sm md:text-base"
+                disabled={resetting}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleResetSystem}
+                disabled={confirmText !== 'CONFIRMAR' || resetting}
+                className="flex-1 px-4 md:px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all text-sm md:text-base"
+              >
+                {resetting ? 'Reiniciando...' : 'Reiniciar Sistema'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
