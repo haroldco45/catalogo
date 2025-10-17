@@ -52,3 +52,6 @@ export const exportInventoryReport = () => {
     responseType: 'blob'
   });
 };
+
+// System API
+export const resetSystem = (confirmation) => axios.post(`${API}/reset-system`, { confirmation });
