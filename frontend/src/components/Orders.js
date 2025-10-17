@@ -82,48 +82,48 @@ const Orders = () => {
 
   return (
     <div data-testid="orders-page">
-      <h2 className="text-3xl font-bold text-gray-800 mb-8">📋 Pedidos</h2>
+      <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-8">📋 Pedidos</h2>
 
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-4 text-center">
-            <p className="text-3xl mb-1">⏳</p>
-            <p className="text-2xl font-bold text-yellow-700">{stats.by_status.pendiente}</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 mb-4 md:mb-8">
+          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl md:rounded-2xl p-3 md:p-4 text-center">
+            <p className="text-2xl md:text-3xl mb-1">⏳</p>
+            <p className="text-xl md:text-2xl font-bold text-yellow-700">{stats.by_status.pendiente}</p>
             <p className="text-xs text-yellow-600">Pendientes</p>
           </div>
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 text-center">
-            <p className="text-3xl mb-1">✅</p>
-            <p className="text-2xl font-bold text-blue-700">{stats.by_status.confirmado}</p>
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-xl md:rounded-2xl p-3 md:p-4 text-center">
+            <p className="text-2xl md:text-3xl mb-1">✅</p>
+            <p className="text-xl md:text-2xl font-bold text-blue-700">{stats.by_status.confirmado}</p>
             <p className="text-xs text-blue-600">Confirmados</p>
           </div>
-          <div className="bg-purple-50 border-2 border-purple-200 rounded-2xl p-4 text-center">
-            <p className="text-3xl mb-1">📦</p>
-            <p className="text-2xl font-bold text-purple-700">{stats.by_status.en_preparacion}</p>
+          <div className="bg-purple-50 border-2 border-purple-200 rounded-xl md:rounded-2xl p-3 md:p-4 text-center">
+            <p className="text-2xl md:text-3xl mb-1">📦</p>
+            <p className="text-xl md:text-2xl font-bold text-purple-700">{stats.by_status.en_preparacion}</p>
             <p className="text-xs text-purple-600">En Preparación</p>
           </div>
-          <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-4 text-center">
-            <p className="text-3xl mb-1">🎉</p>
-            <p className="text-2xl font-bold text-green-700">{stats.by_status.entregado}</p>
+          <div className="bg-green-50 border-2 border-green-200 rounded-xl md:rounded-2xl p-3 md:p-4 text-center">
+            <p className="text-2xl md:text-3xl mb-1">🎉</p>
+            <p className="text-xl md:text-2xl font-bold text-green-700">{stats.by_status.entregado}</p>
             <p className="text-xs text-green-600">Entregados</p>
           </div>
-          <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-center">
-            <p className="text-3xl mb-1">❌</p>
-            <p className="text-2xl font-bold text-red-700">{stats.by_status.cancelado}</p>
+          <div className="bg-red-50 border-2 border-red-200 rounded-xl md:rounded-2xl p-3 md:p-4 text-center">
+            <p className="text-2xl md:text-3xl mb-1">❌</p>
+            <p className="text-xl md:text-2xl font-bold text-red-700">{stats.by_status.cancelado}</p>
             <p className="text-xs text-red-600">Cancelados</p>
           </div>
-          <div className="bg-pink-50 border-2 border-pink-200 rounded-2xl p-4 text-center">
-            <p className="text-3xl mb-1">📊</p>
-            <p className="text-2xl font-bold text-pink-700">{stats.today}</p>
+          <div className="bg-pink-50 border-2 border-pink-200 rounded-xl md:rounded-2xl p-3 md:p-4 text-center">
+            <p className="text-2xl md:text-3xl mb-1">📊</p>
+            <p className="text-xl md:text-2xl font-bold text-pink-700">{stats.today}</p>
             <p className="text-xs text-pink-600">Hoy</p>
           </div>
         </div>
       )}
 
-      <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
+      <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg mb-4 md:mb-6">
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setFilterStatus('')}
-            className={`px-4 py-2 rounded-lg font-semibold ${filterStatus === '' ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+            className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-semibold text-xs md:text-sm active:scale-95 transition-all ${filterStatus === '' ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white' : 'bg-gray-100 text-gray-600'}`}
           >
             Todos
           </button>
@@ -131,71 +131,72 @@ const Orders = () => {
             <button
               key={status}
               onClick={() => setFilterStatus(status)}
-              className={`px-4 py-2 rounded-lg font-semibold ${filterStatus === status ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+              className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-semibold text-xs md:text-sm active:scale-95 transition-all ${filterStatus === status ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white' : 'bg-gray-100 text-gray-600'}`}
             >
-              {getStatusIcon(status)} {status}
+              <span className="hidden sm:inline">{getStatusIcon(status)} {status}</span>
+              <span className="sm:hidden">{getStatusIcon(status)}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {orders.map(order => (
           <div
             key={order.id}
-            className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+            className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl active:scale-98 transition-all cursor-pointer"
             onClick={() => setSelectedOrder(order)}
           >
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex justify-between items-start mb-3 md:mb-4">
               <div>
-                <p className="text-sm text-gray-500">Pedido</p>
-                <p className="text-lg font-bold text-gray-800">#{order.order_number}</p>
+                <p className="text-xs md:text-sm text-gray-500">Pedido</p>
+                <p className="text-base md:text-lg font-bold text-gray-800">#{order.order_number}</p>
               </div>
-              <span className={`px-3 py-1 rounded-full text-sm font-semibold border-2 ${getStatusColor(order.status)}`}>
-                {getStatusIcon(order.status)} {order.status}
+              <span className={`px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-semibold border-2 ${getStatusColor(order.status)}`}>
+                {getStatusIcon(order.status)} <span className="hidden sm:inline">{order.status}</span>
               </span>
             </div>
-            <div className="mb-4">
-              <p className="text-sm text-gray-600">👤 {order.customer_name}</p>
-              <p className="text-sm text-gray-600">📱 {order.customer_phone}</p>
+            <div className="mb-3 md:mb-4">
+              <p className="text-xs md:text-sm text-gray-600 truncate">👤 {order.customer_name}</p>
+              <p className="text-xs md:text-sm text-gray-600">📱 {order.customer_phone}</p>
             </div>
-            <div className="flex justify-between items-center border-t border-pink-100 pt-3">
-              <p className="text-xl font-bold text-pink-600">${order.total.toLocaleString('es-CO')}</p>
+            <div className="flex justify-between items-center border-t border-pink-100 pt-2 md:pt-3">
+              <p className="text-lg md:text-xl font-bold text-pink-600">${order.total.toLocaleString('es-CO')}</p>
               <p className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString('es-CO')}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {orders.length === 0 && <div className="text-center py-20"><p className="text-2xl text-gray-400">No hay pedidos</p></div>}
+      {orders.length === 0 && <div className="text-center py-10 md:py-20"><p className="text-xl md:text-2xl text-gray-400">No hay pedidos</p></div>}
 
       {selectedOrder && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-start mb-6">
-              <h3 className="text-2xl font-bold text-gray-800">Pedido #{selectedOrder.order_number}</h3>
-              <button onClick={() => setSelectedOrder(null)} className="text-gray-500 hover:text-gray-700 text-3xl">×</button>
+          <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-4 md:mb-6">
+              <h3 className="text-xl md:text-2xl font-bold text-gray-800">Pedido #{selectedOrder.order_number}</h3>
+              <button onClick={() => setSelectedOrder(null)} className="text-gray-500 hover:text-gray-700 active:scale-90 text-3xl md:text-4xl">×</button>
             </div>
-            <div className="mb-6">
-              <span className={`inline-block px-4 py-2 rounded-full text-lg font-semibold border-2 ${getStatusColor(selectedOrder.status)}`}>
+            <div className="mb-4 md:mb-6">
+              <span className={`inline-block px-3 md:px-4 py-1.5 md:py-2 rounded-full text-sm md:text-lg font-semibold border-2 ${getStatusColor(selectedOrder.status)}`}>
                 {getStatusIcon(selectedOrder.status)} {selectedOrder.status}
               </span>
             </div>
-            <div className="mb-6 bg-pink-50 rounded-xl p-4">
-              <h4 className="font-bold text-gray-800 mb-2">👤 Cliente</h4>
-              <p className="text-sm"><strong>Nombre:</strong> {selectedOrder.customer_name}</p>
-              <p className="text-sm"><strong>Teléfono:</strong> {selectedOrder.customer_phone}</p>
-              <p className="text-sm"><strong>Dirección:</strong> {selectedOrder.customer_address}</p>
+            <div className="mb-4 md:mb-6 bg-pink-50 rounded-lg md:rounded-xl p-3 md:p-4">
+              <h4 className="font-bold text-gray-800 mb-2 text-sm md:text-base">👤 Cliente</h4>
+              <p className="text-xs md:text-sm"><strong>Nombre:</strong> {selectedOrder.customer_name}</p>
+              <p className="text-xs md:text-sm"><strong>Teléfono:</strong> {selectedOrder.customer_phone}</p>
+              <p className="text-xs md:text-sm"><strong>Dirección:</strong> {selectedOrder.customer_address}</p>
             </div>
-            <div className="mb-6">
-              <h4 className="font-bold text-gray-800 mb-3">📦 Productos</h4>
+            <div className="mb-4 md:mb-6">
+              <h4 className="font-bold text-gray-800 mb-2 md:mb-3 text-sm md:text-base">📦 Productos</h4>
               {selectedOrder.items.map((item, idx) => (
-                <div key={idx} className="flex justify-between py-2 border-b">
-                  <div>
-                    <p className="font-semibold">{item.product_name}</p>
-                    <p className="text-sm text-gray-600">${item.price.toLocaleString('es-CO')} x {item.quantity}</p>
+                <div key={idx} className="flex justify-between py-2 border-b gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-xs md:text-sm truncate">{item.product_name}</p>
+                    <p className="text-xs text-gray-600">${item.price.toLocaleString('es-CO')} x {item.quantity}</p>
                   </div>
-                  <p className="font-bold text-pink-600">${item.subtotal.toLocaleString('es-CO')}</p>
+                  <p className="font-bold text-pink-600 text-sm md:text-base whitespace-nowrap">${item.subtotal.toLocaleString('es-CO')}</p>
                 </div>
               ))}
               <div className="flex justify-between pt-3">
