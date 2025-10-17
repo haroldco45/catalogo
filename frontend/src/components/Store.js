@@ -192,61 +192,61 @@ const Store = () => {
 
       {showCheckout && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">🛒 Tu Pedido</h2>
-              <button onClick={() => setShowCheckout(false)} className="text-gray-500 text-3xl">×</button>
+          <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 md:mb-6">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800">🛒 Tu Pedido</h2>
+              <button onClick={() => setShowCheckout(false)} className="text-gray-500 text-3xl md:text-4xl hover:text-gray-700 active:scale-90 transition-all">×</button>
             </div>
 
             {cart.length === 0 ? (
               <div className="text-center py-10">
-                <p className="text-xl text-gray-400">Carrito vacío</p>
-                <button onClick={() => setShowCheckout(false)} className="mt-4 px-6 py-2 bg-pink-500 text-white rounded-lg">
+                <p className="text-lg md:text-xl text-gray-400">Carrito vacío</p>
+                <button onClick={() => setShowCheckout(false)} className="mt-4 px-5 md:px-6 py-2 bg-pink-500 text-white rounded-lg active:scale-95 transition-all text-sm md:text-base">
                   Seguir comprando
                 </button>
               </div>
             ) : (
               <>
-                <div className="mb-6">
+                <div className="mb-4 md:mb-6">
                   {cart.map(item => (
-                    <div key={item.product_id} className="flex justify-between items-center py-3 border-b">
-                      <div className="flex-1">
-                        <p className="font-semibold">{item.product_name}</p>
-                        <p className="text-sm text-gray-600">${item.price.toLocaleString('es-CO')} c/u</p>
+                    <div key={item.product_id} className="flex justify-between items-center py-3 border-b gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm md:text-base truncate">{item.product_name}</p>
+                        <p className="text-xs md:text-sm text-gray-600">${item.price.toLocaleString('es-CO')} c/u</p>
                       </div>
-                      <div className="flex items-center space-x-3">
-                        <button onClick={() => updateQuantity(item.product_id, item.quantity - 1)} className="w-8 h-8 bg-pink-100 rounded-full">-</button>
-                        <span className="w-8 text-center font-semibold">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.product_id, item.quantity + 1)} className="w-8 h-8 bg-pink-100 rounded-full">+</button>
+                      <div className="flex items-center space-x-2 md:space-x-3">
+                        <button onClick={() => updateQuantity(item.product_id, item.quantity - 1)} className="w-7 h-7 md:w-8 md:h-8 bg-pink-100 rounded-full active:scale-90 transition-all text-sm md:text-base">-</button>
+                        <span className="w-6 md:w-8 text-center font-semibold text-sm md:text-base">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.product_id, item.quantity + 1)} className="w-7 h-7 md:w-8 md:h-8 bg-pink-100 rounded-full active:scale-90 transition-all text-sm md:text-base">+</button>
                       </div>
-                      <p className="ml-4 font-bold text-pink-600">${item.subtotal.toLocaleString('es-CO')}</p>
+                      <p className="ml-2 md:ml-4 font-bold text-pink-600 text-sm md:text-base whitespace-nowrap">${item.subtotal.toLocaleString('es-CO')}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="border-t-2 border-pink-200 pt-4 mb-6">
-                  <div className="flex justify-between text-2xl font-bold">
+                <div className="border-t-2 border-pink-200 pt-3 md:pt-4 mb-4 md:mb-6">
+                  <div className="flex justify-between text-xl md:text-2xl font-bold">
                     <span>Total:</span>
                     <span className="text-pink-600">${calculateTotal().toLocaleString('es-CO')} COP</span>
                   </div>
                 </div>
 
                 <form onSubmit={handleCheckout}>
-                  <h3 className="text-lg font-bold mb-4">📋 Datos de Entrega</h3>
-                  <div className="space-y-4">
-                    <input type="text" name="name" required placeholder="Nombre completo" className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg" />
+                  <h3 className="text-base md:text-lg font-bold mb-3 md:mb-4">📋 Datos de Entrega</h3>
+                  <div className="space-y-3 md:space-y-4">
+                    <input type="text" name="name" required placeholder="Nombre completo" className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg text-sm md:text-base" />
                     <div>
-                      <label className="block text-sm mb-2">Teléfono (WhatsApp) <span className="text-green-600">🇨🇴 +57 automático</span></label>
+                      <label className="block text-xs md:text-sm mb-2">Teléfono (WhatsApp) <span className="text-green-600">🇨🇴 +57 automático</span></label>
                       <div className="flex">
-                        <span className="inline-flex items-center px-3 bg-gray-200 border border-r-0 border-pink-200 rounded-l-lg">+57</span>
-                        <input type="tel" name="phone" required placeholder="3001234567" className="w-full px-4 py-2 border-2 border-pink-200 rounded-r-lg" />
+                        <span className="inline-flex items-center px-2 md:px-3 bg-gray-200 border border-r-0 border-pink-200 rounded-l-lg text-sm md:text-base">+57</span>
+                        <input type="tel" name="phone" required placeholder="3001234567" className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-r-lg text-sm md:text-base" />
                       </div>
                     </div>
-                    <input type="text" name="address" required placeholder="Dirección de entrega" className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg" />
-                    <input type="email" name="email" placeholder="Email (opcional)" className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg" />
-                    <textarea name="notes" rows="2" placeholder="Notas adicionales" className="w-full px-4 py-2 border-2 border-pink-200 rounded-lg" />
+                    <input type="text" name="address" required placeholder="Dirección de entrega" className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg text-sm md:text-base" />
+                    <input type="email" name="email" placeholder="Email (opcional)" className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg text-sm md:text-base" />
+                    <textarea name="notes" rows="2" placeholder="Notas adicionales" className="w-full px-3 md:px-4 py-2 border-2 border-pink-200 rounded-lg text-sm md:text-base" />
                   </div>
-                  <button type="submit" className="w-full mt-6 bg-gradient-to-r from-green-500 to-green-600 text-white py-4 rounded-xl font-bold text-lg">
+                  <button type="submit" className="w-full mt-4 md:mt-6 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 md:py-4 rounded-lg md:rounded-xl font-bold text-base md:text-lg active:scale-95 transition-all">
                     ✅ Confirmar Pedido
                   </button>
                 </form>
