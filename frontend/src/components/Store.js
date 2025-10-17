@@ -113,21 +113,22 @@ const Store = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
       <header className="bg-white/90 backdrop-blur-sm border-b-2 border-pink-200 sticky top-0 z-40 shadow-md">
-        <div className="container mx-auto px-6 py-4">
+        <div className="container mx-auto px-4 md:px-6 py-3 md:py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
                 🛍️ NOVAVENTA
               </h1>
-              <p className="text-sm text-gray-600">Catálogo de Productos</p>
+              <p className="text-xs md:text-sm text-gray-600">Catálogo de Productos</p>
             </div>
             <button
               onClick={() => setShowCheckout(true)}
-              className="relative bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 rounded-xl font-semibold"
+              className="relative bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-semibold text-sm md:text-base active:scale-95 transition-all"
             >
-              🛒 Carrito ({cart.length})
+              <span className="hidden sm:inline">🛒 Carrito ({cart.length})</span>
+              <span className="sm:hidden">🛒 ({cart.length})</span>
               {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 md:-top-2 -right-1 md:-right-2 bg-red-500 text-white text-xs w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center">
                   {cart.length}
                 </span>
               )}
@@ -136,20 +137,20 @@ const Store = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-8">
-        <div className="bg-white rounded-2xl p-6 shadow-lg mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="container mx-auto px-4 md:px-6 py-4 md:py-8">
+        <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg mb-4 md:mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             <input
               type="text"
               placeholder="🔍 Buscar productos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="px-4 py-3 border-2 border-pink-200 rounded-xl focus:outline-none focus:border-pink-400"
+              className="px-3 md:px-4 py-2 md:py-3 border-2 border-pink-200 rounded-lg md:rounded-xl focus:outline-none focus:border-pink-400 text-sm md:text-base"
             />
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="px-4 py-3 border-2 border-pink-200 rounded-xl focus:outline-none focus:border-pink-400"
+              className="px-3 md:px-4 py-2 md:py-3 border-2 border-pink-200 rounded-lg md:rounded-xl focus:outline-none focus:border-pink-400 text-sm md:text-base"
             >
               <option value="">📂 Todas las categorías</option>
               {categories.map(cat => (
@@ -159,27 +160,27 @@ const Store = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {filteredProducts.map(product => (
-            <div key={product.id} className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all">
-              <div className="h-48 bg-gradient-to-br from-pink-200 to-purple-200 flex items-center justify-center">
-                <span className="text-6xl">📦</span>
+            <div key={product.id} className="bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl active:scale-95 transition-all">
+              <div className="h-36 md:h-48 bg-gradient-to-br from-pink-200 to-purple-200 flex items-center justify-center">
+                <span className="text-5xl md:text-6xl">📦</span>
               </div>
-              <div className="p-5">
-                <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">
+              <div className="p-4 md:p-5">
+                <span className="px-2 md:px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">
                   {product.category}
                 </span>
-                <h3 className="text-lg font-bold text-gray-800 mt-2 mb-2">{product.name}</h3>
-                <p className="text-sm text-gray-600 mb-3">{product.description}</p>
-                <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base md:text-lg font-bold text-gray-800 mt-2 mb-1 md:mb-2 line-clamp-2">{product.name}</h3>
+                <p className="text-xs md:text-sm text-gray-600 mb-2 md:mb-3 line-clamp-2">{product.description}</p>
+                <div className="flex items-center justify-between mb-2 md:mb-3">
                   <div>
-                    <p className="text-2xl font-bold text-pink-600">${product.price.toLocaleString('es-CO')}</p>
+                    <p className="text-xl md:text-2xl font-bold text-pink-600">${product.price.toLocaleString('es-CO')}</p>
                     <p className="text-xs text-gray-500">Stock: {product.stock}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => addToCart(product)}
-                  className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 rounded-xl font-semibold"
+                  className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-2 md:py-3 rounded-lg md:rounded-xl font-semibold active:scale-95 transition-all text-sm md:text-base"
                 >
                   Agregar al Carrito
                 </button>
