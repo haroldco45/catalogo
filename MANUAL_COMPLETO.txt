@@ -1,0 +1,502 @@
+============================================
+MANUAL DE USUARIO - NOVAVENTA
+Sistema de Gestión de Inventario y Ventas
+============================================
+
+ÍNDICE
+------
+1. Introducción
+2. Acceso al Sistema
+3. Panel de Control (Dashboard)
+4. Gestión de Inventario
+5. Gestión de Compras
+6. Registro de Ventas
+7. Gestión de Pedidos
+8. Gestión de Clientes
+9. Reportes
+10. Portal de Clientes (Tienda)
+11. Configuración y Perfil
+12. Preguntas Frecuentes
+
+============================================
+1. INTRODUCCIÓN
+============================================
+
+NOVAVENTA es un sistema completo para gestionar tu negocio de productos. Te permite:
+
+- Controlar inventario de productos
+- Registrar ventas y generar reportes
+- Gestionar clientes
+- Recibir y administrar pedidos en línea
+- Registrar compras de productos
+- Enviar notificaciones por WhatsApp
+- Exportar reportes a Excel
+
+============================================
+2. ACCESO AL SISTEMA
+============================================
+
+VERSIÓN ESCRITORIO (PC)
+1. Abre tu navegador web (Chrome, Firefox, Edge)
+2. Ingresa la dirección de tu sistema NOVAVENTA
+3. Verás el panel principal con el menú en la parte superior
+
+VERSIÓN MÓVIL (Celular/Tablet)
+1. Abre el navegador en tu dispositivo móvil
+2. Ingresa la dirección de tu sistema
+3. Para ver el menú, toca el ícono de tres líneas en la esquina superior derecha
+
+TIP: Puedes agregar NOVAVENTA a tu pantalla de inicio para acceso rápido.
+
+============================================
+3. PANEL DE CONTROL (DASHBOARD)
+============================================
+
+Al iniciar sesión, verás el Dashboard con información importante:
+
+TARJETAS DE ESTADÍSTICAS:
+- Ventas Hoy: Número de ventas y total del día
+- Ventas Semana: Ventas de la semana actual
+- Ventas Mes: Ventas del mes en curso
+- Productos: Total de productos y alertas de stock bajo
+
+ACCIONES RÁPIDAS (4 botones):
+- Nueva Venta: Registrar una venta
+- Ver Pedidos: Ver pedidos de clientes
+- Agregar Producto: Añadir nuevo producto
+- Ver Reportes: Consultar reportes
+
+PORTAL DE CLIENTES:
+- Enlace para compartir con tus clientes
+- Ellos pueden hacer pedidos en línea
+
+============================================
+4. GESTIÓN DE INVENTARIO
+============================================
+
+VER PRODUCTOS
+1. Click en "Inventario" en el menú
+2. Verás la lista de todos tus productos con:
+   - Nombre y descripción
+   - Categoría
+   - Precio
+   - Stock actual
+   - Stock mínimo
+
+BUSCAR Y FILTRAR
+- Buscar: Escribe el nombre del producto
+- Filtrar por categoría: Selecciona una categoría
+- Solo stock bajo: Marca para ver productos con poco inventario
+
+AGREGAR NUEVO PRODUCTO
+1. Click en "+ Agregar Producto"
+2. Completa el formulario:
+   - Nombre (obligatorio)
+   - Categoría (obligatorio)
+   - Precio en COP (obligatorio)
+   - Stock (obligatorio)
+   - Stock Mínimo (obligatorio)
+   - Proveedor (opcional)
+   - Descripción (opcional)
+3. Click en "Guardar"
+
+EDITAR PRODUCTO
+1. Click en el ícono de lápiz junto al producto
+2. Modifica la información
+3. Click en "Guardar"
+
+ELIMINAR PRODUCTO
+1. Click en el ícono de basura junto al producto
+2. Confirma la eliminación
+
+IMPORTANTE: Al eliminar un producto, se borra permanentemente.
+
+============================================
+5. GESTIÓN DE COMPRAS
+============================================
+
+Registra cuando compras productos a tus proveedores.
+
+REGISTRAR NUEVA COMPRA
+1. Click en "Compras" en el menú
+2. Click en "+ Nueva Compra"
+3. Completa el formulario:
+   - Proveedor: Nombre del proveedor
+   - Productos: Selecciona, ingresa cantidad y precio de compra
+   - Click en "+ Agregar Producto" para más productos
+   - Notas: Información adicional (opcional)
+4. Revisa el Total
+5. Click en "Registrar Compra"
+
+RESULTADO: El stock se actualiza automáticamente.
+
+VER HISTORIAL
+En la página de Compras verás:
+- Número de compra
+- Proveedor
+- Total
+- Fecha
+- Productos incluidos
+
+============================================
+6. REGISTRO DE VENTAS
+============================================
+
+CREAR NUEVA VENTA
+1. Click en "Ventas" en el menú
+
+2. LADO IZQUIERDO - Seleccionar Productos:
+   - Busca productos
+   - Click en producto para agregar al carrito
+   - Se agrega con cantidad 1
+
+3. LADO DERECHO - Carrito de Venta:
+   
+   a) Seleccionar Cliente:
+   - Elige cliente existente o escribe nombre
+   - VENTAJA: Cliente con teléfono recibe comprobante por WhatsApp
+   
+   b) Ajustar Cantidades:
+   - Usa botones - y + para cambiar cantidad
+   - Click en × para eliminar producto
+   
+   c) Información de Pago:
+   - Método de Pago: Efectivo, Tarjeta, Transferencia, Nequi, Daviplata
+   - Notas (opcional)
+
+4. Revisa el Total
+5. Click en "Completar Venta"
+
+RESULTADO:
+- Venta registrada
+- Stock actualizado
+- Cliente recibe comprobante por WhatsApp (si tiene teléfono)
+
+============================================
+7. GESTIÓN DE PEDIDOS
+============================================
+
+Los pedidos llegan desde el Portal de Clientes (tienda en línea).
+
+VER PEDIDOS
+1. Click en "Pedidos" en el menú
+2. Verás estadísticas:
+   - Pendientes
+   - Confirmados
+   - En Preparación
+   - Entregados
+   - Cancelados
+   - Hoy
+
+FILTRAR PEDIDOS
+Click en botones de estado:
+- Todos
+- Pendiente: Nuevos sin confirmar
+- Confirmado
+- En Preparación
+- Entregado
+- Cancelado
+
+VER DETALLES
+1. Click en tarjeta de pedido
+2. Verás:
+   - Número de pedido
+   - Estado actual
+   - Información del cliente
+   - Productos y cantidades
+   - Total
+
+CAMBIAR ESTADO
+1. Dentro de detalles del pedido
+2. Click en "Cambiar Estado"
+3. Selecciona nuevo estado:
+   - Pendiente → Confirmado → En Preparación → Entregado
+   - O → Cancelado
+4. Confirma
+
+RESULTADO: Cliente recibe notificación por WhatsApp.
+
+============================================
+8. GESTIÓN DE CLIENTES
+============================================
+
+VER CLIENTES
+1. Click en "Clientes" en el menú
+2. Lista con:
+   - Nombre
+   - Teléfono (con indicador WhatsApp)
+   - Dirección
+   - Total de compras
+
+BUSCAR
+Escribe nombre o teléfono en barra de búsqueda.
+
+AGREGAR NUEVO CLIENTE
+1. Click en "+ Agregar Cliente"
+2. Completa:
+   - Nombre completo (obligatorio)
+   - Teléfono WhatsApp (obligatorio)
+     IMPORTANTE: Solo 10 dígitos (ej: 3001234567)
+     Sistema agrega automáticamente +57
+   - Dirección (obligatorio)
+   - Email (opcional)
+3. Click en "Guardar"
+
+TIP: Clientes con teléfono recibirán:
+- Comprobante de ventas por WhatsApp
+- Actualizaciones de pedidos
+
+EDITAR/ELIMINAR
+- Click en lápiz para editar
+- Click en basura para eliminar
+
+============================================
+9. REPORTES
+============================================
+
+REPORTES DE VENTAS
+
+Ver Reporte:
+1. Click en "Reportes"
+2. Selecciona tipo: Ventas o Inventario Valorizado
+3. Para Ventas, elige período: Diario, Semanal, Mensual
+
+Información:
+- Total Ventas
+- Ingresos Totales
+- Venta Promedio
+- Productos Más Vendidos (con medallas top 3)
+
+Exportar a Excel:
+1. Click en "Exportar a Excel"
+2. Descarga archivo con:
+   - Resumen del período
+   - Lista completa de ventas
+   - Productos más vendidos
+   - Formato profesional
+
+REPORTE DE INVENTARIO VALORIZADO
+
+1. Click en "Inventario Valorizado"
+2. Verás:
+   - Total Productos
+   - Total Items
+   - Valor Total (stock × costo)
+   - Stock Bajo
+
+3. Tabla por Categoría y Lista de Productos
+
+Exportar:
+- Click en "Exportar a Excel"
+- Excel con hojas: Resumen, Por Categoría, Detalle
+
+============================================
+10. PORTAL DE CLIENTES (TIENDA)
+============================================
+
+Tu tienda en línea donde clientes hacen pedidos.
+
+COMPARTIR TIENDA
+1. Dashboard → "Portal de Clientes" → "Abrir Tienda"
+2. Copia URL del navegador
+3. Comparte por WhatsApp, Facebook, Instagram
+
+CÓMO FUNCIONA PARA CLIENTES:
+
+Paso 1: Navegan productos
+- Ven todos los productos
+- Buscan por nombre
+- Filtran por categoría
+
+Paso 2: Agregan al carrito
+- Click en "Agregar al Carrito"
+- Múltiples productos
+- Ven carrito en esquina superior
+
+Paso 3: Realizan pedido
+- Click en "Carrito"
+- Revisan y ajustan
+- Completan datos:
+  * Nombre completo
+  * Teléfono (10 dígitos, +57 automático)
+  * Dirección
+  * Email (opcional)
+  * Notas (opcional)
+
+Paso 4: Confirman
+- Click en "Confirmar Pedido"
+- Confirmación en pantalla
+- Mensaje WhatsApp con detalles
+
+TÚ RECIBES:
+- Notificación WhatsApp con pedido completo
+- Pedido en sección "Pedidos"
+
+============================================
+11. CONFIGURACIÓN Y PERFIL
+============================================
+
+ACCEDER
+Click en "Perfil" en el menú.
+
+LOGO DE LA EMPRESA
+1. Sección "Logo de la Empresa"
+2. Click en "Subir Logo"
+3. Selecciona imagen (PNG, JPG hasta 2MB)
+4. Logo aparece en toda la aplicación
+
+INFORMACIÓN DEL NEGOCIO
+Actualiza:
+- Nombre del negocio
+- WhatsApp principal
+- Dirección física
+- Email de contacto
+
+Click en "Guardar Cambios".
+
+REINICIAR SISTEMA A CERO
+*** ZONA DE PELIGRO - USAR CON EXTREMO CUIDADO ***
+
+ELIMINA TODOS LOS DATOS permanentemente:
+- Todos los productos
+- Todas las ventas
+- Todos los clientes
+- Todos los pedidos
+- Todas las compras
+
+CUÁNDO USAR:
+- Terminar período de prueba
+- Empezar año fiscal nuevo
+- Limpiar datos de demostración
+
+CÓMO USAR:
+1. Desplázate a "Zona de Peligro" (fondo rojo)
+2. Click en "Reiniciar Sistema a Cero"
+3. Lee advertencias
+4. Escribe exactamente: CONFIRMAR
+5. Click en "Reiniciar Sistema"
+6. Sistema se limpia y recarga
+
+IMPORTANTE: Acción NO SE PUEDE DESHACER. Exporta reportes antes.
+
+============================================
+12. PREGUNTAS FRECUENTES
+============================================
+
+P: ¿Los clientes necesitan crear cuenta?
+R: No. Solo llenan datos al momento de compra.
+
+P: ¿Cómo funcionan notificaciones de WhatsApp?
+R: Sistema envía mensajes automáticos cuando:
+   - Cliente hace pedido
+   - Cambias estado de pedido
+   - Registras venta a cliente con WhatsApp
+   - Producto tiene stock bajo
+
+P: ¿Qué pasa si elimino producto que tiene ventas?
+R: Producto se elimina, pero ventas anteriores se mantienen.
+
+P: ¿Puedo usar en varios dispositivos?
+R: Sí. Desde cualquier dispositivo con internet.
+
+P: ¿Cómo actualizo stock cuando llega mercancía?
+R: Usa sección "Compras". Stock se actualiza automáticamente.
+
+P: ¿Reportes muestran hora de Colombia?
+R: Sí. Todos en hora de Colombia (America/Bogota).
+
+P: ¿Qué es "Stock Mínimo"?
+R: Cantidad mínima del producto. Al llegar, recibes alerta.
+
+P: ¿Puedo cambiar precio de producto?
+R: Sí. No afecta ventas anteriores.
+
+P: ¿Cómo sé si cliente tiene WhatsApp?
+R: Verás ícono de teléfono junto al cliente.
+
+P: ¿Qué navegadores son compatibles?
+R: Chrome (recomendado), Firefox, Edge, Safari.
+
+============================================
+PROBLEMAS COMUNES Y SOLUCIONES
+============================================
+
+PROBLEMA: No puedo agregar productos al carrito
+SOLUCIÓN: Verifica que producto tenga stock disponible
+
+PROBLEMA: No recibo notificaciones de WhatsApp
+SOLUCIÓN: Verifica números correctos (10 dígitos sin +57)
+
+PROBLEMA: Reportes están vacíos
+SOLUCIÓN: Registra ventas primero
+
+PROBLEMA: Sistema se ve mal en celular
+SOLUCIÓN: Usa menú hamburguesa para navegar
+
+PROBLEMA: Olvidé hacer respaldo antes de reiniciar
+SOLUCIÓN: Datos no se pueden recuperar. Siempre exporta antes.
+
+============================================
+CONSEJOS Y BUENAS PRÁCTICAS
+============================================
+
+PARA INVENTARIO:
+- Actualiza stock regularmente
+- Define stock mínimo realista
+- Usa categorías claras
+- Registra proveedores
+
+PARA VENTAS:
+- Registra inmediatamente
+- Asocia clientes frecuentes
+- Usa método de pago correcto
+- Agrega notas importantes
+
+PARA CLIENTES:
+- Registra WhatsApp correctamente
+- Mantén direcciones actualizadas
+- Usa nombres completos
+
+PARA PEDIDOS:
+- Responde rápido
+- Actualiza estados
+- Comunica demoras
+
+PARA REPORTES:
+- Revisa semanalmente
+- Exporta a Excel para respaldos
+- Analiza productos más vendidos
+- Monitorea tendencias
+
+============================================
+GLOSARIO
+============================================
+
+Dashboard: Pantalla principal con resumen
+Stock: Cantidad de productos disponibles
+Stock Mínimo: Cantidad mínima antes de alerta
+Pedido: Solicitud desde tienda online
+Venta: Transacción registrada manualmente
+Compra: Registro de mercancía adquirida
+Reporte Valorizado: Incluye costos y valores
+Portal de Clientes: Tienda online
+WhatsApp: App de mensajería para notificaciones
+
+============================================
+PASOS PARA EMPEZAR
+============================================
+
+1. Sube logo del negocio
+2. Actualiza información en Perfil
+3. Agrega productos en Inventario
+4. Registra clientes frecuentes
+5. Comparte enlace de tienda
+6. Empieza a registrar ventas
+7. Revisa reportes regularmente
+
+¡Éxito con tu negocio!
+
+============================================
+Manual de Usuario NOVAVENTA v1.0
+Última actualización: Octubre 2025
+============================================
