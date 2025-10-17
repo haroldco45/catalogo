@@ -48,6 +48,30 @@ body {
   animation: fadeIn 0.5s ease-in-out;
 }
 
+/* Mobile responsive table styles */
+@media (max-width: 768px) {
+  /* Improve horizontal scrolling on mobile */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  
+  /* Better touch targets on mobile */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Prevent text selection on buttons */
+  button {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+}
+
 /* Print styles for reports */
 @media print {
   .no-print {
